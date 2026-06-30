@@ -1,0 +1,4 @@
+npm/platform-packages/*/docx-kit
+npm/platform-packages/*/docx-kit.exe
+node_modules/
+*.tgz
