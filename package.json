@@ -1,6 +1,6 @@
 {
   "name": "@dztabel/docxkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agent-facing CLI for exporting prepared content into polished Word docx reports.",
   "license": "UNLICENSED",
   "publishConfig": {
@@ -11,7 +11,7 @@
     "docxkit": "npm/docx-kit.cjs"
   },
   "optionalDependencies": {
-    "@dztabel/docxkit-darwin-arm64": "0.1.0"
+    "@dztabel/docxkit-darwin-arm64": "0.1.1"
   },
   "files": [
     "npm/docx-kit.cjs",
