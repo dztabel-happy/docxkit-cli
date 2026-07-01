@@ -15,3 +15,17 @@ Outputs:
 - `report/build-result.json`
 
 The MVP ships the `executive-cn-docx` template for formal Chinese reports.
+
+## Agent Skill
+
+Use the Codex skill in this repository when an agent should turn uploaded materials or prepared research into a Word deliverable:
+
+```text
+skills/codex/docxkit-word-report
+```
+
+Flow:
+
+```text
+user materials / LLM research -> Markdown or report.json -> docx-kit build -> editable report.docx
+```

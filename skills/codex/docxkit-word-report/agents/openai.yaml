@@ -1,0 +1,4 @@
+interface:
+  display_name: "DocxKit Word Report"
+  short_description: "Export prepared content as polished editable Word."
+  default_prompt: "Use $docxkit-word-report to turn the available report content into a polished editable Word document."

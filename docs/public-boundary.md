@@ -10,7 +10,7 @@
 - npm wrapper：`npm/docx-kit.cjs`
 - 平台包 metadata：`npm/platform-packages/*/package.json`
 - 用户 README
-- Codex skill
+- Codex skill：`skills/codex/docxkit-word-report`
 - 公开示例和截图
 
 本仓库不包含：
@@ -45,6 +45,21 @@ npm/platform-packages/*/docx-kit.exe
 ```
 
 MVP 只发布 `@dztabel/docxkit-darwin-arm64`。Linux 和 Windows 平台包是跨平台构建阶段的后续项。
+
+## Agent skill
+
+```text
+skills/codex/docxkit-word-report
+```
+
+该 skill 负责指导 Agent 把用户上传材料、LLM 调研内容、Markdown 或 `report.json` 整理后调用 `docx-kit` 导出 Word。
+
+边界：
+
+- skill 不负责自行调研或编造来源；
+- skill 不修改 core 模板或 OpenXML；
+- skill 输出 `report.docx` 和可继续编辑的 `report.json`；
+- 正常分页交给 Word/WPS，`---PAGE---` 只作为显式分页逃生口。
 
 ## 产品验收
 
