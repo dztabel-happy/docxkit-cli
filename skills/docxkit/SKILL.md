@@ -36,7 +36,7 @@ Minimum rules:
 - Use `表[compact]：标题` only for dense numeric/status/checklist tables with many short cells; use normal `表：标题` for narrative or comparison tables.
 - Use `表[landscape]：标题` only when a wide table must remain intact.
 - Put `图：` before every image, with image alt text kept short and not identical to the formal figure caption; image paths are resolved relative to the Markdown file.
-- Use fenced code blocks for JSON/config/code; put the optional display title after the language, for example ```` ```json renderer_contract ````.
+- Use fenced code blocks for JSON/config/code; put the optional display title after the language, for example ```` ```json renderer_contract ````. If no title is provided, DocxKit shows the language label.
 - Use callouts sparingly: `> [!note]`, `> [!insight]`, `> [!risk]`, `> [!warning]`.
 - Do not rely on `---PAGE---` for normal pagination. Use it only when the user explicitly wants a hard page break.
 

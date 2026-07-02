@@ -89,7 +89,7 @@ Supported kinds: `note`, `insight`, `risk`, `warning`. `tip` is normalized to `n
 ```
 ````
 
-The first word after the opening fence is the language. The remaining text becomes the optional code-block title.
+The first word after the opening fence is the language. The remaining text becomes the optional code-block title. If no title is provided, DocxKit shows the language label. Code remains editable in Word and may use lightweight syntax colors.
 
 ## Page Breaks
 
