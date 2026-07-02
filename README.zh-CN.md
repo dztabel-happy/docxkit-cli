@@ -29,14 +29,14 @@
 
 ## 效果预览
 
-以下截图展示 DocxKit 的默认 Word 报告效果。
+以下截图展示 6 份不同业务场景的完整 6 页 Word 报告。
 
 | | | |
 |:---:|:---:|:---:|
-| <sub><strong>封面</strong></sub> | <sub><strong>目录</strong></sub> | <sub><strong>决策摘要</strong></sub> |
-| <img src="examples/showcase/reference/01-cover.png" alt="DocxKit 封面" width="260"> | <img src="examples/showcase/reference/02-toc.png" alt="DocxKit 目录" width="260"> | <img src="examples/showcase/reference/03-summary.png" alt="DocxKit 决策摘要" width="260"> |
-| <sub><strong>长表</strong></sub> | <sub><strong>图文与流程</strong></sub> | <sub><strong>代码块</strong></sub> |
-| <img src="examples/showcase/reference/04-long-table.png" alt="DocxKit 长表" width="260"> | <img src="examples/showcase/reference/05-flow.png" alt="DocxKit 图文与流程" width="260"> | <img src="examples/showcase/reference/06-code.png" alt="DocxKit 代码块" width="260"> |
+| <sub><strong>董事会决策备忘</strong></sub> | <sub><strong>客户研究报告</strong></sub> | <sub><strong>技术交付复盘</strong></sub> |
+| <img src="examples/showcase/cases/01-board-decision-memo.png" alt="DocxKit 董事会决策备忘" width="300"> | <img src="examples/showcase/cases/02-customer-research-report.png" alt="DocxKit 客户研究报告" width="300"> | <img src="examples/showcase/cases/03-technical-delivery-review.png" alt="DocxKit 技术交付复盘" width="300"> |
+| <sub><strong>财务风险简报</strong></sub> | <sub><strong>运营执行手册</strong></sub> | <sub><strong>市场进入报告</strong></sub> |
+| <img src="examples/showcase/cases/04-finance-risk-brief.png" alt="DocxKit 财务风险简报" width="300"> | <img src="examples/showcase/cases/05-operations-playbook.png" alt="DocxKit 运营执行手册" width="300"> | <img src="examples/showcase/cases/06-market-entry-report.png" alt="DocxKit 市场进入报告" width="300"> |
 
 ## 安装
 

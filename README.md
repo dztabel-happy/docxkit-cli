@@ -29,14 +29,14 @@ Users can provide any material the agent can read and understand, such as:
 
 ## Preview
 
-These screenshots show DocxKit's default Word report output.
+These screenshots show six complete 6-page Word reports generated for different business scenarios.
 
 | | | |
 |:---:|:---:|:---:|
-| <sub><strong>Cover</strong></sub> | <sub><strong>Table of contents</strong></sub> | <sub><strong>Executive summary</strong></sub> |
-| <img src="examples/showcase/reference/01-cover.png" alt="DocxKit cover" width="260"> | <img src="examples/showcase/reference/02-toc.png" alt="DocxKit table of contents" width="260"> | <img src="examples/showcase/reference/03-summary.png" alt="DocxKit executive summary" width="260"> |
-| <sub><strong>Long table</strong></sub> | <sub><strong>Figure and flow</strong></sub> | <sub><strong>Code block</strong></sub> |
-| <img src="examples/showcase/reference/04-long-table.png" alt="DocxKit long table" width="260"> | <img src="examples/showcase/reference/05-flow.png" alt="DocxKit figure and flow" width="260"> | <img src="examples/showcase/reference/06-code.png" alt="DocxKit code block" width="260"> |
+| <sub><strong>Board decision memo</strong></sub> | <sub><strong>Customer research report</strong></sub> | <sub><strong>Technical delivery review</strong></sub> |
+| <img src="examples/showcase/cases/01-board-decision-memo.png" alt="DocxKit board decision memo" width="300"> | <img src="examples/showcase/cases/02-customer-research-report.png" alt="DocxKit customer research report" width="300"> | <img src="examples/showcase/cases/03-technical-delivery-review.png" alt="DocxKit technical delivery review" width="300"> |
+| <sub><strong>Finance risk brief</strong></sub> | <sub><strong>Operations playbook</strong></sub> | <sub><strong>Market entry report</strong></sub> |
+| <img src="examples/showcase/cases/04-finance-risk-brief.png" alt="DocxKit finance risk brief" width="300"> | <img src="examples/showcase/cases/05-operations-playbook.png" alt="DocxKit operations playbook" width="300"> | <img src="examples/showcase/cases/06-market-entry-report.png" alt="DocxKit market entry report" width="300"> |
 
 ## Install
 
