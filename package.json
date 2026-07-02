@@ -16,6 +16,10 @@
   "files": [
     "npm/docx-kit.cjs",
     "README.md",
+    "README.en.md",
+    "README.zh-CN.md",
+    "skills/docxkit",
+    "examples/showcase/reference/*.png",
     "docs/public-boundary.md"
   ],
   "engines": {

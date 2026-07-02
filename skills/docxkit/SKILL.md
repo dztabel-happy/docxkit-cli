@@ -1,11 +1,11 @@
 ---
-name: docxkit-word-report
+name: docxkit
 description: Use when prepared report content, uploaded user materials, Markdown, or report.json should be delivered as a polished editable Word .docx through the local docx-kit CLI. Use at the final report-export step after content is available, when a task naturally needs a formal Chinese Word deliverable, or when the user explicitly asks to use DocxKit. This skill formats and exports reports; it does not gather sources by itself.
 ---
 
-# DocxKit Word Report
+# DocxKit
 
-Use this skill when the next deliverable is a polished, editable Word report. The user may have uploaded materials for Codex to organize, the current task may naturally end in a report, or the user may explicitly ask to use DocxKit.
+Use this skill when the next deliverable is a polished, editable Word report. The user may have uploaded materials for the agent to organize, the current task may naturally end in a report, or the user may explicitly ask to use DocxKit.
 
 This skill drives the local CLI. It does not research, gather facts, or decide source material by itself.
 
