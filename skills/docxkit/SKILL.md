@@ -89,13 +89,13 @@ npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx
 
 ## Visual QA
 
-When rendering the `.docx` to PNG/PDF for visual QA, use only the Documents skill renderer:
+When rendering the `.docx` to PNG/PDF for visual QA, use DocxKit's QA wrapper. It only calls the Documents skill renderer and patches a temporary TOC cache for PNG/PDF review:
 
 ```bash
-python <documents-skill>/render_docx.py ./output_docx/report.docx --output_dir ./output_docx/rendered --emit_pdf
+python3 <docxkit-skill>/tools/render_docxkit.py ./output_docx/report.docx --report-json ./output_docx/report.json --renderer <documents-skill>/render_docx.py --output-dir ./output_docx/rendered --emit-pdf
 ```
 
-Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`, or custom conversion commands. If the Documents skill renderer is unavailable, report that visual QA is unavailable instead of using a substitute renderer.
+Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`, or custom conversion commands. If the DocxKit QA wrapper or Documents skill renderer is unavailable, report that visual QA is unavailable instead of using a substitute renderer.
 
 ## Workflow
 
