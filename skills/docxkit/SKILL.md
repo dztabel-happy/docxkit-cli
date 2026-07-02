@@ -33,7 +33,8 @@ Minimum rules:
 - Put frontmatter at the top for title, subtitle, author, client, date, language, and confidentiality when available.
 - Use unnumbered headings such as `# 研究背景`; do not write `# 一、研究背景`, `# 1. 研究背景`, or `## （一）研究方法`.
 - Put `表：` before every Markdown table.
-- Use `表[compact]：标题` only for dense tables and `表[landscape]：标题` only when a wide table must remain intact.
+- Use `表[compact]：标题` only for dense numeric/status/checklist tables with many short cells; use normal `表：标题` for narrative or comparison tables.
+- Use `表[landscape]：标题` only when a wide table must remain intact.
 - Put `图：` before every image, with image alt text kept short and not identical to the formal figure caption; image paths are resolved relative to the Markdown file.
 - Use fenced code blocks for JSON/config/code; put the optional display title after the language, for example ```` ```json renderer_contract ````.
 - Use callouts sparingly: `> [!note]`, `> [!insight]`, `> [!risk]`, `> [!warning]`.

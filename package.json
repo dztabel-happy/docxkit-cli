@@ -19,8 +19,7 @@
     "README.en.md",
     "README.zh-CN.md",
     "skills/docxkit",
-    "examples/showcase/reference/*.png",
-    "docs/public-boundary.md"
+    "examples/showcase/reference/*.png"
   ],
   "engines": {
     "node": ">=18"

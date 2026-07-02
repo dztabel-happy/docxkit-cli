@@ -31,12 +31,12 @@
 
 以下截图展示 DocxKit 的默认 Word 报告效果。
 
-| | |
-|:---:|:---:|
-| <sub><strong>封面</strong></sub> | <sub><strong>目录</strong></sub> |
-| <img src="examples/showcase/reference/01-cover.png" alt="DocxKit 封面" width="320"> | <img src="examples/showcase/reference/02-toc.png" alt="DocxKit 目录" width="320"> |
-| <sub><strong>正文与视觉块</strong></sub> | <sub><strong>续页</strong></sub> |
-| <img src="examples/showcase/reference/03-body.png" alt="DocxKit 正文与视觉块" width="320"> | <img src="examples/showcase/reference/04-continuation.png" alt="DocxKit 续页" width="320"> |
+| | | |
+|:---:|:---:|:---:|
+| <sub><strong>封面</strong></sub> | <sub><strong>目录</strong></sub> | <sub><strong>决策摘要</strong></sub> |
+| <img src="examples/showcase/reference/01-cover.png" alt="DocxKit 封面" width="260"> | <img src="examples/showcase/reference/02-toc.png" alt="DocxKit 目录" width="260"> | <img src="examples/showcase/reference/03-summary.png" alt="DocxKit 决策摘要" width="260"> |
+| <sub><strong>长表</strong></sub> | <sub><strong>图文与流程</strong></sub> | <sub><strong>代码块</strong></sub> |
+| <img src="examples/showcase/reference/04-long-table.png" alt="DocxKit 长表" width="260"> | <img src="examples/showcase/reference/05-flow.png" alt="DocxKit 图文与流程" width="260"> | <img src="examples/showcase/reference/06-code.png" alt="DocxKit 代码块" width="260"> |
 
 ## 安装
 

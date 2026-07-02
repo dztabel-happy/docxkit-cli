@@ -31,12 +31,12 @@ Users can provide any material the agent can read and understand, such as:
 
 These screenshots show DocxKit's default Word report output.
 
-| | |
-|:---:|:---:|
-| <sub><strong>Cover</strong></sub> | <sub><strong>Table of contents</strong></sub> |
-| <img src="examples/showcase/reference/01-cover.png" alt="DocxKit cover" width="320"> | <img src="examples/showcase/reference/02-toc.png" alt="DocxKit table of contents" width="320"> |
-| <sub><strong>Body and visual blocks</strong></sub> | <sub><strong>Continuation page</strong></sub> |
-| <img src="examples/showcase/reference/03-body.png" alt="DocxKit body and visual blocks" width="320"> | <img src="examples/showcase/reference/04-continuation.png" alt="DocxKit continuation page" width="320"> |
+| | | |
+|:---:|:---:|:---:|
+| <sub><strong>Cover</strong></sub> | <sub><strong>Table of contents</strong></sub> | <sub><strong>Executive summary</strong></sub> |
+| <img src="examples/showcase/reference/01-cover.png" alt="DocxKit cover" width="260"> | <img src="examples/showcase/reference/02-toc.png" alt="DocxKit table of contents" width="260"> | <img src="examples/showcase/reference/03-summary.png" alt="DocxKit executive summary" width="260"> |
+| <sub><strong>Long table</strong></sub> | <sub><strong>Figure and flow</strong></sub> | <sub><strong>Code block</strong></sub> |
+| <img src="examples/showcase/reference/04-long-table.png" alt="DocxKit long table" width="260"> | <img src="examples/showcase/reference/05-flow.png" alt="DocxKit figure and flow" width="260"> | <img src="examples/showcase/reference/06-code.png" alt="DocxKit code block" width="260"> |
 
 ## Install
 

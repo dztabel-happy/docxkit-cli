@@ -54,7 +54,7 @@ Place captions directly before every table and figure.
 ![瀑布图](assets/waterfall.png)
 ```
 
-Use `表[compact]：标题` for dense tables and `表[landscape]：标题` for wide tables that must remain intact.
+Use `表[compact]：标题` only for dense numeric/status/checklist tables with many short cells; use normal `表：标题` for narrative or comparison tables. Use `表[landscape]：标题` for wide tables that must remain intact.
 
 ## Tables
 
