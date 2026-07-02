@@ -29,6 +29,10 @@ confidentiality: 内部资料
 | 内容 | 已具备基础结构 | 补充更多真实案例 |
 | 样式 | 已形成第一版模板 | 持续视觉回归 |
 | 分发 | npm 可安装 | 扩展平台包 |
+
+# 资料来源
+
+1. [内部材料清单](https://example.com/internal-materials)，用户已提供材料，2026-07-02 访问。
 ```
 
 ## Direct Skill Invocation

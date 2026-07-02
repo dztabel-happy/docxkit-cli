@@ -62,6 +62,21 @@ Use `表[compact]：标题` only for dense numeric/status/checklist tables with 
 
 Introduce every table or figure before its caption in surrounding prose. Professional reports should not show a table or figure first and then explain it with `见表1.1` or `如图1.1所示` afterward.
 
+## Sources
+
+Put source material in a final `# 资料来源` section. Use ordered-list items only. DocxKit renders them as `[1] xxxx`, `[2] xxxx` reference entries.
+
+```markdown
+公开口径显示，预算压力主要来自回款周期延长[1]。
+
+# 资料来源
+
+1. [国家统计局](https://www.stats.gov.cn/)，公开数据，2026-07-02 访问。
+2. [行业协会研究报告](https://example.com/report)，行业资料，2026-07-02 访问。
+```
+
+Do not paste naked long URLs into prose or tables. Use `[来源名称](URL)` in the source list. Inline `[1]` / `[2]` citations become clickable superscript Word references.
+
 ## Tables
 
 Keep tables as real row/column data. If cells become long paragraphs, move the explanation into surrounding prose or split the table.
@@ -110,6 +125,7 @@ paragraph
 table
 figure
 ordered_list
+source_list
 bullet_list
 quote
 code_block
