@@ -33,10 +33,10 @@ These screenshots show six complete 6-page Word reports generated for different 
 
 | | | |
 |:---:|:---:|:---:|
-| <sub><strong>Board decision memo</strong></sub> | <sub><strong>Customer research report</strong></sub> | <sub><strong>Technical delivery review</strong></sub> |
-| <img src="examples/showcase/cases/01-board-decision-memo.png" alt="DocxKit board decision memo" width="300"> | <img src="examples/showcase/cases/02-customer-research-report.png" alt="DocxKit customer research report" width="300"> | <img src="examples/showcase/cases/03-technical-delivery-review.png" alt="DocxKit technical delivery review" width="300"> |
-| <sub><strong>Finance risk brief</strong></sub> | <sub><strong>Operations playbook</strong></sub> | <sub><strong>Market entry report</strong></sub> |
-| <img src="examples/showcase/cases/04-finance-risk-brief.png" alt="DocxKit finance risk brief" width="300"> | <img src="examples/showcase/cases/05-operations-playbook.png" alt="DocxKit operations playbook" width="300"> | <img src="examples/showcase/cases/06-market-entry-report.png" alt="DocxKit market entry report" width="300"> |
+| <sub><strong>Board budget decision</strong></sub> | <sub><strong>Customer interview research</strong></sub> | <sub><strong>Technical delivery review</strong></sub> |
+| <img src="examples/showcase/cases/01-board-decision-memo.png" alt="DocxKit board budget decision" width="300"> | <img src="examples/showcase/cases/02-customer-research-report.png" alt="DocxKit customer interview research" width="300"> | <img src="examples/showcase/cases/03-technical-delivery-review.png" alt="DocxKit technical delivery review" width="300"> |
+| <sub><strong>Cash-flow risk brief</strong></sub> | <sub><strong>Operations playbook</strong></sub> | <sub><strong>Market entry assessment</strong></sub> |
+| <img src="examples/showcase/cases/04-finance-risk-brief.png" alt="DocxKit cash-flow risk brief" width="300"> | <img src="examples/showcase/cases/05-operations-playbook.png" alt="DocxKit operations playbook" width="300"> | <img src="examples/showcase/cases/06-market-entry-report.png" alt="DocxKit market entry assessment" width="300"> |
 
 ## Install
 

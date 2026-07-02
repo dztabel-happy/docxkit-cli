@@ -33,10 +33,10 @@
 
 | | | |
 |:---:|:---:|:---:|
-| <sub><strong>董事会决策备忘</strong></sub> | <sub><strong>客户研究报告</strong></sub> | <sub><strong>技术交付复盘</strong></sub> |
-| <img src="examples/showcase/cases/01-board-decision-memo.png" alt="DocxKit 董事会决策备忘" width="300"> | <img src="examples/showcase/cases/02-customer-research-report.png" alt="DocxKit 客户研究报告" width="300"> | <img src="examples/showcase/cases/03-technical-delivery-review.png" alt="DocxKit 技术交付复盘" width="300"> |
-| <sub><strong>财务风险简报</strong></sub> | <sub><strong>运营执行手册</strong></sub> | <sub><strong>市场进入报告</strong></sub> |
-| <img src="examples/showcase/cases/04-finance-risk-brief.png" alt="DocxKit 财务风险简报" width="300"> | <img src="examples/showcase/cases/05-operations-playbook.png" alt="DocxKit 运营执行手册" width="300"> | <img src="examples/showcase/cases/06-market-entry-report.png" alt="DocxKit 市场进入报告" width="300"> |
+| <sub><strong>董事会预算决策</strong></sub> | <sub><strong>客户访谈研究</strong></sub> | <sub><strong>技术交付复盘</strong></sub> |
+| <img src="examples/showcase/cases/01-board-decision-memo.png" alt="DocxKit 董事会预算决策" width="300"> | <img src="examples/showcase/cases/02-customer-research-report.png" alt="DocxKit 客户访谈研究" width="300"> | <img src="examples/showcase/cases/03-technical-delivery-review.png" alt="DocxKit 技术交付复盘" width="300"> |
+| <sub><strong>现金流风险简报</strong></sub> | <sub><strong>运营执行手册</strong></sub> | <sub><strong>市场进入评估</strong></sub> |
+| <img src="examples/showcase/cases/04-finance-risk-brief.png" alt="DocxKit 现金流风险简报" width="300"> | <img src="examples/showcase/cases/05-operations-playbook.png" alt="DocxKit 运营执行手册" width="300"> | <img src="examples/showcase/cases/06-market-entry-report.png" alt="DocxKit 市场进入评估" width="300"> |
 
 ## 安装
 
