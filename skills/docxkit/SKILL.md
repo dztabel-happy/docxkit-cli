@@ -86,6 +86,16 @@ npm install @dztabel/docxkit
 npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx
 ```
 
+## Visual QA
+
+When rendering the `.docx` to PNG/PDF for visual QA, use only the Documents skill renderer:
+
+```bash
+python <documents-skill>/render_docx.py ./output_docx/report.docx --output_dir ./output_docx/rendered --emit_pdf
+```
+
+Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`, or custom conversion commands. If the Documents skill renderer is unavailable, report that visual QA is unavailable instead of using a substitute renderer.
+
 ## Workflow
 
 1. Prepare the final report content from the materials already available in the conversation, uploaded files, or an existing Markdown / `report.json` input.
