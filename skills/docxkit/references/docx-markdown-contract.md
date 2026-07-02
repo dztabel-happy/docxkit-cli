@@ -45,16 +45,22 @@ Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks
 Place captions directly before every table and figure.
 
 ```markdown
+见表1.1，渠道效率对比应先由正文说明阅读目的，再放置表格。
+
 表：渠道效率对比
 | 渠道 | 状态 | 说明 |
 | --- | --- | --- |
 | Partner Program | 继续投入 | 线索质量稳定。 |
+
+如图1.1所示，瀑布图用于解释关键指标的拆分路径。
 
 图：结算瀑布图
 ![瀑布图](assets/waterfall.png)
 ```
 
 Use `表[compact]：标题` only for dense numeric/status/checklist tables with many short cells; use normal `表：标题` for narrative or comparison tables. Use `表[landscape]：标题` for wide tables that must remain intact.
+
+Introduce every table or figure before its caption in surrounding prose. Professional reports should not show a table or figure first and then explain it with `见表1.1` or `如图1.1所示` afterward.
 
 ## Tables
 

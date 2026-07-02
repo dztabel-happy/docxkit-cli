@@ -35,6 +35,7 @@ Minimum rules:
 - Put `表：` before every Markdown table.
 - Use `表[compact]：标题` only for dense numeric/status/checklist tables with many short cells; use normal `表：标题` for narrative or comparison tables.
 - Use `表[landscape]：标题` only when a wide table must remain intact.
+- Introduce each table or figure in the preceding prose before the `表：` or `图：` caption; do not place `如图1.1所示` or `见表1.1` after the referenced object.
 - Put `图：` before every image, with image alt text kept short and not identical to the formal figure caption; image paths are resolved relative to the Markdown file.
 - Use fenced code blocks for JSON/config/code; put the optional display title after the language, for example ```` ```json renderer_contract ````. If no title is provided, DocxKit shows the language label.
 - Use callouts sparingly: `> [!note]`, `> [!insight]`, `> [!risk]`, `> [!warning]`.
