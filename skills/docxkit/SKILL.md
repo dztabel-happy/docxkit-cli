@@ -89,24 +89,25 @@ npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx
 
 ## Visual QA
 
-When rendering the `.docx` to PNG/PDF for visual QA, use DocxKit's QA wrapper. It only calls the Documents skill renderer and patches a temporary TOC cache for PNG/PDF review:
+When rendering the `.docx` to PNG/PDF for visual QA, use the DocxKit CLI QA command:
 
 ```bash
-python3 <docxkit-skill>/tools/render_docxkit.py ./output_docx/report.docx --report-json ./output_docx/report.json --renderer <documents-skill>/render_docx.py --output-dir ./output_docx/rendered --emit-pdf
+docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/rendered
 ```
 
-Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`, or custom conversion commands. If the DocxKit QA wrapper or Documents skill renderer is unavailable, report that visual QA is unavailable instead of using a substitute renderer.
+Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`, or custom conversion commands. The QA command chooses Word first, then LibreOffice as fallback, checks embedded-font rendering, patches the temporary TOC cache for PNG/PDF review, and generates `page-*.png` plus `report.pdf` when visual QA is available. If no renderer is available, it performs structural QA only; do not claim visual QA passed.
 
 ## Workflow
 
 1. Prepare the final report content from the materials already available in the conversation, uploaded files, or an existing Markdown / `report.json` input.
 2. Save the draft as `./output_docx/content.md`, or use an existing `report.json` when editing a prior build.
 3. Run `docx-kit build <input> --out ./output_docx` unless the user asked for another path.
-4. Save stdout as `stdout.json` when verifying parity.
+4. Save stdout as `stdout.json` when verifying parity: `docx-kit build ./output_docx/content.md --out ./output_docx | tee ./output_docx/stdout.json`.
 5. Verify the returned `report_path`, `docx_path`, and `artifacts.build_result` exist.
 6. Compare stdout JSON with `build-result.json`.
-7. If warnings or errors are present, revise the Markdown/report JSON and rebuild once before returning final output.
-8. Return the Word path and editable `report.json` path.
+7. Run `docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/rendered`.
+8. If warnings or errors are present, revise the Markdown/report JSON and rebuild once before returning final output.
+9. Return the Word path, editable `report.json` path, and QA result path.
 
 ## Revision Workflow
 
