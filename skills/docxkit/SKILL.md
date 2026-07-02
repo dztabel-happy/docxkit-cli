@@ -15,6 +15,7 @@ This skill drives the local CLI. It does not research, gather facts, or decide s
 - Use the CLI to generate `report.docx`, `report.json`, and diagnostics.
 - Return both the Word `.docx` path and editable `report.json` path.
 - Default to the `executive-cn-docx` Chinese report template.
+- Keep the default embedded font subsets; do not add `--no-embed-fonts` unless the user explicitly asks for a compatibility escape hatch.
 - Do not edit the embedded Word template for ordinary report generation.
 - Default to the current project/workspace directory for artifacts.
 

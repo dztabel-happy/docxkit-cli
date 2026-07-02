@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.1.20
+docx-kit 0.1.21
 ```
 
 ### 2. Install one agent skill
@@ -142,6 +142,8 @@ report/report.docx
 report/report.json
 report/build-result.json
 ```
+
+Generated `.docx` files embed Kaiti SC and Times New Roman font subsets by default for stable Word/WPS/PDF rendering.
 
 ## Troubleshooting
 

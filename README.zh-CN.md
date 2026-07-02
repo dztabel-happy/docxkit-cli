@@ -50,7 +50,7 @@ docx-kit --version
 出现类似输出代表 CLI 安装成功：
 
 ```text
-docx-kit 0.1.20
+docx-kit 0.1.21
 ```
 
 ### 2. 安装 Agent skill（二选一）
@@ -142,6 +142,8 @@ report/report.docx
 report/report.json
 report/build-result.json
 ```
+
+生成的 `.docx` 默认嵌入 Kaiti SC 和 Times New Roman 字体子集，保证 Word/WPS/PDF 渲染稳定。
 
 ## 排障
 
