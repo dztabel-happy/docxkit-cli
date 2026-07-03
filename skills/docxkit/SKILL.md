@@ -89,15 +89,15 @@ npm install @dztabel/docxkit
 npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx
 ```
 
-## Visual QA
+## Structural QA
 
-When rendering the `.docx` to PNG/PDF for visual QA, use the DocxKit CLI QA command:
+Use the DocxKit CLI QA command for automatic structural checks:
 
 ```bash
-docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/rendered
+docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa
 ```
 
-Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`, or custom conversion commands. The QA command chooses Word first, then LibreOffice as fallback, checks embedded-font rendering, patches the temporary TOC cache for PNG/PDF review, and generates `page-*.png` plus `report.pdf` when visual QA is available. If no renderer is available, it performs structural QA only; do not claim visual QA passed.
+Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`, Pandoc, MiniPdf, or custom conversion commands. Automatic QA checks the DOCX package structure, required Word fields, and embedded font declarations only.
 
 ## Workflow
 
@@ -107,7 +107,7 @@ Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`
 4. Save stdout as `stdout.json` when verifying parity: `docx-kit build ./output_docx/content.md --out ./output_docx | tee ./output_docx/stdout.json`.
 5. Verify the returned `report_path`, `docx_path`, and `artifacts.build_result` exist.
 6. Compare stdout JSON with `build-result.json`.
-7. Run `docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/rendered`.
+7. Run `docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa`.
 8. If warnings or errors are present, revise the Markdown/report JSON and rebuild once before returning final output.
 9. Return the Word path, editable `report.json` path, and QA result path.
 

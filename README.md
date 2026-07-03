@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.1.37
+docx-kit 0.1.38
 ```
 
 ### 2. Install one agent skill
@@ -133,7 +133,7 @@ The agent turns the material into DocxKit-ready intermediate content and runs:
 
 ```bash
 docx-kit build prepared-report.md --out ./report
-docx-kit qa ./report/report.docx --report-json ./report/report.json --out ./report/rendered
+docx-kit qa ./report/report.docx --report-json ./report/report.json --out ./report/qa
 ```
 
 DocxKit outputs:
@@ -142,10 +142,10 @@ DocxKit outputs:
 report/report.docx
 report/report.json
 report/build-result.json
-report/rendered/qa-result.json
+report/qa/qa-result.json
 ```
 
-Generated `.docx` files embed Kaiti SC and Times New Roman font subsets by default for stable Word/WPS/PDF rendering.
+Generated `.docx` files embed Kaiti SC and Times New Roman font subsets by default for stable Word/WPS editing and display.
 
 ## Troubleshooting
 
