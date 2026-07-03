@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.1.29
+docx-kit 0.1.30
 ```
 
 ### 2. Install one agent skill
