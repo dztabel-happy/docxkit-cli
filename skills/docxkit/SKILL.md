@@ -7,7 +7,7 @@ description: Use when prepared report content, uploaded user materials, Markdown
 
 Use this skill when the next deliverable is a polished, editable Word report. The user may have uploaded materials for the agent to organize, the current task may naturally end in a report, or the user may explicitly ask to use DocxKit.
 
-This skill drives the local CLI. It does not research, gather facts, or decide source material by itself.
+This skill drives the local CLI after the agent has prepared content, sources, Markdown, or `report.json`. It does not replace the agent's normal research or source-reading work.
 
 ## Principle
 
@@ -97,7 +97,7 @@ Use the DocxKit CLI QA command for automatic structural checks:
 docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa
 ```
 
-Do not hand-write or run direct `soffice`, `libreoffice`, `pdftoppm`, `qlmanage`, Pandoc, MiniPdf, or custom conversion commands. Automatic QA checks the DOCX package structure, required Word fields, and embedded font declarations only.
+Do not add custom rendering or conversion steps to the DocxKit workflow. Automatic QA checks the DOCX package structure, required Word fields, and embedded font declarations only.
 
 ## Workflow
 
@@ -122,7 +122,7 @@ When the user asks for changes:
 
 ## Guardrails
 
-- Do not search the web or invent sources as part of this skill.
+- Do not invent sources. If the user asks for research, complete that research with normal available tools before invoking DocxKit for export.
 - Use the local CLI or binary command shown above for Word export.
 - Do not hand-write OpenXML for ordinary reports.
 - Do not edit `template.docx` for ordinary reports.
