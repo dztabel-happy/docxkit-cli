@@ -1,6 +1,6 @@
 {
   "name": "@dztabel/docxkit-darwin-arm64",
-  "version": "0.1.40",
+  "version": "0.1.41",
   "description": "macOS arm64 DocxKit binary.",
   "license": "UNLICENSED",
   "publishConfig": {
