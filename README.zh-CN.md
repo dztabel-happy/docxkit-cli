@@ -50,7 +50,7 @@ docx-kit --version
 出现类似输出代表 CLI 安装成功：
 
 ```text
-docx-kit 0.1.41
+docx-kit 0.1.42
 ```
 
 ### 2. 安装 Agent skill（二选一）
@@ -145,7 +145,7 @@ report/build-result.json
 report/qa/qa-result.json
 ```
 
-生成的 `.docx` 默认嵌入 Kaiti SC 和 Times New Roman 字体子集，保证 Word/WPS 编辑和显示稳定。
+生成的 `.docx` 默认不内嵌字体：模版使用楷体 + Times New Roman，并在 fontTable 里声明跨平台字体别名链（楷体 ↔ KaiTi ↔ Kaiti SC ↔ STKaiti），Windows/macOS 的 Word/WPS 都能稳定显示和编辑，文件体积也更小。若收件人环境可能缺少中文字体（如海外非中文系统），用 `--embed-fonts` 显式嵌入字体子集。
 
 ## 排障
 

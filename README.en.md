@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.1.41
+docx-kit 0.1.42
 ```
 
 ### 2. Install one agent skill
@@ -145,7 +145,7 @@ report/build-result.json
 report/qa/qa-result.json
 ```
 
-Generated `.docx` files embed Kaiti SC and Times New Roman font subsets by default for stable Word/WPS editing and display.
+Generated `.docx` files do not embed fonts by default: the template uses KaiTi + Times New Roman with a cross-platform alt-name chain (楷体 ↔ KaiTi ↔ Kaiti SC ↔ STKaiti) declared in the font table, so Word/WPS on Windows and macOS render and edit them consistently with a much smaller file size. Pass `--embed-fonts` to embed font subsets when recipients may lack Chinese fonts (for example non-Chinese systems).
 
 ## Troubleshooting
 

@@ -15,7 +15,7 @@ This skill drives the local CLI after the agent has prepared content, sources, M
 - Use the CLI to generate `report.docx`, `report.json`, and diagnostics.
 - Return both the Word `.docx` path and editable `report.json` path.
 - Default to the `executive-cn-docx` Chinese report template.
-- Keep the default embedded font subsets; do not add `--no-embed-fonts` unless the user explicitly asks for a compatibility escape hatch.
+- Keep the default font behavior (no embedding): the template maps 楷体 across Windows/macOS Word/WPS via font alt-name chains, so files stay small and fully editable. Add `--embed-fonts` only when recipients may lack Chinese fonts (for example overseas readers on non-Chinese systems).
 - Do not edit the embedded Word template for ordinary report generation.
 - Default to the current project/workspace directory for artifacts.
 
@@ -97,7 +97,7 @@ Use the DocxKit CLI QA command for automatic structural checks:
 docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa
 ```
 
-Do not add custom rendering or conversion steps to the DocxKit workflow. Automatic QA checks the DOCX package structure, required Word fields, and embedded font declarations only.
+Do not add custom rendering or conversion steps to the DocxKit workflow. Automatic QA checks the DOCX package structure, required Word fields, and font declarations (embedding consistency when enabled) only.
 
 ## Workflow
 
