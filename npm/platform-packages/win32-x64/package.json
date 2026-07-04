@@ -1,0 +1,12 @@
+{
+  "name": "@dztabel/docxkit-win32-x64",
+  "version": "0.1.42",
+  "description": "Windows x64 DocxKit binary.",
+  "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": ["win32"],
+  "cpu": ["x64"],
+  "files": ["docx-kit.exe"]
+}

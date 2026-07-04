@@ -11,7 +11,8 @@
     "docxkit": "npm/docx-kit.cjs"
   },
   "optionalDependencies": {
-    "@dztabel/docxkit-darwin-arm64": "0.1.42"
+    "@dztabel/docxkit-darwin-arm64": "0.1.42",
+    "@dztabel/docxkit-win32-x64": "0.1.42"
   },
   "files": [
     "npm/docx-kit.cjs",
