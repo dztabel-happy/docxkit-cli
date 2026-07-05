@@ -19,6 +19,15 @@ Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `co
 
 `template` defaults to `executive-cn-docx`. `executive-cn` is accepted as a ReportKit alias.
 
+Available templates (identical layout, different Chinese font pairing):
+
+| template id | 正文 | 标题/封面/目录标题 | 题注 |
+| --- | --- | --- | --- |
+| `executive-cn-docx`（默认） | 楷体 | 楷体加粗 | 楷体 |
+| `executive-cn-song-docx` | 宋体 | 黑体加粗（GB/T 9704 搭配） | 宋体加粗 |
+
+Latin text uses Times New Roman in both. Pick the song variant only when the user asks for 宋体/黑体 styling; otherwise keep the default.
+
 ## Sections
 
 - If frontmatter has `title`, `#` is a level-1 report section.

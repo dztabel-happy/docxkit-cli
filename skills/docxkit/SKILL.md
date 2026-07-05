@@ -14,7 +14,7 @@ This skill drives the local CLI after the agent has prepared content, sources, M
 - Keep the editable source as Markdown or `report.json`.
 - Use the CLI to generate `report.docx`, `report.json`, and diagnostics.
 - Return both the Word `.docx` path and editable `report.json` path.
-- Default to the `executive-cn-docx` Chinese report template.
+- Default to the `executive-cn-docx` Chinese report template (楷体 body and headings). Switch to `executive-cn-song-docx` (宋体 body + 黑体 bold headings, GB/T 9704 pairing) only when the user asks for 宋体/黑体 styling, via `template: executive-cn-song-docx` in the Markdown frontmatter.
 - Keep the default font behavior (no embedding): the template maps 楷体 across Windows/macOS Word/WPS via font alt-name chains, so files stay small and fully editable. Add `--embed-fonts` only when recipients may lack Chinese fonts (for example overseas readers on non-Chinese systems).
 - Do not edit the embedded Word template for ordinary report generation.
 - Default to the current project/workspace directory for artifacts.

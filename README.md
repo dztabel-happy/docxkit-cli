@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.1.43
+docx-kit 0.1.44
 ```
 
 ### 2. Install one agent skill
@@ -146,6 +146,8 @@ report/qa/qa-result.json
 ```
 
 Generated `.docx` files do not embed fonts by default: the template uses KaiTi + Times New Roman with a cross-platform alt-name chain (楷体 ↔ KaiTi ↔ Kaiti SC ↔ STKaiti) declared in the font table, so Word/WPS on Windows and macOS render and edit them consistently with a much smaller file size. Pass `--embed-fonts` to embed font subsets when recipients may lack Chinese fonts (for example non-Chinese systems).
+
+The default template is `executive-cn-docx` (KaiTi body and headings). Add `template: executive-cn-song-docx` to the Markdown frontmatter to switch to the SimSun variant (宋体 body + bold 黑体 headings, the classic GB/T 9704 pairing, bold captions); the layout is identical.
 
 ## Troubleshooting
 

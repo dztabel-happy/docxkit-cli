@@ -50,7 +50,7 @@ docx-kit --version
 出现类似输出代表 CLI 安装成功：
 
 ```text
-docx-kit 0.1.43
+docx-kit 0.1.44
 ```
 
 ### 2. 安装 Agent skill（二选一）
@@ -146,6 +146,8 @@ report/qa/qa-result.json
 ```
 
 生成的 `.docx` 默认不内嵌字体：模版使用楷体 + Times New Roman，并在 fontTable 里声明跨平台字体别名链（楷体 ↔ KaiTi ↔ Kaiti SC ↔ STKaiti），Windows/macOS 的 Word/WPS 都能稳定显示和编辑，文件体积也更小。若收件人环境可能缺少中文字体（如海外非中文系统），用 `--embed-fonts` 显式嵌入字体子集。
+
+默认模版为 `executive-cn-docx`（楷体正文与标题）。可在 Markdown frontmatter 中用 `template: executive-cn-song-docx` 切换到宋体模版（宋体正文 + 黑体加粗标题，GB/T 9704 经典搭配，题注加粗），版式两者一致。
 
 ## 排障
 
