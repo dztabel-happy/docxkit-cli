@@ -9,131 +9,65 @@ Use this skill when the next deliverable is a polished, editable Word report. Th
 
 This skill drives the local CLI after the agent has prepared content, sources, Markdown, or `report.json`. It does not replace the agent's normal research or source-reading work.
 
-## Principle
+## Requirements
 
-- Keep the editable source as Markdown or `report.json`.
-- Use the CLI to generate `report.docx`, `report.json`, and diagnostics.
-- Return both the Word `.docx` path and editable `report.json` path.
-- Default to the `executive-cn-docx` Chinese report template (楷体 body and headings). Switch to `executive-cn-song-docx` (宋体 body + 黑体 bold headings, GB/T 9704 pairing) only when the user asks for 宋体/黑体 styling, via `template: executive-cn-song-docx` in the Markdown frontmatter.
-- Keep the default font behavior (no embedding): the template maps 楷体 across Windows/macOS Word/WPS via font alt-name chains, so files stay small and fully editable. Add `--embed-fonts` only when recipients may lack Chinese fonts (for example overseas readers on non-Chinese systems).
-- Do not edit the embedded Word template for ordinary report generation.
-- Default to the current project/workspace directory for artifacts.
-
-## Output Location
-
-Unless the user gives an explicit output path, write artifacts under `./output_docx` in the current project/workspace directory.
-
-Use a stable file name for the editable source, such as `./output_docx/content.md`, and run the CLI with `--out ./output_docx`. If `./output_docx` already contains a report that should be preserved, use a versioned sibling such as `./output_docx_v2`.
-
-## Input Contract
-
-For Markdown input, follow `references/docx-markdown-contract.md`. If the task needs examples, read `references/examples.md`.
-
-Minimum rules:
-
-- Put frontmatter at the top for title, subtitle, author, client, date, language, and confidentiality when available.
-- Use unnumbered headings such as `# 研究背景`; do not write `# 一、研究背景`, `# 1. 研究背景`, or `## （一）研究方法`.
-- Give long chapters real hierarchy: when a `#` chapter covers more than one sub-topic, split it with `##` subsections (and `###` when needed), e.g. `# 市场规模与需求结构` followed by `## 渗透率走势` and `## 区域结构变化`. A formal report where every chapter is a flat `#` reads like an outline.
-- Put `表：` before every Markdown table.
-- Use `表[compact]：标题` only for dense numeric/status/checklist tables with many short cells; use normal `表：标题` for narrative or comparison tables.
-- Use `表[landscape]：标题` only when a wide table must remain intact.
-- Introduce each table or figure in the preceding prose before the `表：` or `图：` caption; do not place `如图1.1所示` or `见表1.1` after the referenced object.
-- Put `图：` before every image, with image alt text kept short and not identical to the formal figure caption; image paths are resolved relative to the Markdown file.
-- Put source material in a final `# 资料来源` section. Use ordered-list items only: `1. [来源名称](https://example.com)，发布方/作者，发布日期或访问日期。` Do not paste naked long URLs.
-- Cite sources inline as `[1]`, `[2]` after the supported claim, for example `预算压力来自公开口径[1]。` DocxKit renders these as clickable superscript Word references.
-- Block equations are auto-numbered per chapter with the number on the right edge; cite them in prose as `式 3.1`/`公式 3.1` for clickable cross-references. Add `list_of_figures: true` / `list_of_tables: true` frontmatter only when the report is figure/table-heavy.
-- Write block formulas as LaTeX in ```` ```math ```` fences (real Word equations, editable in Word/WPS); write inline math inside body text as `\( ... \)` spans. Use ```` ```omml ```` only to pass through native OMML from a Word source or when the build warns that LaTeX fell back to plain text; always re-check `warnings` after building documents with formulas.
-- Use fenced code blocks for JSON/config/code; put the optional display title after the language, for example ```` ```json renderer_contract ````. If no title is provided, DocxKit shows the language label.
-- Use callouts sparingly: `> [!note]`, `> [!insight]`, `> [!risk]`, `> [!warning]`.
-- Do not rely on `---PAGE---` for normal pagination. Use it only when the user explicitly wants a hard page break.
-
-Keep analysis conclusions, recommendations, field explanations, status notes, and action items as paragraphs, tables, or normal lists. Do not create glossary/checklist-style blocks in Markdown unless the user provides an existing `report.json` that already uses them.
-
-## Delivery Gate
-
-`ok: true` only means the build completed. It is not enough to return success.
-
-The CLI runs a content lint gate on every build. `checks` in the JSON result is a list of `{code, severity, path, message}`:
-
-- `severity: error` (dangling `表/图/式 x.x` references, `[n]` beyond the source list, table rows wider than the header) **fails the build**. Fix the content at the reported `path` and rebuild — never work around the gate.
-- `severity: warning` (missing captions, manual numbering in titles, wide tables that should be `表[landscape]`, checklist-like bullet walls) should be fixed too; only leave one when the user explicitly wants that shape, and say so when delivering.
-
-Run `docx-kit components` for the machine-readable component contract (purpose, use/avoid, fields, visual behavior of every block type) when unsure which component fits.
-
-Before returning the final Word path:
-
-1. Read the JSON result printed by the CLI.
-2. Verify `report.docx`, `report.json`, and `build-result.json` exist.
-3. Confirm `build-result.json` exactly matches stdout.
-4. Inspect `errors`, `warnings`, and `checks`; revise the Markdown/report JSON and rebuild until `checks` is clean or the remaining warning is intentional.
-5. Return the `.docx` path, editable `report.json` path, and any remaining intentional warning.
-
-Avoid these common LLM habits:
-
-- manual heading numbers: `# 一、背景`, `# 1. 背景`, `## （一）方法`;
-- sections made only of tables or figures with no explanatory prose;
-- excessive callouts for ordinary conclusions or risks;
-- decorative horizontal rules instead of natural document flow;
-- missing `表：` or `图：` captions.
-
-## CLI Commands
-
-Use these commands in the normal workflow:
+This skill matches `@dztabel/docxkit >= 0.1.48`. Ensure the latest CLI before building:
 
 ```bash
-docx-kit build ./output_docx/content.md --out ./output_docx
-docx-kit build ./output_docx/report.json --out ./output_docx
+npm install @dztabel/docxkit          # install or upgrade in the workspace
+npx --no-install docx-kit --version
 ```
 
-Use these only when validating or debugging:
+## Principles
 
-```bash
-docx-kit --version
-docx-kit validate ./output_docx/report.json
-```
+- Keep the editable source as Markdown (`./output_docx/content.md`) or `report.json`; the CLI generates `report.docx` plus diagnostics into the same `--out` directory (default `./output_docx`; use a versioned sibling like `./output_docx_v2` when the old build must be preserved).
+- Default template is `executive-cn-docx` (楷体 body and headings). Switch to `executive-cn-song-docx` (宋体 body + 黑体 bold headings, GB/T 9704 pairing) only when the user asks for 宋体/黑体 styling, via `template: executive-cn-song-docx` frontmatter.
+- Keep the default font behavior (no embedding): fonts map across Windows/macOS Word/WPS via alt-name chains, so files stay small and fully editable. Add `--embed-fonts` only when recipients may lack Chinese fonts (for example overseas readers on non-Chinese systems).
+- Never hand-edit the generated `.docx` or write OpenXML directly; all changes go through the Markdown/`report.json` source and a rebuild.
 
-If `docx-kit` is not installed but npm is available, install the public package in the current workspace before building:
+## Writing the Input
 
-```bash
-npm install @dztabel/docxkit
-npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx
-```
+`references/docx-markdown-contract.md` is the single authoritative writing contract — read it before writing. `references/examples.md` shows a full-featured report to imitate. When unsure which component fits, run `docx-kit components` for the machine-readable component contract (purpose, use/avoid, fields, visual behavior).
 
-## Structural QA
+The highest-frequency rules:
 
-Use the DocxKit CLI QA command for automatic structural checks:
-
-```bash
-docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa
-```
-
-Do not add custom rendering or conversion steps to the DocxKit workflow. Automatic QA checks the DOCX package structure, required Word fields, and font declarations (embedding consistency when enabled) only.
+1. Headings are unnumbered (`# 研究背景`, never `# 一、背景`), and long chapters get real `##` subsections — a report where every chapter is a flat `#` reads like an outline.
+2. Every table gets `表：标题` on the line before it (`表[landscape]：` for wide tables, `表[compact]：` for dense numeric ones); every image gets `图：题注`.
+3. Introduce each table/figure in the prose before it appears, referencing it as `见表 x.x` / `如图 x.x` — these become clickable cross-references.
+4. Cite sources inline as `[1]` after the supported claim and list them in a final `# 资料来源` chapter as ordered `[名称](url)，出处，日期。` items — never invent sources, never paste naked URLs.
+5. Block formulas go in ```` ```math ```` fences (LaTeX, auto-numbered, cite as `式 x.x` in prose); inline math uses `\( ... \)` spans inside body text.
+6. Prose first: conclusions and explanations are paragraphs; lists support them. Use callouts (`> [!note]` / `> [!risk]`) sparingly, avoid `---PAGE---`, and never fabricate glossary/checklist blocks in Markdown.
 
 ## Workflow
 
-1. Prepare the final report content from the materials already available in the conversation, uploaded files, or an existing Markdown / `report.json` input.
-2. Save the draft as `./output_docx/content.md`, or use an existing `report.json` when editing a prior build.
-3. Run `docx-kit build <input> --out ./output_docx` unless the user asked for another path.
-4. Save stdout as `stdout.json` when verifying parity: `docx-kit build ./output_docx/content.md --out ./output_docx | tee ./output_docx/stdout.json`.
-5. Verify the returned `report_path`, `docx_path`, and `artifacts.build_result` exist.
-6. Compare stdout JSON with `build-result.json`.
-7. Run `docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa`.
-8. If warnings or errors are present, revise the Markdown/report JSON and rebuild once before returning final output.
-9. Return the Word path, editable `report.json` path, and QA result path.
+1. Prepare content per the contract and save it as `./output_docx/content.md` (or edit the active `report.json`).
+2. Ensure the CLI is current (see Requirements).
+3. Build, capturing stdout:
 
-## Revision Workflow
+   ```bash
+   npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx | tee ./output_docx/stdout.json
+   ```
 
-When the user asks for changes:
+4. **Gate loop** — `ok: true` is not enough; read `errors`, `warnings`, and `checks` (a list of `{code, severity, path, message}`):
+   - `severity: error` fails the build (dangling `表/图/式 x.x` references, `[n]` beyond the source list, table rows wider than the header). Fix the content at the reported `path` and rebuild — never work around the gate.
+   - `severity: warning` and formula-fallback `warnings` should be fixed too; iterate until `checks` and `warnings` are clean. Leave a warning only when the user explicitly wants that shape, and say so when delivering.
+5. Run structural QA (package structure, Word fields, internal link anchors, style names, font declarations):
 
-1. Edit Markdown if the source was Markdown, or edit `report.json` if that is the active editable artifact.
-2. Re-run `build` for Markdown or `build <report.json>` for JSON.
-3. Keep the same output directory only if overwriting is intended; otherwise use a versioned folder such as `./output_docx_v2`.
-4. Return the new `.docx` path and the edited source path.
+   ```bash
+   npx --no-install docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa
+   ```
 
-## Guardrails
+6. Verify `report.docx`, `report.json`, and `build-result.json` exist and `build-result.json` matches the captured stdout.
+7. Deliver the `.docx` path, the editable source path, and any intentionally remaining warning.
 
-- Do not invent sources. If the user asks for research, complete that research with normal available tools before invoking DocxKit for export.
-- Use the local CLI or binary command shown above for Word export.
-- Do not hand-write OpenXML for ordinary reports.
-- Do not edit `template.docx` for ordinary reports.
-- If CLI validation fails, inspect structured errors, fix the Markdown or JSON, and rerun.
+For user-requested revisions: edit the same editable source, rebuild into the same directory (or a versioned sibling if the old build must survive), and rerun the gate loop.
+
+## Failure Playbook
+
+| Situation | Action |
+| --- | --- |
+| `errors` from validate/build (missing fields, unknown template, missing image) | Fix the structure at the reported path; each message names the field. |
+| `checks` with `severity: error` | Fix the content at `path`; the code table in the contract explains every code. |
+| `warnings` like `formula rendered as plain text` | Repair the LaTeX (subset listed in the contract) or switch that formula to an ```` ```omml ```` fence. |
+| `qa` fails | Do not hand-edit the docx; rebuild, and if QA still fails report the QA JSON to the user as a tool issue. |
+| `docx-kit` not found | `npm install @dztabel/docxkit`, then use `npx --no-install docx-kit ...`. |
