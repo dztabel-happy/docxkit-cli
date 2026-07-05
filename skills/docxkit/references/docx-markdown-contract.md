@@ -153,6 +153,25 @@ Add `title=` after the fence language to attach a caption below the equation, e.
 
 Use `---PAGE---` only when the user explicitly asks for a hard page break. Normal reports should rely on automatic Word/WPS pagination.
 
+## Content Checks
+
+`build` and `validate` return structured `checks` (`{code, severity, path, message}`). Error-level checks fail the build:
+
+| code | severity | meaning |
+| --- | --- | --- |
+| `dangling_caption_reference` | error | 正文引用的 表/图/式 x.x 不存在 |
+| `dangling_source_reference` | error | `[n]` 超出资料来源条目数 |
+| `table_row_wider_than_columns` | error | 行内单元格多于列数，数据会被丢弃 |
+| `table_row_narrower_than_columns` | warning | 行内单元格少于列数，缺口渲染为空白 |
+| `table_missing_caption` | warning | 表格缺“表：标题” |
+| `table_consider_landscape` | warning | ≥6 列建议 `表[landscape]：` |
+| `figure_missing_caption` | warning | 图既无题注也无 alt |
+| `manual_numbering_in_title` | warning | 标题带手工编号（模板会自动编号） |
+| `checklist_like_bullet_items` | warning | ≥3 个带 [状态] 前缀的列表项 |
+| `section_reads_like_checklist` | warning | 章节列表项多且无正文段落 |
+
+`docx-kit components` prints the full machine-readable component contract.
+
 ## Direct report.json
 
 Use direct `report.json` only when Markdown cannot express the required structure or exact table widths. Supported first-stage block types are:

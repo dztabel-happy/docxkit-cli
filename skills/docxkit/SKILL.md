@@ -52,12 +52,19 @@ Keep analysis conclusions, recommendations, field explanations, status notes, an
 
 `ok: true` only means the build completed. It is not enough to return success.
 
+The CLI runs a content lint gate on every build. `checks` in the JSON result is a list of `{code, severity, path, message}`:
+
+- `severity: error` (dangling `表/图/式 x.x` references, `[n]` beyond the source list, table rows wider than the header) **fails the build**. Fix the content at the reported `path` and rebuild — never work around the gate.
+- `severity: warning` (missing captions, manual numbering in titles, wide tables that should be `表[landscape]`, checklist-like bullet walls) should be fixed too; only leave one when the user explicitly wants that shape, and say so when delivering.
+
+Run `docx-kit components` for the machine-readable component contract (purpose, use/avoid, fields, visual behavior of every block type) when unsure which component fits.
+
 Before returning the final Word path:
 
 1. Read the JSON result printed by the CLI.
 2. Verify `report.docx`, `report.json`, and `build-result.json` exist.
 3. Confirm `build-result.json` exactly matches stdout.
-4. Inspect `warnings` and `errors`; revise the Markdown/report JSON and rebuild if any issue is reported.
+4. Inspect `errors`, `warnings`, and `checks`; revise the Markdown/report JSON and rebuild until `checks` is clean or the remaining warning is intentional.
 5. Return the `.docx` path, editable `report.json` path, and any remaining intentional warning.
 
 Avoid these common LLM habits:
