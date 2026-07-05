@@ -33,6 +33,7 @@ Minimum rules:
 
 - Put frontmatter at the top for title, subtitle, author, client, date, language, and confidentiality when available.
 - Use unnumbered headings such as `# 研究背景`; do not write `# 一、研究背景`, `# 1. 研究背景`, or `## （一）研究方法`.
+- Give long chapters real hierarchy: when a `#` chapter covers more than one sub-topic, split it with `##` subsections (and `###` when needed), e.g. `# 市场规模与需求结构` followed by `## 渗透率走势` and `## 区域结构变化`. A formal report where every chapter is a flat `#` reads like an outline.
 - Put `表：` before every Markdown table.
 - Use `表[compact]：标题` only for dense numeric/status/checklist tables with many short cells; use normal `表：标题` for narrative or comparison tables.
 - Use `表[landscape]：标题` only when a wide table must remain intact.
