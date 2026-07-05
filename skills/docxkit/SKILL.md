@@ -41,7 +41,7 @@ Minimum rules:
 - Put source material in a final `# 资料来源` section. Use ordered-list items only: `1. [来源名称](https://example.com)，发布方/作者，发布日期或访问日期。` Do not paste naked long URLs.
 - Cite sources inline as `[1]`, `[2]` after the supported claim, for example `预算压力来自公开口径[1]。` DocxKit renders these as clickable superscript Word references.
 - Block equations are auto-numbered per chapter with the number on the right edge; cite them in prose as `式 3.1`/`公式 3.1` for clickable cross-references. Add `list_of_figures: true` / `list_of_tables: true` frontmatter only when the report is figure/table-heavy.
-- Write block formulas as LaTeX in ```` ```math ```` fences (real Word equations, editable in Word/WPS). Use ```` ```omml ```` only to pass through native OMML from a Word source or when the build warns that LaTeX fell back to plain text; always re-check `warnings` after building documents with formulas.
+- Write block formulas as LaTeX in ```` ```math ```` fences (real Word equations, editable in Word/WPS); write inline math inside body text as `\( ... \)` spans. Use ```` ```omml ```` only to pass through native OMML from a Word source or when the build warns that LaTeX fell back to plain text; always re-check `warnings` after building documents with formulas.
 - Use fenced code blocks for JSON/config/code; put the optional display title after the language, for example ```` ```json renderer_contract ````. If no title is provided, DocxKit shows the language label.
 - Use callouts sparingly: `> [!note]`, `> [!insight]`, `> [!risk]`, `> [!warning]`.
 - Do not rely on `---PAGE---` for normal pagination. Use it only when the user explicitly wants a hard page break.

@@ -145,6 +145,8 @@ Use an `omml` fence only in two cases: the formula came from a Word source (past
 
 The root element must be `m:oMath` or `m:oMathPara`. Invalid OMML and unsupported LaTeX never fail the build: the formula degrades to styled text and a warning appears in `build-result.json` — always check warnings and repair the formula.
 
+Inline math inside any body text (paragraphs, list items, table cells, callouts) uses `\( ... \)` spans, e.g. `其中 \(P_{nev}\) 表示渗透率`. Spans render as native inline equations at the surrounding font size and are never numbered. The same LaTeX subset applies; an unsupported span degrades to literal text with a warning.
+
 Every block equation is numbered per chapter — `（3.1）` on the right edge, same numbering family as tables/figures. Reference equations in body text as `式 3.1` or `公式 3.1`; the text stays normal body style (not superscript) and becomes a clickable jump, exactly like `见表3.1`.
 
 Add `title=` after the fence language to attach a caption below the equation, e.g. ```` ```math title="增长率定义" ````.
