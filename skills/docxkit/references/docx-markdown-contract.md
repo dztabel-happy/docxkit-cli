@@ -121,6 +121,30 @@ Supported kinds: `note`, `insight`, `risk`, `warning`. `tip` is normalized to `n
 
 The first word after the opening fence is the language. The remaining text becomes the optional code-block title. If no title is provided, DocxKit shows the language label. Code remains editable in Word and may use lightweight syntax colors.
 
+## Equations
+
+Block equations use fenced blocks. Write LaTeX in a `math` fence (preferred — highest reliability):
+
+````markdown
+```math
+\sum_{i=1}^{n} \frac{x_i}{\sigma} \ge \sqrt{y}
+```
+````
+
+Supported LaTeX subset: fractions (`\frac`), roots (`\sqrt`, `\sqrt[n]`), sub/superscripts, `\sum` `\prod` `\int` with limits, `\left(...\right)`, Greek letters, common operators/relations (`\times` `\le` `\ne` `\infty` `\to` …), and `\text{}`.
+
+Use an `omml` fence only in two cases: the formula came from a Word source (paste its native OMML verbatim for lossless transfer), or the build reported a `formula rendered as plain text` warning for LaTeX outside the subset:
+
+````markdown
+```omml
+<m:oMath><m:r><m:t>x</m:t></m:r></m:oMath>
+```
+````
+
+The root element must be `m:oMath` or `m:oMathPara`. Invalid OMML and unsupported LaTeX never fail the build: the formula degrades to styled text and a warning appears in `build-result.json` — always check warnings and repair the formula.
+
+Add `title=` after the fence language to attach a caption below the equation, e.g. ```` ```math title="增长率定义" ````.
+
 ## Page Breaks
 
 Use `---PAGE---` only when the user explicitly asks for a hard page break. Normal reports should rely on automatic Word/WPS pagination.
