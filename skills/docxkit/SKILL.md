@@ -40,6 +40,7 @@ Minimum rules:
 - Put `图：` before every image, with image alt text kept short and not identical to the formal figure caption; image paths are resolved relative to the Markdown file.
 - Put source material in a final `# 资料来源` section. Use ordered-list items only: `1. [来源名称](https://example.com)，发布方/作者，发布日期或访问日期。` Do not paste naked long URLs.
 - Cite sources inline as `[1]`, `[2]` after the supported claim, for example `预算压力来自公开口径[1]。` DocxKit renders these as clickable superscript Word references.
+- Block equations are auto-numbered per chapter with the number on the right edge; cite them in prose as `式 3.1`/`公式 3.1` for clickable cross-references. Add `list_of_figures: true` / `list_of_tables: true` frontmatter only when the report is figure/table-heavy.
 - Write block formulas as LaTeX in ```` ```math ```` fences (real Word equations, editable in Word/WPS). Use ```` ```omml ```` only to pass through native OMML from a Word source or when the build warns that LaTeX fell back to plain text; always re-check `warnings` after building documents with formulas.
 - Use fenced code blocks for JSON/config/code; put the optional display title after the language, for example ```` ```json renderer_contract ````. If no title is provided, DocxKit shows the language label.
 - Use callouts sparingly: `> [!note]`, `> [!insight]`, `> [!risk]`, `> [!warning]`.

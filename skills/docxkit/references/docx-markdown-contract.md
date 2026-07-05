@@ -15,7 +15,7 @@ confidentiality: 内部资料
 ---
 ```
 
-Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`.
+Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`, `list_of_figures`, `list_of_tables`.
 
 `template` defaults to `executive-cn-docx`. `executive-cn` is accepted as a ReportKit alias.
 
@@ -27,6 +27,8 @@ Available templates (identical layout, different Chinese font pairing):
 | `executive-cn-song-docx` | 宋体 | 黑体加粗（GB/T 9704 搭配） | 宋体加粗 |
 
 Latin text uses Times New Roman in both. Pick the song variant only when the user asks for 宋体/黑体 styling; otherwise keep the default.
+
+Set `list_of_figures: true` / `list_of_tables: true` to append 图目录 / 表目录 after the main TOC. Entries link to the captions and jump in Word/WPS; page numbers refresh when Word opens the file. Enable them only for figure/table-heavy reports.
 
 ## Sections
 
@@ -142,6 +144,8 @@ Use an `omml` fence only in two cases: the formula came from a Word source (past
 ````
 
 The root element must be `m:oMath` or `m:oMathPara`. Invalid OMML and unsupported LaTeX never fail the build: the formula degrades to styled text and a warning appears in `build-result.json` — always check warnings and repair the formula.
+
+Every block equation is numbered per chapter — `（3.1）` on the right edge, same numbering family as tables/figures. Reference equations in body text as `式 3.1` or `公式 3.1`; the text stays normal body style (not superscript) and becomes a clickable jump, exactly like `见表3.1`.
 
 Add `title=` after the fence language to attach a caption below the equation, e.g. ```` ```math title="增长率定义" ````.
 
