@@ -11,7 +11,7 @@ This skill drives the local CLI after the agent has prepared content, sources, M
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.1.48`. Ensure the latest CLI before building:
+This skill matches `@dztabel/docxkit >= 0.1.51`. Ensure the latest CLI before building:
 
 ```bash
 npm install @dztabel/docxkit          # install or upgrade in the workspace
@@ -42,11 +42,13 @@ The highest-frequency rules:
 
 1. Prepare content per the contract and save it as `./output_docx/content.md` (or edit the active `report.json`).
 2. Ensure the CLI is current (see Requirements).
-3. Build, capturing stdout:
+3. Build:
 
    ```bash
-   npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx | tee ./output_docx/stdout.json
+   npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx
    ```
+
+   The full result JSON is also written to `./output_docx/build-result.json` — read that file; no `tee` needed.
 
 4. **Gate loop** — `ok: true` is not enough; read `errors`, `warnings`, and `checks` (a list of `{code, severity, path, message}`):
    - `severity: error` fails the build (dangling `表/图/式 x.x` references, `[n]` beyond the source list, table rows wider than the header). Fix the content at the reported `path` and rebuild — never work around the gate.
@@ -57,7 +59,7 @@ The highest-frequency rules:
    npx --no-install docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa
    ```
 
-6. Verify `report.docx`, `report.json`, and `build-result.json` exist and `build-result.json` matches the captured stdout.
+6. Verify `report.docx`, `report.json`, and `build-result.json` exist.
 7. Deliver the `.docx` path, the editable source path, and any intentionally remaining warning.
 
 For user-requested revisions: edit the same editable source, rebuild into the same directory (or a versioned sibling if the old build must survive), and rerun the gate loop.
@@ -67,7 +69,7 @@ For user-requested revisions: edit the same editable source, rebuild into the sa
 | Situation | Action |
 | --- | --- |
 | `errors` from validate/build (missing fields, unknown template, missing image) | Fix the structure at the reported path; each message names the field. |
-| `checks` with `severity: error` | Fix the content at `path`; the code table in the contract explains every code. |
+| `checks` with `severity: error` | Fix the content at `path`; the code table in the contract explains every code. `dangling_caption_reference` messages list the document's actual auto-generated numbers — use those instead of guessing (执行摘要/导论 also counts as chapter 1). |
 | `warnings` like `formula rendered as plain text` | Repair the LaTeX (subset listed in the contract) or switch that formula to an ```` ```omml ```` fence. |
 | `qa` fails | Do not hand-edit the docx; rebuild, and if QA still fails report the QA JSON to the user as a tool issue. |
 | `docx-kit` not found | `npm install @dztabel/docxkit`, then use `npx --no-install docx-kit ...`. |
