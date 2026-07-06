@@ -32,7 +32,7 @@ npx --no-install docx-kit --version
 The highest-frequency rules:
 
 1. Headings are unnumbered (`# 研究背景`, never `# 一、背景`), and long chapters get real `##` subsections — a report where every chapter is a flat `#` reads like an outline.
-2. Every table gets `表：标题` on the line before it (`表[landscape]：` for wide tables, `表[compact]：` for dense numeric ones); every image gets `图：题注`.
+2. Every table gets `表：标题` on the line before it (`表[landscape]：` for wide tables that must stay intact); every image gets `图：题注`. Table font size is automatic — never try to control it.
 3. Introduce each table/figure in the prose before it appears, referencing it as `见表 x.x` / `如图 x.x` — these become clickable cross-references.
 4. Cite sources inline as `[1]` after the supported claim and list them in a final `# 资料来源` chapter as ordered `[名称](url)，出处，日期。` items — never invent sources, never paste naked URLs.
 5. Block formulas go in ```` ```math ```` fences (LaTeX, auto-numbered, cite as `式 x.x` in prose); inline math uses `\( ... \)` spans inside body text.

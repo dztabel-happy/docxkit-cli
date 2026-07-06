@@ -77,7 +77,7 @@ Place captions directly before every table and figure.
 ![瀑布图](assets/waterfall.png)
 ```
 
-Use `表[compact]：标题` only for dense numeric/status/checklist tables with many short cells; use normal `表：标题` for narrative or comparison tables. Use `表[landscape]：标题` for wide tables that must remain intact.
+Table font size is resolved automatically from the content: tables render at the normal size, and only drop to the dense tier when the measured content cannot fit at normal size (typically 7-8 short columns in portrait). Do not try to control table font size; `表[compact]：` from older documents is still accepted but no longer changes anything and triggers a `table_compact_layout_ignored` warning. Use `表[landscape]：标题` for wide tables that must remain intact.
 
 Introduce every table or figure before its caption in surrounding prose. Professional reports should not show a table or figure first and then explain it with `见表1.1` or `如图1.1所示` afterward.
 
@@ -175,6 +175,7 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 | `table_row_narrower_than_columns` | warning | 行内单元格少于列数，缺口渲染为空白 |
 | `table_missing_caption` | warning | 表格缺“表：标题” |
 | `table_consider_landscape` | warning | ≥6 列建议 `表[landscape]：` |
+| `table_compact_layout_ignored` | warning | 字号已自动化，`表[compact]：` 标记应移除 |
 | `figure_missing_caption` | warning | 图既无题注也无 alt |
 | `manual_numbering_in_title` | warning | 标题带手工编号（模板会自动编号） |
 | `checklist_like_bullet_items` | warning | ≥3 个带 [状态] 前缀的列表项 |
