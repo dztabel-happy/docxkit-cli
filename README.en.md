@@ -14,7 +14,7 @@
 
 <p align="center">
   <img alt="npm" src="https://img.shields.io/npm/v/@dztabel/docxkit?label=npm">
-  <img alt="platforms" src="https://img.shields.io/badge/platform-macOS%20arm64-blue">
+  <img alt="platforms" src="https://img.shields.io/badge/platform-macOS%20arm64%20%7C%20Windows%20x64-blue">
 </p>
 
 ---
@@ -153,7 +153,7 @@ Supports equations (block and inline LaTeX, editable native Word math), clickabl
 
 ## Troubleshooting
 
-The public beta supports macOS Apple Silicon.
+The public beta supports macOS Apple Silicon and Windows x64.
 
 If global npm install skips optional dependencies, install the matching platform package explicitly:
 

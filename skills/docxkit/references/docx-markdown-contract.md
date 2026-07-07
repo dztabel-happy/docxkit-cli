@@ -184,6 +184,10 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 | `checklist_like_bullet_items` | warning | ≥3 个带 [状态] 前缀的列表项 |
 | `section_reads_like_checklist` | warning | 章节列表项多且无正文段落 |
 | `flat_section_structure` | warning | 全文无二级标题且存在大体量章节 |
+| `mechanical_section_nesting` | warning | 多数一级章只挂唯一一个二级节，像为凑篇幅横向摊开；应合并为更少的章、每章配多个二级节 |
+| `unreferenced_caption` | warning | 带题注的表/图从未在正文引用；应在正文用“见表/图 x.x”或叙述引出 |
+
+Pass `--strict` to `docx-kit build` to promote every warning-level check (and formula-degradation warnings) to a build failure — intended for CI/batch pipelines. The default is iterate-until-clean.
 
 `docx-kit components` prints the full machine-readable component contract.
 

@@ -14,7 +14,7 @@
 
 <p align="center">
   <img alt="npm" src="https://img.shields.io/npm/v/@dztabel/docxkit?label=npm">
-  <img alt="platforms" src="https://img.shields.io/badge/platform-macOS%20arm64-blue">
+  <img alt="platforms" src="https://img.shields.io/badge/platform-macOS%20arm64%20%7C%20Windows%20x64-blue">
 </p>
 
 ---
@@ -153,7 +153,7 @@ report/qa/qa-result.json
 
 ## 排障
 
-当前公开测试版支持 macOS Apple Silicon。
+当前公开测试版支持 macOS Apple Silicon 与 Windows x64。
 
 如果全局 npm 安装跳过了 optional dependencies，显式安装对应平台包：
 
