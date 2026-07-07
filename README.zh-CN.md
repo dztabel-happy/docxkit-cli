@@ -50,7 +50,7 @@ docx-kit --version
 出现类似输出代表 CLI 安装成功：
 
 ```text
-docx-kit 0.1.51
+docx-kit 0.1.52
 ```
 
 ### 2. 安装 Agent skill（二选一）
