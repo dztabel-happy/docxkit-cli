@@ -11,7 +11,7 @@ This skill drives the local CLI after the agent has prepared content, sources, M
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.1.52`. Ensure the latest CLI before building:
+This skill matches `@dztabel/docxkit >= 0.1.53`. Ensure the latest CLI before building:
 
 ```bash
 npm install @dztabel/docxkit          # install or upgrade in the workspace
@@ -62,7 +62,7 @@ The highest-frequency rules:
 6. Verify `report.docx`, `report.json`, and `build-result.json` exist.
 7. Deliver the `.docx` path, the editable source path, and any intentionally remaining warning.
 
-For user-requested revisions: edit the same editable source, rebuild into the same directory (or a versioned sibling if the old build must survive), and rerun the gate loop.
+When the user wants changes to an already-generated report — including asking for tracked-changes markup of what changed — read `references/revising-documents.md`. The short version: edit the same editable source (`content.md` or the always-written `report.json`), never the `.docx`, then rebuild and rerun the gate loop.
 
 ## Failure Playbook
 
