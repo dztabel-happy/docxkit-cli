@@ -106,6 +106,9 @@ DocxKit infers column widths for normal Markdown tables. Use direct `report.json
 ## Figures
 
 Image paths are resolved relative to the Markdown file. Keep alt text short and different from the formal `图：` caption.
+The generated `report.json` rebases relative figure paths to its own output directory, so `docx-kit build report/report.json --out report` remains reproducible.
+
+PNG, JPEG, GIF, and BMP files are embedded directly. PDF figures use the first page and require `pdftoppm` on `PATH` (macOS can fall back to `sips`); otherwise convert the figure to PNG/JPEG before building.
 
 ## Callouts
 
@@ -194,6 +197,8 @@ Pass `--strict` to `docx-kit build` to promote every warning-level check (and fo
 ## Direct report.json
 
 Use direct `report.json` only when Markdown cannot express the required structure or exact table widths. Supported first-stage block types are:
+
+`report.json` is a strict contract: unknown properties, invalid enum values, null object/array fields, and non-empty `appendices` fail validation instead of being ignored.
 
 ```text
 paragraph

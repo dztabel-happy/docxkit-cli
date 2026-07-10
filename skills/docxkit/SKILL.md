@@ -11,7 +11,7 @@ This skill drives the local CLI after the agent has prepared content, sources, M
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.1.53`. Ensure the latest CLI before building:
+This skill matches `@dztabel/docxkit >= 0.1.54`. Ensure the latest CLI before building:
 
 ```bash
 npm install @dztabel/docxkit          # install or upgrade in the workspace
