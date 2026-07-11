@@ -64,6 +64,8 @@ Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks
 
 Place captions directly before every table and figure.
 
+Prefixed caption numbers are accepted and discarded: `图 1.1：年度趋势` and `表 2.1：方法比较` import as `年度趋势` / `方法比较`, because DocxKit always renumbers tables and figures per chapter. Upstream systems can keep their own numbering in Markdown without causing double numbers.
+
 ```markdown
 见表1.1，渠道效率对比应先由正文说明阅读目的，再放置表格。
 
@@ -109,6 +111,12 @@ Image paths are resolved relative to the Markdown file. Keep alt text short and 
 The generated `report.json` rebases relative figure paths to its own output directory, so `docx-kit build report/report.json --out report` remains reproducible.
 
 PNG, JPEG, GIF, and BMP files are embedded directly. PDF figures use the first page and require `pdftoppm` on `PATH` (macOS can fall back to `sips`); otherwise convert the figure to PNG/JPEG before building.
+
+### Chart manifests (ChartKit)
+
+If `<image>-manifest.json` sits next to a figure image (e.g. `assets/chart.png` + `assets/chart-manifest.json`), Markdown import consumes `layout.recommended_insert_width_mm` (falling back to `layout.rendered_width_mm`) to size the figure. Discovery is fail-soft: a sidecar that is not valid JSON or has no usable width is treated as absent and never blocks or changes a build. An explicit `width` on the figure always wins over the manifest.
+
+In direct `report.json`, `chart_manifest` on a figure block is a strict reference: the file must exist and parse, otherwise the build fails with a structured error.
 
 ## Callouts
 
@@ -193,6 +201,16 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 Pass `--strict` to `docx-kit build` to promote every warning-level check (and formula-degradation warnings) to a build failure — intended for CI/batch pipelines. The default is iterate-until-clean.
 
 `docx-kit components` prints the full machine-readable component contract.
+
+## Machine-Readable Results (cli-contract 0.2)
+
+`build-result.json`, `redline-result.json`, and `qa-result.json` carry `contract_version: "0.2"`; stdout is always byte-identical to the persisted result file.
+
+- All paths in results (`input_path`, `output_dir`, `report_path`, `docx_path`, `artifacts.*`) are absolute.
+- `build` and `validate` results carry `input_sha256`: the SHA-256 of the exact input bytes that were parsed (a successful result always has a real 64-hex digest; an unreadable input leaves it empty). `redline` and `error` results keep it empty instead of fabricating one.
+- `qa` results carry `docx_sha256` and `report_sha256`, computed from the same bytes the structural checks inspected; a passing QA always has both digests.
+
+Any upstream system can verify what was built by comparing these digests against its own copy of the input and artifacts.
 
 ## Direct report.json
 
