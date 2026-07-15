@@ -86,7 +86,7 @@ function platformPackageName() {
   if (!arch) {
     return null;
   }
-  if (process.platform === "darwin") {
+  if (process.platform === "darwin" && arch === "arm64") {
     return `@dztabel/docxkit-darwin-${arch}`;
   }
   if (process.platform === "win32" && arch === "x64") {

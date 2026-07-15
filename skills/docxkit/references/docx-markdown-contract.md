@@ -16,6 +16,7 @@ confidentiality: 内部资料
 ```
 
 Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`, `list_of_figures`, `list_of_tables`.
+`language` currently accepts only `zh-CN`.
 
 `template` defaults to `executive-cn-docx`. `executive-cn` is accepted as a ReportKit alias.
 

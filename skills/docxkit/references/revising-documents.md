@@ -35,3 +35,5 @@ Re-run the same gate loop as a first build: read `errors` / `warnings` / `checks
 ## Showing what changed (tracked changes)
 
 To hand the user a Word file with tracked-changes markup of what changed between two versions you generated, use `docx-kit redline --from <old.report.json> --to <new.report.json> --out <dir>` — it renders the new report with insertions/deletions marked, reviewable and acceptable in Word/WPS. This works only between DocxKit-generated versions (both sources available); it is not for redlining an arbitrary uploaded `.docx`.
+
+Redline v1 always renders in portrait. Use it to review changes, then rebuild the final document to restore landscape tables.
