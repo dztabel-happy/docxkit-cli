@@ -23,7 +23,8 @@ if (!binary) {
 
 const result = spawnSync(binary, process.argv.slice(2), {
   cwd: process.cwd(),
-  env: process.env,
+  // DOCXKIT_PACKAGE_ROOT lets `docx-kit sync-skill` locate the packaged skills/ directory
+  env: { ...process.env, DOCXKIT_PACKAGE_ROOT: packageRoot },
   stdio: "inherit",
 });
 

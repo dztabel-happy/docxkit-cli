@@ -11,12 +11,15 @@ This skill drives the local CLI after the agent has prepared content, sources, M
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.1.57`. Ensure the latest CLI before building:
+This skill matches `@dztabel/docxkit >= 0.1.58`. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
 
 ```bash
-npm install @dztabel/docxkit          # install or upgrade in the workspace
+npm install @dztabel/docxkit@latest   # session-start upgrade; on failure keep the local install
 npx --no-install docx-kit --version
+npx --no-install docx-kit sync-skill  # mirrors the packaged skill into ~/.claude/skills and ~/.agents/skills
 ```
+
+`sync-skill` refreshes the machine-installed skill copies from the npm package (only into skills roots that already exist); an updated skill takes effect in the next session — do not re-read it mid-session. Skip the command silently if the local CLI predates it. Do not run `npm install` again mid-session: the CLI version must stay stable across a build/redline loop.
 
 ## Principles
 

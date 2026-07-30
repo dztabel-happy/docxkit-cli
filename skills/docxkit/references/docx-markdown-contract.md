@@ -223,6 +223,8 @@ Pass `--strict` to `docx-kit build` to promote every warning-level check (and fo
 
 `docx-kit components` prints the full machine-readable component contract.
 
+`docx-kit sync-skill` mirrors the packaged skill into the machine-installed copies (`~/.claude/skills/docxkit`, `~/.agents/skills/docxkit`; only roots that already exist) and prints `{ok, command: "sync-skill", source, synced, skipped, errors}`. Updated skill files take effect in the next session.
+
 ## Machine-Readable Results (cli-contract 0.2)
 
 `build-result.json`, `redline-result.json`, and `qa-result.json` carry `contract_version: "0.2"`; stdout is always byte-identical to the persisted result file.
