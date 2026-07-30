@@ -63,6 +63,22 @@ Set `list_of_figures: true` / `list_of_tables: true` to append 图目录 / 表�
 
 Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks for normal report content. Use callouts only for rare high-signal emphasis.
 
+## Inline Formatting
+
+Body text (paragraphs, list items, quotes, callouts, table cells, `report.json` text fields alike) supports inline markers:
+
+| syntax | renders as |
+| --- | --- |
+| `**粗体**` / `__粗体__` | bold run |
+| `*斜体*` | italic run（单下划线 `_斜体_` 不支持，避免误伤 snake_case） |
+| `***粗斜体***` | bold + italic run |
+| `~~删除线~~` | strikethrough run |
+| `` `行内代码` `` | monospaced-styled run with light gray shading, content kept literal |
+| `[标题](https://…)` | external hyperlink (http/https only) |
+| `\( … \)` | native inline equation (see Equations) |
+
+Markers must be paired and hug their content (`**9.1%**`, not `** 9.1% **`); unpaired markers stay literal and trigger the `unparsed_inline_markdown` warning. Backslash escapes are not interpreted. Inline markers inside section headings and table/figure captions are stripped to plain text (headings and captions already carry their own uniform style).
+
 ## Captions
 
 Place captions directly before every table and figure.
@@ -201,6 +217,7 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 | `flat_section_structure` | warning | 全文无二级标题且存在大体量章节 |
 | `mechanical_section_nesting` | warning | 多数一级章只挂唯一一个二级节，像为凑篇幅横向摊开；应合并为更少的章、每章配多个二级节 |
 | `unreferenced_caption` | warning | 带题注的表/图从未在正文引用；应在正文用“见表/图 x.x”或叙述引出 |
+| `unparsed_inline_markdown` | warning | 未配对的 `**`/`__`/`~~`/反引号 会原样出现在正文；`[文本](非 http 路径)` 链接语法只支持外部 URL |
 
 Pass `--strict` to `docx-kit build` to promote every warning-level check (and formula-degradation warnings) to a build failure — intended for CI/batch pipelines. The default is iterate-until-clean.
 
@@ -221,6 +238,8 @@ Any upstream system can verify what was built by comparing these digests against
 Use direct `report.json` only when Markdown cannot express the required structure or exact table widths. Supported first-stage block types are:
 
 `report.json` is a strict contract: unknown properties, invalid enum values, null object/array fields, and non-empty `appendices` fail validation instead of being ignored.
+
+The `report.json` that `build` persists alongside `report.docx` omits fields equal to their defaults (empty strings/arrays, `emphasis: "normal"`, `language: "zh-CN"`, default `theme`, …) — a paragraph is just `{"type": "paragraph", "text": "…"}`. Reading is unchanged: omitted fields deserialize to the same defaults, and the slim form round-trips losslessly. Selective inline emphasis inside a paragraph is expressed with the inline markers above (e.g. `"text": "弃电率为 **16.6%**。"`), not a separate runs structure.
 
 ```text
 paragraph
