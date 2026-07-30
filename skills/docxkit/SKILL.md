@@ -24,7 +24,7 @@ npx --no-install docx-kit sync-skill  # mirrors the packaged skill into ~/.claud
 ## Principles
 
 - Keep the editable source as Markdown (`./output_docx/content.md`) or `report.json`; the CLI generates `report.docx` plus diagnostics into the same `--out` directory (default `./output_docx`; use a versioned sibling like `./output_docx_v2` when the old build must be preserved).
-- Default template is `executive-cn-docx` (楷体 body and headings). Switch to `executive-cn-song-docx` (宋体 body + 黑体 bold headings, GB/T 9704 pairing) only when the user asks for 宋体/黑体 styling, via `template: executive-cn-song-docx` frontmatter.
+- Default template is `executive-cn-docx` (楷体 body and headings). Switch to `executive-cn-song-docx` (宋体 body + 黑体 headings, GB/T 9704 pairing, formal thesis-style layout) only when the user asks for 宋体/黑体 styling, via `template: executive-cn-song-docx` frontmatter.
 - Keep the default font behavior (no embedding): fonts map across Windows/macOS Word/WPS via alt-name chains, so files stay small and fully editable. Add `--embed-fonts` only when recipients may lack Chinese fonts (for example overseas readers on non-Chinese systems).
 - Never hand-edit the generated `.docx` or write OpenXML directly; all changes go through the Markdown/`report.json` source and a rebuild.
 
