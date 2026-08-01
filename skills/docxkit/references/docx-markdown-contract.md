@@ -23,10 +23,10 @@ Unknown keys fail the build. `list_of_figures` and `list_of_tables` accept only 
 
 Available templates (different Chinese font pairing and layout personality):
 
-| template id | 正文 | 标题/封面/目录标题 | 题注 | 版式 |
-| --- | --- | --- | --- | --- |
-| `executive-cn-docx`（默认） | 楷体 | 楷体加粗 | 楷体 | 现代商务风 |
-| `executive-cn-song-docx` | 宋体 | 黑体（GB/T 9704 搭配，不加粗） | 宋体 | 正式规范风（行距 20 磅、标题段距阶梯、清北学位论文体系） |
+| template id | 正文 | 章节标题 | 题注 | 封面/目录标题 | 版式 |
+| --- | --- | --- | --- | --- | --- |
+| `executive-cn-docx`（默认） | 楷体 | 楷体加粗 | 楷体 | 楷体（封面加粗） | 现代商务风 |
+| `executive-cn-song-docx` | 宋体 | 黑体（不加粗，GB/T 9704 搭配） | 宋体 | 宋体加粗 | 正式规范风（行距 20 磅、标题段距阶梯、清北学位论文体系） |
 
 Latin text uses Times New Roman in both. Pick the song variant only when the user asks for 宋体/黑体 styling; otherwise keep the default.
 
