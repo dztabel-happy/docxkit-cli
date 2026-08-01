@@ -61,7 +61,7 @@ Set `list_of_figures: true` / `list_of_tables: true` to append 图目录 / 表�
 > 普通引用会变成 quote。
 ```
 
-Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks for normal report content. Use callouts only for rare high-signal emphasis.
+Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks for normal report content. Use callouts only for rare high-signal emphasis. Callout rendering is template-specific: the default kaiti template draws an admonition box (colored left bar, light fill for risk/warning); the song template renders a plain body paragraph led by a bold label（标题或默认"风险提示"/"注"）— the formal-report idiom, no box or color.
 
 ## Inline Formatting
 
