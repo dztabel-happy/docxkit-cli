@@ -50,7 +50,7 @@ docx-kit --version
 出现类似输出代表 CLI 安装成功：
 
 ```text
-docx-kit 0.1.59 (cli-contract 0.2)
+docx-kit 0.1.60 (cli-contract 0.2)
 ```
 
 ### 2. 安装 Agent skill（二选一）
@@ -132,22 +132,22 @@ Agent 会完成资料读取、调研、正文组织、格式约束和 Word 导�
 Agent 会自动把资料整理成 DocxKit 可处理的中间内容，并调用：
 
 ```bash
-docx-kit build prepared-report.md --out ./report
-docx-kit qa ./report/report.docx --report-json ./report/report.json --out ./report/qa
+docx-kit build prepared-report.md --out ./report --filename 项目复盘报告.docx
+docx-kit qa ./report/项目复盘报告.docx --report-json ./report/report.json --out ./report/qa
 ```
 
 DocxKit 输出：
 
 ```text
-report/report.docx
+report/项目复盘报告.docx
 report/report.json
 report/build-result.json
 report/qa/qa-result.json
 ```
 
-生成的 `.docx` 默认不内嵌字体：模版使用楷体 + Times New Roman，并在 fontTable 里声明跨平台字体别名链（楷体 ↔ KaiTi ↔ Kaiti SC ↔ STKaiti），Windows/macOS 的 Word/WPS 都能稳定显示和编辑，文件体积也更小。若收件人环境可能缺少中文字体（如海外非中文系统），用 `--embed-fonts` 显式嵌入字体子集。
+生成的 `.docx` 默认不内嵌字体：每个模版都在 fontTable 中声明规范字体名与跨平台替代链，Word/WPS 会优先使用目标电脑已安装的字体并保持文档可编辑。若收件人环境缺少规范字体，用 `--embed-fonts` 显式嵌入本机可合法嵌入的字体子集。
 
-默认模版为 `executive-cn-docx`（楷体正文与标题）。可在 Markdown frontmatter 中用 `template: executive-cn-song-docx` 切换到宋体模版（宋体正文 + 黑体加粗标题，GB/T 9704 经典搭配，题注加粗），版式两者一致。
+内置三个模版：`executive-cn-docx`（默认，楷体商务风）、`executive-cn-song-docx`（宋体正文 + 不加粗黑体标题，正式规范风）和 `executive-cn-official-docx`（方正小标宋标题、楷体_GB2312 副标题、仿宋_GB2312 三号正文、小四号表格及表题、二三级标题加粗、无页眉、固定 30 磅行距，禁止 callout）。公文范式默认在首页顶部直接排列标题、副标题和正文，不生成独立封面与目录；只有明确需要时才设置 `document_mode: report`。在 Markdown frontmatter 中用 `template:` 显式切换。
 
 支持公式（LaTeX 块级与行内，Word 原生可编辑）、表/图/公式/来源四类可点击交叉引用、图目录与表目录；构建内置内容质量门禁（悬空引用等 error 级问题会使构建失败，详见输出 JSON 的 checks 字段）。
 

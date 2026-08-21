@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.1.59 (cli-contract 0.2)
+docx-kit 0.1.60 (cli-contract 0.2)
 ```
 
 ### 2. Install one agent skill
@@ -132,22 +132,22 @@ The agent handles source reading, research, writing, formatting, and Word export
 The agent turns the material into DocxKit-ready intermediate content and runs:
 
 ```bash
-docx-kit build prepared-report.md --out ./report
-docx-kit qa ./report/report.docx --report-json ./report/report.json --out ./report/qa
+docx-kit build prepared-report.md --out ./report --filename project-review.docx
+docx-kit qa ./report/project-review.docx --report-json ./report/report.json --out ./report/qa
 ```
 
 DocxKit outputs:
 
 ```text
-report/report.docx
+report/project-review.docx
 report/report.json
 report/build-result.json
 report/qa/qa-result.json
 ```
 
-Generated `.docx` files do not embed fonts by default: the template uses KaiTi + Times New Roman with a cross-platform alt-name chain (楷体 ↔ KaiTi ↔ Kaiti SC ↔ STKaiti) declared in the font table, so Word/WPS on Windows and macOS render and edit them consistently with a much smaller file size. Pass `--embed-fonts` to embed font subsets when recipients may lack Chinese fonts (for example non-Chinese systems).
+Generated `.docx` files do not embed fonts by default. Each template declares its required font names and cross-platform fallback chain in the font table, so Word/WPS uses fonts installed on the recipient's computer while keeping the document editable. Pass `--embed-fonts` only to embed locally available fonts that may legally be embedded.
 
-The default template is `executive-cn-docx` (KaiTi body and headings). Add `template: executive-cn-song-docx` to the Markdown frontmatter to switch to the SimSun variant (宋体 body + bold 黑体 headings, the classic GB/T 9704 pairing, bold captions); the layout is identical.
+Three templates are built in: `executive-cn-docx` (default KaiTi business style), `executive-cn-song-docx` (SimSun body with non-bold SimHei headings), and `executive-cn-official-docx` (16 pt FangSong_GB2312 body, 12 pt tables and table captions, bold level-2/3 official headings, no header, fixed 30 pt line spacing, and no callouts). The official template defaults to an inline title/subtitle with no separate cover or TOC; set `document_mode: report` only when a cover and TOC are required. Select one with `template:` in the Markdown frontmatter.
 
 Supports equations (block and inline LaTeX, editable native Word math), clickable cross-references for tables/figures/equations/sources, and optional lists of figures/tables; every build runs a content lint gate (dangling references fail the build — see the checks field in the output JSON).
 

@@ -15,7 +15,7 @@ confidentiality: 内部资料
 ---
 ```
 
-Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`, `list_of_figures`, `list_of_tables`.
+Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`, `document_mode`, `list_of_figures`, `list_of_tables`.
 Unknown keys fail the build. `list_of_figures` and `list_of_tables` accept only `true` / `false`, `yes` / `no`, or `1` / `0`.
 `language` currently accepts only `zh-CN`.
 
@@ -27,8 +27,11 @@ Available templates (different Chinese font pairing and layout personality):
 | --- | --- | --- | --- | --- | --- |
 | `executive-cn-docx`（默认） | 楷体 | 楷体加粗 | 楷体 | 楷体（封面加粗） | 现代商务风 |
 | `executive-cn-song-docx` | 宋体 | 黑体（不加粗，GB/T 9704 搭配） | 宋体 | 宋体加粗 | 正式规范风（行距 20 磅、标题段距阶梯、清北学位论文体系） |
+| `executive-cn-official-docx` | 仿宋_GB2312 三号 | H1 黑体；H2 楷体_GB2312 加粗；H3 仿宋_GB2312 加粗；H4 仿宋_GB2312 | 仿宋_GB2312 小四号，表题同字号 | 方正小标宋简体（二号封面标题） | 首页副标题无前缀、无页眉、A4 默认页边距、固定 30 磅行距、公文序号“一、”“（一）”“1.”“（1）”；禁止 callout |
 
-Latin text uses Times New Roman in both. Pick the song variant only when the user asks for 宋体/黑体 styling; otherwise keep the default.
+Latin text uses Times New Roman in all templates. Pick a non-default template only when the user asks for the corresponding typography.
+
+`executive-cn-official-docx` defaults to `document`: the title and subtitle appear at the top of page 1 followed immediately by the body, with no separate cover or TOC. Set `document_mode: report` only when the user explicitly requests a cover or TOC, or the deliverable genuinely needs them. The two legacy templates continue to default to `report`. `document` cannot be combined with `list_of_figures` or `list_of_tables`.
 
 Set `list_of_figures: true` / `list_of_tables: true` to append 图目录 / 表目录 after the main TOC. Entries link to the captions and jump in Word/WPS; page numbers refresh when Word opens the file. Enable them only for figure/table-heavy reports.
 
@@ -36,7 +39,7 @@ Set `list_of_figures: true` / `list_of_tables: true` to append 图目录 / 表�
 
 - If frontmatter has `title`, `#` is a level-1 report section.
 - If frontmatter has no `title`, the first `#` becomes the cover title.
-- Use `##` and `###` for lower levels. Long chapters should be split into `##` subsections — the template numbers them 2.1 / 2.2 automatically and the TOC nests them:
+- Use `##` and `###` for lower levels. `####` is supported only by `executive-cn-official-docx`; the legacy templates reject level 4. Long chapters should be split into `##` subsections. The legacy templates number them 2.1 / 2.2, while the official template uses “一、”“（一）”“1.”“（1）”:
 - The first section must use `#`. Do not skip heading levels (`#` → `###`); invalid hierarchy fails validation instead of generating numbers such as `1.0.1`.
 
 ```markdown
@@ -61,7 +64,7 @@ Set `list_of_figures: true` / `list_of_tables: true` to append 图目录 / 表�
 > 普通引用会变成 quote。
 ```
 
-Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks for normal report content. Use callouts only for rare high-signal emphasis. Callout rendering is template-specific: the default kaiti template draws an admonition box (colored left bar, light fill for risk/warning); the song template renders a plain body paragraph led by a bold label（标题或默认"风险提示"/"注"）— the formal-report idiom, no box or color.
+Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks for normal report content. Use callouts only for rare high-signal emphasis. The official template rejects callouts. The default kaiti template draws an admonition box (colored left bar, light fill for risk/warning); the song template renders a plain body paragraph led by a bold label（标题或默认"风险提示"/"注"）— the formal-report idiom, no box or color.
 
 ## Inline Formatting
 
@@ -127,7 +130,7 @@ DocxKit infers column widths for normal Markdown tables. Use direct `report.json
 ## Figures
 
 Image paths are resolved relative to the Markdown file. Keep alt text short and different from the formal `图：` caption.
-The generated `report.json` rebases relative figure paths to its own output directory, so `docx-kit build report/report.json --out report` remains reproducible.
+The generated `report.json` rebases relative figure paths to its own output directory, so `docx-kit build report/report.json --out report --filename 目标文件名.docx` remains reproducible.
 
 PNG, JPEG, GIF, and BMP files are embedded directly. PDF figures use the first page and require `pdftoppm` on `PATH` (macOS can fall back to `sips`); otherwise convert the figure to PNG/JPEG before building.
 Unsupported extensions, mismatched file signatures, and corrupt bitmap files fail validation instead of producing a broken Word image.
@@ -229,7 +232,7 @@ Pass `--strict` to `docx-kit build` to promote every warning-level check (and fo
 
 `build-result.json`, `redline-result.json`, and `qa-result.json` carry `contract_version: "0.2"`; stdout is always byte-identical to the persisted result file.
 
-- All paths in results (`input_path`, `output_dir`, `report_path`, `docx_path`, `artifacts.*`) are absolute.
+- All paths in results (`input_path`, `output_dir`, `report_path`, `docx_path`, `artifacts.*`) are absolute. Pass `--filename <name.docx>` to `build`; it accepts a file name only, not a path. `docx_path` is the single authoritative Word deliverable and must not be copied or renamed by the agent.
 - `build` and `validate` results carry `input_sha256`: the SHA-256 of the exact input bytes that were parsed (a successful result always has a real 64-hex digest; an unreadable input leaves it empty). `redline` and `error` results keep it empty instead of fabricating one.
 - `qa` results carry `docx_sha256` and `report_sha256`, computed from the same bytes the structural checks inspected; a passing QA always has both digests.
 
@@ -241,7 +244,7 @@ Use direct `report.json` only when Markdown cannot express the required structur
 
 `report.json` is a strict contract: unknown properties, invalid enum values, null object/array fields, and non-empty `appendices` fail validation instead of being ignored.
 
-The `report.json` that `build` persists alongside `report.docx` omits fields equal to their defaults (empty strings/arrays, `emphasis: "normal"`, `language: "zh-CN"`, default `theme`, …) — a paragraph is just `{"type": "paragraph", "text": "…"}`. Reading is unchanged: omitted fields deserialize to the same defaults, and the slim form round-trips losslessly. Selective inline emphasis inside a paragraph is expressed with the inline markers above (e.g. `"text": "弃电率为 **16.6%**。"`), not a separate runs structure.
+The `report.json` that `build` persists alongside the named Word deliverable omits fields equal to their defaults (empty strings/arrays, `emphasis: "normal"`, `language: "zh-CN"`, default `theme`, …) — a paragraph is just `{"type": "paragraph", "text": "…"}`. Reading is unchanged: omitted fields deserialize to the same defaults, and the slim form round-trips losslessly. Selective inline emphasis inside a paragraph is expressed with the inline markers above (e.g. `"text": "弃电率为 **16.6%**。"`), not a separate runs structure.
 
 ```text
 paragraph

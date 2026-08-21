@@ -11,7 +11,7 @@ This skill drives the local CLI after the agent has prepared content, sources, M
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.1.59`. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
+This skill matches `@dztabel/docxkit >= 0.1.60`. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
 
 ```bash
 npm install @dztabel/docxkit@latest   # session-start upgrade; on failure keep the local install
@@ -23,8 +23,10 @@ npx --no-install docx-kit sync-skill  # mirrors the packaged skill into ~/.claud
 
 ## Principles
 
-- Keep the editable source as Markdown (`./output_docx/content.md`) or `report.json`; the CLI generates `report.docx` plus diagnostics into the same `--out` directory (default `./output_docx`; use a versioned sibling like `./output_docx_v2` when the old build must be preserved).
-- Default template is `executive-cn-docx` (楷体 body and headings). Switch to `executive-cn-song-docx` (宋体 body + 黑体 headings, GB/T 9704 pairing, formal thesis-style layout) only when the user asks for 宋体/黑体 styling, via `template: executive-cn-song-docx` frontmatter.
+- Keep the editable source as Markdown (`./output_docx/content.md`) or `report.json`; the CLI generates one user-facing Word file plus diagnostics into the same `--out` directory (default `./output_docx`; use a versioned sibling like `./output_docx_v2` when the old build must be preserved).
+- Always pass `--filename <descriptive-name.docx>` on `build`. Use a concise name derived from the report title, with no directory components. The returned `docx_path` is the only Word deliverable: never copy or rename it, and never expose a second `.docx` from the same build.
+- Default template is `executive-cn-docx` (楷体 body and headings). Use `executive-cn-song-docx` for 宋体正文 + 黑体标题. Use `executive-cn-official-docx` only for a 公文范式 request: 方正小标宋简体 title, no-prefix 楷体_GB2312 subtitle, 仿宋_GB2312 三号 body, bold H2/H3, 小四 tables and table captions, no header, four official heading levels and fixed 30 pt line spacing.
+- `executive-cn-official-docx` defaults to `document`: notices, plans, implementation schemes and ordinary official documents start with an inline title/subtitle and have no separate cover or TOC. Set `document_mode: report` only when the user explicitly requests a cover or TOC, or the deliverable is genuinely a long report that needs them.
 - Keep the default font behavior (no embedding): fonts map across Windows/macOS Word/WPS via alt-name chains, so files stay small and fully editable. Add `--embed-fonts` only when recipients may lack Chinese fonts (for example overseas readers on non-Chinese systems).
 - Never hand-edit the generated `.docx` or write OpenXML directly; all changes go through the Markdown/`report.json` source and a rebuild.
 
@@ -34,12 +36,12 @@ npx --no-install docx-kit sync-skill  # mirrors the packaged skill into ~/.claud
 
 The highest-frequency rules:
 
-1. Headings are unnumbered (`# 研究背景`, never `# 一、背景`), and long chapters get real `##` subsections — a report where every chapter is a flat `#` reads like an outline.
+1. Headings are unnumbered (`# 研究背景`, never `# 一、背景`), and long chapters get real `##` subsections. `####` is reserved for `executive-cn-official-docx`; the two legacy templates accept only `#` through `###`.
 2. Every table gets `表：标题` on the line before it (`表[landscape]：` for wide tables that must stay intact); every image gets `图：题注`. Table font size is automatic — never try to control it.
 3. Introduce each table/figure in the prose before it appears, referencing it as `见表 x.x` / `如图 x.x` — these become clickable cross-references.
 4. Cite sources inline as `[1]` after the supported claim and list them in a final `# 资料来源` chapter as ordered `[名称](url)，出处，日期。` items — never invent sources, never paste naked URLs.
 5. Block formulas go in ```` ```math ```` fences (LaTeX, auto-numbered, cite as `式 x.x` in prose); inline math uses `\( ... \)` spans inside body text.
-6. Prose first: conclusions and explanations are paragraphs; lists support them. Use callouts (`> [!note]` / `> [!risk]`) sparingly, avoid `---PAGE---`, and never fabricate glossary/checklist blocks in Markdown.
+6. Prose first: conclusions and explanations are paragraphs; lists support them. `executive-cn-official-docx` forbids callouts; with the other templates use callouts (`> [!note]` / `> [!risk]`) sparingly. Avoid `---PAGE---`, and never fabricate glossary/checklist blocks in Markdown.
 
 ## Workflow
 
@@ -48,7 +50,7 @@ The highest-frequency rules:
 3. Build:
 
    ```bash
-   npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx
+   npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx --filename 项目复盘报告.docx
    ```
 
    The full result JSON is also written to `./output_docx/build-result.json` — read that file; no `tee` needed.
@@ -59,11 +61,11 @@ The highest-frequency rules:
 5. Run structural QA (package structure, Word fields, internal link anchors, style names, font declarations):
 
    ```bash
-   npx --no-install docx-kit qa ./output_docx/report.docx --report-json ./output_docx/report.json --out ./output_docx/qa
+   npx --no-install docx-kit qa ./output_docx/项目复盘报告.docx --report-json ./output_docx/report.json --out ./output_docx/qa
    ```
 
-6. Verify `report.docx`, `report.json`, and `build-result.json` exist.
-7. Deliver the `.docx` path, the editable source path, and any intentionally remaining warning.
+6. Verify the single `.docx` at `docx_path`, plus `report.json` and `build-result.json`, exist.
+7. Deliver only `docx_path` as the Word file, together with the editable source path and any intentionally remaining warning.
 
 When the user wants changes to an already-generated report — including asking for tracked-changes markup of what changed — read `references/revising-documents.md`. The short version: edit the same editable source (`content.md` or the always-written `report.json`), never the `.docx`, then rebuild and rerun the gate loop.
 
