@@ -48,10 +48,12 @@ jobs:
           - runner: macos-14
             rid: osx-arm64
             platform_dir: darwin-arm64
+            boundary: darwin
             binary: docx-kit
           - runner: windows-latest
             rid: win-x64
             platform_dir: win32-x64
+            boundary: win32
             binary: docx-kit.exe
     runs-on: ${{ matrix.runner }}
     steps:
@@ -94,7 +96,7 @@ jobs:
           fi
       - name: Package boundary gate
         shell: bash
-        run: node scripts/check_package_boundary.mjs wrapper
+        run: node scripts/check_package_boundary.mjs wrapper main "${{ matrix.boundary }}"
       - name: Packed install smoke test
         shell: bash
         run: |
@@ -152,7 +154,7 @@ jobs:
       - name: Release gates
         run: |
           node scripts/check_release_metadata.mjs wrapper
-          node scripts/check_package_boundary.mjs wrapper
+          node scripts/check_package_boundary.mjs wrapper main
       - name: Publish main package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
