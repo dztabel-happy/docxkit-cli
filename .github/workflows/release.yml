@@ -1,0 +1,159 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish packages to npm after all gates pass
+        required: true
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+      core_ref:
+        description: Exact docxkit-cli-core commit, tag, or branch to build
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docxkit-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-core-ref:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - name: Checkout private core
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          repository: dztabel-happy/docxkit-cli-core
+          ref: ${{ inputs.core_ref }}
+          ssh-key: ${{ secrets.CORE_DEPLOY_KEY }}
+          persist-credentials: false
+      - name: Resolve immutable core commit
+        id: resolve
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build-platform:
+    needs: resolve-core-ref
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            rid: osx-arm64
+            platform_dir: darwin-arm64
+            binary: docx-kit
+          - runner: windows-latest
+            rid: win-x64
+            platform_dir: win32-x64
+            binary: docx-kit.exe
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout private core
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          repository: dztabel-happy/docxkit-cli-core
+          ref: ${{ needs.resolve-core-ref.outputs.sha }}
+          ssh-key: ${{ secrets.CORE_DEPLOY_KEY }}
+          persist-credentials: false
+      - name: Checkout public wrapper
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          path: wrapper
+          persist-credentials: false
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
+        with:
+          dotnet-version: 8.0.x
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+      - name: Release metadata gate
+        shell: bash
+        run: node scripts/check_release_metadata.mjs wrapper
+      - name: Build platform binary
+        shell: bash
+        run: bash scripts/build_binary.sh "${{ matrix.rid }}"
+      - name: Binary smoke test
+        shell: bash
+        run: "./dist/${{ matrix.rid }}/${{ matrix.binary }} --version"
+      - name: Stage binary into public package
+        shell: bash
+        run: |
+          cp "dist/${{ matrix.rid }}/${{ matrix.binary }}" "wrapper/npm/platform-packages/${{ matrix.platform_dir }}/${{ matrix.binary }}"
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            chmod +x "wrapper/npm/platform-packages/${{ matrix.platform_dir }}/${{ matrix.binary }}"
+          fi
+      - name: Package boundary gate
+        shell: bash
+        run: node scripts/check_package_boundary.mjs wrapper
+      - name: Packed install smoke test
+        shell: bash
+        run: |
+          pack_dir="$RUNNER_TEMP/docxkit-packages"
+          install_dir="$RUNNER_TEMP/docxkit-install"
+          mkdir -p "$pack_dir" "$install_dir"
+          (cd wrapper && npm pack --pack-destination "$pack_dir" >/dev/null)
+          (cd "wrapper/npm/platform-packages/${{ matrix.platform_dir }}" && npm pack --pack-destination "$pack_dir" >/dev/null)
+          cd "$install_dir"
+          npm init -y >/dev/null
+          npm install "$pack_dir"/*.tgz >/dev/null
+          cat > content.md <<'EOF'
+          ---
+          title: DocxKit 公开构建验收
+          template: executive-cn-official-docx
+          ---
+
+          # 一级标题
+
+          正文内容。
+          EOF
+          npx --no-install docx-kit --version
+          npx --no-install docx-kit build content.md --out output --filename 公开构建验收.docx >/dev/null
+          test -f output/公开构建验收.docx
+          npx --no-install docx-kit qa output/公开构建验收.docx --report-json output/report.json --out output/qa >/dev/null
+      - name: Publish platform package
+        if: inputs.publish == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: node scripts/publish_npm_packages.mjs "wrapper/npm/platform-packages/${{ matrix.platform_dir }}"
+
+  publish-main:
+    if: inputs.publish == 'true'
+    needs: [resolve-core-ref, build-platform]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout private core
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          repository: dztabel-happy/docxkit-cli-core
+          ref: ${{ needs.resolve-core-ref.outputs.sha }}
+          ssh-key: ${{ secrets.CORE_DEPLOY_KEY }}
+          persist-credentials: false
+      - name: Checkout public wrapper
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          path: wrapper
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+      - name: Release gates
+        run: |
+          node scripts/check_release_metadata.mjs wrapper
+          node scripts/check_package_boundary.mjs wrapper
+      - name: Publish main package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: node scripts/publish_npm_packages.mjs wrapper
