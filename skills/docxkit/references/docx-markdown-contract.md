@@ -29,7 +29,7 @@ Available templates (different Chinese font pairing and layout personality):
 | `executive-cn-song-docx` | 宋体 | 黑体（不加粗，GB/T 9704 搭配） | 宋体 | 宋体加粗 | 正式规范风（行距 20 磅、标题段距阶梯、清北学位论文体系） |
 | `executive-cn-official-docx` | 仿宋_GB2312 三号 | H1 黑体；H2 楷体_GB2312 加粗；H3 仿宋_GB2312 加粗；H4 仿宋_GB2312 | 仿宋_GB2312 小四号，表题同字号 | 方正小标宋简体（二号封面标题） | 首页副标题无前缀、无页眉、A4 默认页边距、固定 30 磅行距、公文序号“一、”“（一）”“1.”“（1）”；禁止 callout |
 
-Latin text uses Times New Roman in all templates. Pick a non-default template only when the user asks for the corresponding typography.
+Latin text uses Times New Roman in all templates; Chinese always renders in the template's Chinese font, including inside inline code, code blocks and equations. Pick a non-default template only when the user asks for the corresponding typography.
 
 `executive-cn-official-docx` defaults to `document`: the title and subtitle appear at the top of page 1 followed immediately by the body, with no separate cover or TOC. Set `document_mode: report` only when the user explicitly requests a cover or TOC, or the deliverable genuinely needs them. The two legacy templates continue to default to `report`. `document` cannot be combined with `list_of_figures` or `list_of_tables`.
 
@@ -76,7 +76,7 @@ Body text (paragraphs, list items, quotes, callouts, table cells, `report.json` 
 | `*斜体*` | italic run（单下划线 `_斜体_` 不支持，避免误伤 snake_case） |
 | `***粗斜体***` | bold + italic run |
 | `~~删除线~~` | strikethrough run |
-| `` `行内代码` `` | monospaced-styled run with light gray shading, content kept literal |
+| `` `行内代码` `` | monospaced-styled run with light gray shading, content kept literal; Chinese inside code keeps the template's Chinese font |
 | `[标题](https://…)` | external hyperlink (http/https only) |
 | `\( … \)` | native inline equation (see Equations) |
 
