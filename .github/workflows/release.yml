@@ -122,15 +122,18 @@ jobs:
           npx --no-install docx-kit build content.md --out output --filename 公开构建验收.docx >/dev/null
           test -f output/公开构建验收.docx
           npx --no-install docx-kit qa output/公开构建验收.docx --report-json output/report.json --out output/qa >/dev/null
-      - name: Publish platform package
-        if: inputs.publish == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        shell: bash
-        run: node scripts/publish_npm_packages.mjs "wrapper/npm/platform-packages/${{ matrix.platform_dir }}"
+      - name: Hand the platform binary to the publish job
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: platform-binary-${{ matrix.platform_dir }}
+          path: dist/${{ matrix.rid }}/${{ matrix.binary }}
+          retention-days: 1
+          if-no-files-found: error
 
-  publish-main:
-    if: inputs.publish == 'true'
+  publish-packages:
+    # 平台包与主包一律在这里统一发布：任何一个平台构建失败都不会有包落地，
+    # 版本号因此可以原样重试（2026-09 有一次 windows 发布失败前 darwin 包已上架，
+    # 重跑时二进制无法逐字节复现、integrity 守卫拒绝覆盖，那个版本号只能作废）。
     needs: [resolve-core-ref, build-platform]
     runs-on: ubuntu-latest
     steps:
@@ -151,11 +154,35 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org
+      - name: Collect platform binaries
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: platform-binary-*
+          path: platform-binaries
+      - name: Stage binaries into public packages
+        shell: bash
+        run: |
+          cp platform-binaries/platform-binary-darwin-arm64/docx-kit wrapper/npm/platform-packages/darwin-arm64/docx-kit
+          cp platform-binaries/platform-binary-win32-x64/docx-kit.exe wrapper/npm/platform-packages/win32-x64/docx-kit.exe
+          # artifact 不保留权限位，重新赋予可执行权限（npm 打包会带上文件模式）
+          chmod +x wrapper/npm/platform-packages/darwin-arm64/docx-kit
       - name: Release gates
         run: |
           node scripts/check_release_metadata.mjs wrapper
-          node scripts/check_package_boundary.mjs wrapper main
-      - name: Publish main package
+          node scripts/check_package_boundary.mjs wrapper main darwin win32
+      - name: Publish packages
+        if: inputs.publish == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: node scripts/publish_npm_packages.mjs wrapper
+        run: |
+          node scripts/publish_npm_packages.mjs \
+            wrapper/npm/platform-packages/darwin-arm64 \
+            wrapper/npm/platform-packages/win32-x64 \
+            wrapper
+      - name: Rehearse publish
+        if: inputs.publish != 'true'
+        run: |
+          node scripts/publish_npm_packages.mjs --dry-run \
+            wrapper/npm/platform-packages/darwin-arm64 \
+            wrapper/npm/platform-packages/win32-x64 \
+            wrapper
