@@ -68,7 +68,7 @@ Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks
 
 ## Inline Formatting
 
-Body text (paragraphs, list items, quotes, callouts, table cells, `report.json` text fields alike) supports inline markers:
+Body text (paragraphs, list items, quotes, callouts, table cells, source-list entries, `report.json` text fields alike) supports inline markers:
 
 | syntax | renders as |
 | --- | --- |
