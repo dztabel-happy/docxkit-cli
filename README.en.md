@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.1.62 (cli-contract 0.2)
+docx-kit 0.1.63 (cli-contract 0.2)
 ```
 
 ### 2. Install one agent skill
@@ -150,6 +150,10 @@ Generated `.docx` files do not embed fonts by default. Each template declares it
 Three templates are built in: `executive-cn-docx` (default KaiTi business style), `executive-cn-song-docx` (SimSun body with non-bold SimHei headings), and `executive-cn-official-docx` (16 pt FangSong_GB2312 body, 12 pt tables and table captions, bold level-2/3 official headings, no header, fixed 30 pt line spacing, and no callouts). The official template defaults to an inline title/subtitle with no separate cover or TOC; set `document_mode: report` only when a cover and TOC are required. Select one with `template:` in the Markdown frontmatter.
 
 Supports equations (block and inline LaTeX, editable native Word math), clickable cross-references for tables/figures/equations/sources, and optional lists of figures/tables; every build runs a content lint gate (dangling references fail the build — see the checks field in the output JSON).
+
+Headings stay on the same page as the paragraph that follows them. When a tall figure is pushed to the next page and leaves the previous page half empty, `docx-kit build ... --settle-figures` (opt-in) measures the real pagination — with Microsoft Word on Windows, with LibreOffice elsewhere — and lets the figure fall back by a paragraph or two in the delivered document so the page fills; the source and `report.json` keep the author's order.
+
+`report.json` is the editable source alongside the Markdown: it stores headings and captions as written, and rebuilding from it any number of times gives the same document.
 
 ## Troubleshooting
 

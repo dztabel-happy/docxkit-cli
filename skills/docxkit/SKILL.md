@@ -11,7 +11,7 @@ This skill drives the local CLI after the agent has prepared content, sources, M
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.1.62`. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
+This skill matches `@dztabel/docxkit >= 0.1.63`. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
 
 ```bash
 npm install @dztabel/docxkit@latest   # session-start upgrade; on failure keep the local install
@@ -29,6 +29,7 @@ npx --no-install docx-kit sync-skill  # mirrors the packaged skill into ~/.claud
 - `executive-cn-official-docx` defaults to `document`: notices, plans, implementation schemes and ordinary official documents start with an inline title/subtitle and have no separate cover or TOC. Set `document_mode: report` only when the user explicitly requests a cover or TOC, or the deliverable is genuinely a long report that needs them.
 - Keep the default font behavior (no embedding): fonts map across Windows/macOS Word/WPS via alt-name chains, so files stay small and fully editable. Add `--embed-fonts` only when recipients may lack Chinese fonts (for example overseas readers on non-Chinese systems).
 - Never hand-edit the generated `.docx` or write OpenXML directly; all changes go through the Markdown/`report.json` source and a rebuild.
+- `--settle-figures` is opt-in: add it to `build` only when the user asks to reduce the blank space a tall figure leaves at the bottom of the previous page, or you can see that problem in the delivered file. Read the contract's “Tall figures and blank page bottoms” section first.
 
 ## Writing the Input
 
@@ -38,7 +39,7 @@ The highest-frequency rules:
 
 1. Headings are unnumbered (`# 研究背景`, never `# 一、背景`), and long chapters get real `##` subsections. `####` is reserved for `executive-cn-official-docx`; the two legacy templates accept only `#` through `###`.
 2. Every table gets `表：标题` on the line before it (`表[landscape]：` for wide tables that must stay intact); every image gets `图：题注`. Table font size is automatic — never try to control it.
-3. Introduce each table/figure in the prose before it appears, referencing it as `见表 x.x` / `如图 x.x` — these become clickable cross-references.
+3. Introduce each table/figure in the prose before it appears, referencing it by number as `见表 x.x` / `如图 x.x` — these become clickable cross-references. Never point by position (“上图”“下图”“如下表所示”): it reads wrong as soon as the exhibit lands on another page.
 4. Cite sources inline as `[1]` after the supported claim and list them in a final `# 资料来源` chapter as ordered `[名称](url)，出处，日期。` items — never invent sources, never paste naked URLs.
 5. Block formulas go in ```` ```math ```` fences (LaTeX, auto-numbered, cite as `式 x.x` in prose); inline math uses `\( ... \)` spans inside body text.
 6. Prose first: conclusions and explanations are paragraphs; lists support them. `executive-cn-official-docx` forbids callouts; with the other templates use callouts (`> [!note]` / `> [!risk]`) sparingly. Avoid `---PAGE---`, and never fabricate glossary/checklist blocks in Markdown.
@@ -76,5 +77,6 @@ When the user wants changes to an already-generated report — including asking 
 | `errors` from validate/build (missing fields, unknown template, missing image) | Fix the structure at the reported path; each message names the field. |
 | `checks` with `severity: error` | Fix the content at `path`; the code table in the contract explains every code. `dangling_caption_reference` messages list the document's actual auto-generated numbers — use those instead of guessing (执行摘要/导论 also counts as chapter 1). |
 | `warnings` like `formula rendered as plain text` | Repair the LaTeX (subset listed in the contract) or switch that formula to an ```` ```omml ```` fence. |
+| `warnings` starting with `图位置整理未执行` / `图位置整理中止` (only with `--settle-figures`) | Not a content problem, and the document was still delivered — either the normal one or an arrangement measured before the pass stopped. Do not try to "fix" the content. Whether paragraphs were moved is told by `figure_settling.moved_paragraphs`, not by the warning: if it is above 0, check the moved paragraphs as usual. Tell the user; measuring needs Microsoft Word on Windows, or LibreOffice plus poppler elsewhere. |
 | `qa` fails | Do not hand-edit the docx; rebuild, and if QA still fails report the QA JSON to the user as a tool issue. |
 | `docx-kit` not found | `npm install @dztabel/docxkit`, then use `npx --no-install docx-kit ...`. |

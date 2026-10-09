@@ -50,7 +50,7 @@ docx-kit --version
 出现类似输出代表 CLI 安装成功：
 
 ```text
-docx-kit 0.1.62 (cli-contract 0.2)
+docx-kit 0.1.63 (cli-contract 0.2)
 ```
 
 ### 2. 安装 Agent skill（二选一）
@@ -150,6 +150,10 @@ report/qa/qa-result.json
 内置三个模版：`executive-cn-docx`（默认，楷体商务风）、`executive-cn-song-docx`（宋体正文 + 不加粗黑体标题，正式规范风）和 `executive-cn-official-docx`（方正小标宋标题、楷体_GB2312 副标题、仿宋_GB2312 三号正文、小四号表格及表题、二三级标题加粗、无页眉、固定 30 磅行距，禁止 callout）。公文范式默认在首页顶部直接排列标题、副标题和正文，不生成独立封面与目录；只有明确需要时才设置 `document_mode: report`。在 Markdown frontmatter 中用 `template:` 显式切换。
 
 支持公式（LaTeX 块级与行内，Word 原生可编辑）、表/图/公式/来源四类可点击交叉引用、图目录与表目录；构建内置内容质量门禁（悬空引用等 error 级问题会使构建失败，详见输出 JSON 的 checks 字段）。
+
+标题与它后面的段落保持在同一页。一张高图被整张推到下一页、前一页空出半页时，可以加 `docx-kit build ... --settle-figures`（可选）：它实测分页（Windows 上用本机 Microsoft Word，其它平台用 LibreOffice），在成品里让这张图往后让一两段，把页面填上；输入与 `report.json` 仍是作者的次序。
+
+`report.json` 与 Markdown 一样是可编辑的源：标题、题注按原文保存，拿它重建多少次，得到的都是同一份文档。
 
 ## 排障
 
