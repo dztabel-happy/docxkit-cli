@@ -13,6 +13,10 @@ When the user is not satisfied with a `.docx` DocxKit produced and asks for chan
 2. Otherwise edit `report.json` — it is the canonical editable artifact and `docx-kit build ./output_docx/report.json --out ./output_docx --filename 原交付文件名.docx` regenerates everything.
 3. If neither is available (the user only has the `.docx` and it was hand-edited outside DocxKit), you cannot cleanly merge. Reconstruct the content as Markdown and treat it as a fresh build — say so plainly to the user.
 
+`report.json` stores headings and captions as written, inline markers included; the document shows them with the markers removed. Edit them the same way you would in Markdown — keep the backticks around literal `*` / `~` characters (`` `电量*电价` ``).
+
+A `report.json` written by docx-kit 0.1.62 or earlier stored headings and captions with the markers already removed, so backticks that protected literal `*` / `~` are gone from it. If the original had such a heading or caption, rebuild from `content.md`; with only the old `report.json`, re-add the backticks there before rebuilding.
+
 ## Common revisions
 
 | Ask | What to change |
@@ -36,6 +40,6 @@ Re-run the same gate loop as a first build: read `errors` / `warnings` / `checks
 
 To hand the user a Word file with tracked-changes markup of what changed between two versions you generated, use `docx-kit redline --from <old.report.json> --to <new.report.json> --out <dir>` — it renders the new report with insertions/deletions marked, reviewable and acceptable in Word/WPS. This works only between DocxKit-generated versions (both sources available); it is not for redlining an arbitrary uploaded `.docx`.
 
-Redline compares report structure only. It does not compare the bytes of external image or chart assets, so replacing an asset at the same path is visible only in the rebuilt final document.
+Redline compares report structure only. It does not compare the bytes of external image or chart assets, so replacing an asset at the same path is visible only in the rebuilt final document. Headings and table/figure/equation captions are compared as the reader sees them: a change to inline markers that leaves the displayed text the same is not a change (`**概况**` vs `概况`), while one that alters it is (`` `A*B*C` `` shows `A*B*C`; without the backticks it shows `ABC`). The `redline` summary (`added` / `removed` / `changed`) counts changed blocks and is taken from the same comparison the tracked changes are drawn from.
 
 Redline v1 always renders in portrait. Use it to review changes, then rebuild the final document to restore landscape tables.
