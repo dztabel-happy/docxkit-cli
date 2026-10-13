@@ -50,7 +50,7 @@ Three escapes exist: `\*` for a literal asterisk, `\|` for a literal pipe inside
 
 ## Transcribing an Existing Document
 
-For a contract, notice or letter, use `document_mode: document`, `heading_numbering: none`, `punctuation_mode: preserve`, and `numbering_rule: native-v1`. Select the font template that suits the source; do not switch to the 公文模板 just to remove the cover. A flush-left salutation, a right-aligned sign-off or a centred line goes in a `::: 顶格` / `::: 靠右` / `::: 居中` container (see "Paragraph Alignment" in the contract); never position text with spaces or empty paragraphs.
+For a contract, notice or letter, use `document_mode: document`, `heading_numbering: none`, `punctuation_mode: preserve`, and `numbering_rule: native-v1`. Select the font template that suits the source; do not switch to the 公文模板 just to remove the cover. A flush-left salutation, a right-aligned sign-off or a centred line goes in a `::: 顶格` / `::: 靠右` / `::: 居中` container (see "Paragraph Alignment" in the contract); never position text with spaces or empty paragraphs. To keep the source's own list numbers and forms (`3.`, `（1）`, `1、`, `一、`, `(1)`, `（一）`) as native Word lists set like body paragraphs, add `list_numbering: author` (see "Lists Numbered as Written" in the contract); without it only `1.` lines are lists and they use the template's numbering from 1. Other numbering (`a.`, `①`, an indented sub-item) is kept as text and reported as `unsupported_list_numbering`.
 
 Ordinary documents have three title cases: with metadata `title`, all `#` headings are real sections; without it, an initial `#` becomes the document title and is consumed; without it and without an initial `#`, the document starts directly with the body. Do not add an invisible title or repeat the title as a section.
 
@@ -129,6 +129,7 @@ Tell the user, in their language, what they can do with the file. For Chinese de
 | Validation/build errors | Fix the named field or missing asset. Do not patch the generated Word file. |
 | `dangling_caption_reference` | Check the available reference locators listed in the message and the effective numbering policy. Some locators support old input and differ from the displayed number. Opening sections count as chapters when chapter numbering applies. |
 | `caption_reference_renumbered` | Compare the old and new target named at each location. Correct the source reference to the intended object before declaring `native-v1`. |
+| `unsupported_list_numbering` | Only under `list_numbering: author`. The named line looks like numbering but is not a supported form, or is indented; it was kept as text and will not renumber in Word. In new writing, rewrite it flush left as `1.`, `（1）`, `1、`, `一、`, `(1)` or `（一）`. In a transcription that must keep the original numbering, leave it and tell the user. |
 | `legacy_official_reference` / `caption_number_replaced` | Informational compatibility/renumbering notices; inspect their meaning, but do not block strict builds or change an original merely to clear them. |
 | Formula rendered as plain text | Correct the LaTeX or use valid native OMML from the source. Check top-level `warnings` as well as `checks`. |
 | Figure settling skipped/stopped | Inspect `figure_settling` and warn the user; this warning alone does not fail strict builds. A moved figure still needs a reading-order review. |

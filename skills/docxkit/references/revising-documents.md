@@ -26,7 +26,7 @@ A `report.json` written by docx-kit 0.1.62 or earlier stored headings/captions w
 | Add, delete or move a section | Edit headings and blocks. Recheck source reference numbers against the effective policy. Word edits can update native references, but a Markdown rebuild still parses the locators written in the source. |
 | Add/drop a table, figure or source | Update the block and its source references together. Uncaptioned tables consume no table number. Ordinary documents do not require adding references merely to clear `info`. |
 | Change typography | Change `template:` while retaining mode. Recheck caption numbering: the 公文模板 is continuous. Remove level-4 input headings before switching to 楷体/宋体. |
-| Keep the original clause numbers | Set `heading_numbering: none`; keep author numbers in headings, use line-start `1\.` for literal numbered paragraphs. |
+| Keep the original clause numbers | Set `heading_numbering: none`; keep author numbers in headings, use line-start `1\.` for literal numbered paragraphs, or `list_numbering: author` to keep numbered lines as native lists with the numbers and form the author wrote. |
 | Add a chart | Render a local image, then add its path and a caption. Check the reference before the image in a new report. |
 
 ## Versioning

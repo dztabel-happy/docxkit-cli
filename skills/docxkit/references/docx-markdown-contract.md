@@ -61,9 +61,11 @@ These fail validation instead of producing an empty part:
 - `toc: true` in an ordinary document with no chapters (`theme.toc is true but the document has no chapters…`). Add `#` headings or leave `toc` off; no chapter is created for you.
 - `chapter_header: true` with neither a level-1 heading nor a title.
 - `cover: true` with no title.
-- `page_numbers: auto` and `list_numbering: author` (`… is not available yet`); `list_numbering` accepts only `template` for now.
+- `page_numbers: auto` (`… is not available yet`).
 
 A figure or table list that is switched on but has nothing to list is skipped with a warning.
+
+`list_numbering` accepts `template` (default) or `author` in every template and mode. `template` shows ordered lists in the template's format, each starting at 1; `author` keeps the form and numbers the author wrote. See "Lists Numbered as Written".
 
 `heading_numbering` accepts `auto` (default) or `none` in every template and mode. `auto` supplies heading numbers; `none` keeps author-written clause numbers and supplies none of its own. Heading styles and outline levels remain usable. It does not disable list or caption numbering.
 
@@ -130,6 +132,59 @@ Undeclared Markdown uses the new counting rule. If an old table locator and the 
 Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks for normal report content. Use callouts only for rare high-signal emphasis. The official template rejects callouts. The default kaiti template draws an admonition box (colored left bar, light fill for risk/warning); the song template renders a plain body paragraph led by a bold label（标题或默认"风险提示"/"注"）— the formal-report idiom, no box or color.
 
 An ordered list is one numbering instance. Items separated only by blank lines remain one list, even if every item is written as `1.`. After an intervening paragraph, code block, table or bullet list, numbering one greater than the last authored item number continues the same instance (even when earlier items were all written as `1.`); restarting at `1.` starts a new instance. New instances display from 1. Word supports demoting/promoting list items; this is not a new Markdown nested-list syntax.
+
+## Lists Numbered as Written (`list_numbering: author`)
+
+By default (`list_numbering: template`) only lines written `1. 条目` are ordered lists, they are shown in the template's own format, and every list starts at 1 — the rules in "Blocks" above. Add `list_numbering: author` to the metadata, in any template and either mode, to keep the form and the numbers the author wrote. Nothing changes unless the option is written: a line such as `（1）正文` in an existing source stays a paragraph.
+
+| Written in Markdown | `list_format` | Shown in Word |
+| --- | --- | --- |
+| `1. 条目` (whitespace is required after the dot) | `decimal-dot` | 1. 2. 3. |
+| `（1）条目` | `decimal-full-paren` | （1）（2）（3） |
+| `1、条目` | `decimal-comma` | 1、2、3、 |
+| `一、条目` (一 to 九十九) | `chinese-comma` | 一、二、三、 |
+| `(1)条目` | `decimal-paren` | (1) (2) (3) |
+| `（一）条目` (一 to 九十九) | `chinese-full-paren` | （一）（二）（三） |
+
+The numbers are native Word numbering, not typed text. The first item shows the number that was written (`3.` starts at 3), and adding or deleting an item in Word renumbers the rest.
+
+These items are set like body paragraphs, the convention for notices, contracts and official-style text: the numbered line is indented two characters like the first line of a body paragraph, wrapped lines return to the left edge, and there is no hanging indent. Spacing, line pitch and alignment are the body's. After `1.` comes one space; the other forms run straight into the text, so the text after a wider number (9 → 10) simply starts further right. Template lists (`list_numbering: template`) keep their hanging-indent look.
+
+How lines are grouped into lists:
+
+- Adjacent lines of the same form whose numbers go up by one are one list; blank lines between them do not matter. It displays from the first number written.
+- After something else (a paragraph, a table, a quote, a list in another form, …), a line whose number is exactly one more than the last number of the previous list in the same form continues that list. Any other number starts a new list at the number written. So `1.` `2.` / paragraph / `3.` is one list, and `1.` `2.` / paragraph / `1.` is two.
+- A number that does not follow on starts a new list even with nothing in between: two consecutive `1.` lines are two lists that each show 1, and `1.` `2.` `5.` is a list of two followed by a list that starts at 5.
+- A heading ends continuation. The first list after a heading starts at the number written and is a list of its own.
+- A different form is a different list. `（一）` lines under a `一、` item, or `（1）` lines under a `1.` item, are their own list, and a following `二、` or `2.` continues the first list. No multi-level relationship is inferred; every item is at the first level.
+- The item text does not decide anything: `1、2026 年工作安排` / `2、2027 年工作安排` are two items.
+
+```markdown
+一、总体安排
+（一）设备管理部负责现场
+（二）综合部负责通知
+二、时间安排
+（一）周六上午检修一号楼
+```
+
+One protection for sentences: a line with `、` whose number is not 1, that neither continues a list nor is followed by the next number, and whose text goes on like an enumeration (`2026、2027 年完成`, `三、四层的住户`, `10、20、30 三档`) is read as text, so a wrapped paragraph is not cut in two. A line that starts at 1 is always an item.
+
+Numbering that is not one of the six forms gets no native numbering. Each such line is kept as it was written, as a paragraph of its own (consecutive lines are not joined), and `build` / `validate` report it with the warning `unsupported_list_numbering`, which names the line: Word will not renumber it when items are added or deleted. This covers:
+
+- letters and roman numerals (`a.`, `A、`, `(b)`, `iv.`, `Ⅳ、`), circled or parenthesised number symbols (`①`, `⑴`), full-width digits (`１.`);
+- leading zeros and zero (`01.`, `0、`), a lone closing bracket or mixed brackets (`1)`, `1）`, `（1)`);
+- Chinese numerals outside 一…九十九 or not in the usual spelling (`一百、`, `一十、`), and Chinese numerals in other shapes (`(一)`, `一.`);
+- any numbered line that is indented. Below a list item that is a nested list, and multi-level import is not supported, so it is not flattened into the parent list or changed to another form: write the lower level flush left in another form, as in the example above. (Indented bullets are unchanged.)
+
+Like every paragraph, a kept line follows `punctuation_mode`: under `normalize` an ASCII `. ` next to Chinese becomes `。`; transcriptions use `preserve`. Dates, decimals, version numbers and ordinary sentences (`2026.10.13`, `1.5 倍`, `v1.2.3`, `A、B 两栋`, numbers above 32767) are not numbering and are not reported.
+
+Unaffected by the option: `# 资料来源` sections (`1.` entries there are still the `[n]` source list; the other forms there are paragraphs), quotes, callouts, table cells, code blocks, `:::` alignment containers (numbered lines inside them stay text) and bullet lists.
+
+In `report.json` an `ordered_list` block carries `list_format` (one of the six names above; `template`, the default, is omitted) and `list_start`, the number its numbering instance starts from (default 1, omitted). Blocks with the same `list_id` are one instance: they must have the same `list_format` and the same `list_start`, and a later block continues counting after the items of the earlier ones, so its own first number is not stored. An author `list_format` needs `theme.list_numbering: author`; a `list_start` other than 1 needs an author format; a `chinese-comma` or `chinese-full-paren` list must stay within 一…九十九. These rules fail validation with a message that names the block. JSON has no line numbers, so `unsupported_list_numbering` is reported only for Markdown.
+
+`docx-kit redline` compares the form and the displayed numbers, not `list_id`. The parts of a list whose form or displayed numbers changed (renumbered, another form, continued differently) are shown as deleted and inserted, and accepting or rejecting all changes leaves each draft's own numbering.
+
+Binaries older than this feature reject `list_numbering: author` (or the key itself). Check `docx-kit components`: the `ordered_list` component lists `list_format` and `list_start`.
 
 ## Paragraph Alignment
 
@@ -313,6 +368,7 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 | `table_compact_layout_ignored` | warning | warning | Obsolete compact flag; remove it, sizing is automatic |
 | `manual_numbering_in_title` | warning | warning | Author numbering conflicts with `auto`; use `none` when it belongs to the original |
 | `unparsed_inline_markdown` | warning | warning | Unpaired markers remain literal, or a link has an unsupported target; preserve original characters, escape literal stars or repair intended formatting; a lone `__` needs its pair for bold, while three or more underscores are a literal fill-in blank and never warn; use current display numbers such as 表 1 / 表 1.1 for exhibit references |
+| `unsupported_list_numbering` | warning | warning | Under `list_numbering: author`, a Markdown line looks like list numbering but is not one of the six supported forms, or is indented; it is kept as a paragraph without native numbering. Rewrite it flush left in a supported form if it should renumber, or leave it if the original must be kept |
 | `caption_reference_renumbered` | warning | warning | Undeclared Markdown's table reference changes target under new counting; inspect both targets before declaring the rule |
 | `legacy_official_reference` | info | info | A legacy chapter locator was resolved to the intended object and displayed with its new number |
 | `caption_number_replaced` | info | info | Supplied caption number differs from generated number; check fidelity |
@@ -392,5 +448,6 @@ New JSON fields preserve the input's meaning across rebuilds:
 - `sections[0].kind: body` stores ordinary-document content before any section, without creating a heading. It is allowed only as the first container in document mode, with an empty title and level 1. Other containers are `section` (default). A title-only ordinary document may have an empty sections array.
 - `table`/`figure` blocks may carry `caption_number`, recording the supplied number without overriding automatic numbering.
 - `ordered_list.list_id`: equal nonempty IDs continue one instance, different IDs restart at 1; an omitted/empty ID retains historical document-wide list numbering. Markdown supplies these IDs automatically.
+- `ordered_list.list_format` and `ordered_list.list_start`: the written form and the start number of a list kept as the author wrote it; only under `theme.list_numbering: author`. Omitted means the template's numbering from 1. See "Lists Numbered as Written".
 
 Documents generated from different inputs never share bookmark names, so a chapter copied from one into another keeps its own references. Copies of the same document share names, as copies of any Word document do. Saving the layout settings explicitly does not rename anything: a rebuild from the persisted `report.json` has the same bookmark names as the build that wrote it.
