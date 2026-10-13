@@ -107,6 +107,7 @@ Rules and edge cases for every row are in [the Markdown contract](references/doc
 | Need | Write |
 | --- | --- |
 | Font | Nothing for 楷体 (`executive-cn-docx`). Set `template` to `executive-cn-song-docx` for 宋体 body with 黑体 headings, or to `executive-cn-official-docx` for the 公文模板: 仿宋, headings numbered 一、（一）1.（1）, always a plain document unless you write `report`. Change it only when the user asks for that look. Fonts are not embedded; add `--embed-fonts` to `build` only when recipients lack them |
+| Stated format | Only when the user names it. `body_font: 仿宋_GB2312`, `body_size: 三号` (a Chinese size name, or points with a unit such as `16pt`), `body_line_spacing: 28pt` (fixed), `at-least 28pt` or `1.5x`; the same keys for `title`, `heading1`–`heading3` (`heading4` on the 公文模板), and `<role>_latin_font` for the Latin font. `text_scale: large` makes all type 4/3 when the user wants it bigger without naming sizes. Tables, captions, lists and unstated headings follow the body; a stated value is never changed for you, and nothing is shrunk to save a page. A stated font missing on this machine gives the warning `font_not_found`: tell the user, do not substitute. First confirm `docx-kit templates` shows `format.features`; an older binary rejects these keys |
 | Parts | `cover`, `toc`, `chapter_header`, `list_of_figures`, `list_of_tables`: `true` / `false`. `page_numbers: always / none / auto`. `heading_numbering: auto / none`. Each overrides the mode's default: `cover: false` gives a report that starts with its title and contents |
 | Headings | `#` `##` `###` (`####` only on the 公文模板), no skipped level. Report: no numbers in the text. Plain document: kept as written (`# 第一条 服务内容`) |
 | Alignment | Ordinary paragraphs are indented two characters on the first line. `::: 顶格` for a salutation or label lines (`甲方：…`, `时间：…`), `::: 靠右` for a sign-off, `::: 居中` for a line under the title (author, date). Never position text with spaces or empty paragraphs |
@@ -127,7 +128,7 @@ Say so to the user instead of improvising with spaces, empty paragraphs, layout 
 
 - A table look other than the three-line table (no full grid, no borderless table), and merged cells for forms.
 - Side-by-side blocks, such as two signature columns, and multi-column pages: write the blocks one under the other, each in its own container; no gap can be added between them.
-- Overriding a font, type size, margin or line spacing; placing text at a chosen height on the page.
+- Setting page margins; placing text at a chosen height on the page (`margin_*`, `page_position`, `::: 表格`, `::: 并排` and `::: 留白` are refused as not available yet). Bold, character spacing or a size for a single paragraph cannot be stated either.
 
 ## Notes that must not be lost
 

@@ -21,7 +21,7 @@ confidentiality: 内部资料
 ---
 ```
 
-Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`, `document_mode`, `heading_numbering`, `punctuation_mode`, `numbering_rule`, `list_of_figures`, `list_of_tables`, `cover`, `toc`, `chapter_header`, `page_numbers`, `list_numbering`.
+Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`, `document_mode`, `heading_numbering`, `punctuation_mode`, `numbering_rule`, `list_of_figures`, `list_of_tables`, `cover`, `toc`, `chapter_header`, `page_numbers`, `list_numbering`, and the stated-format keys `text_scale`, `<role>_font`, `<role>_latin_font`, `<role>_size`, `<role>_line_spacing` (see "Stated Formats and the Type Scale").
 Unknown keys fail the build. `list_of_figures`, `list_of_tables`, `cover`, `toc` and `chapter_header` accept only `true` / `false`, `yes` / `no`, or `1` / `0`.
 `language` currently accepts only `zh-CN`.
 
@@ -98,6 +98,65 @@ A figure or table list that is switched on but has nothing to list is skipped wi
 Put `numbering_rule: native-v1` in new Markdown that refers to tables, figures or equations by number; a text without such references does not need it. It declares that references were written against the new numbering rules; it does not choose a visual format. Do not add it to an old document before checking its reference targets. Markdown accepts only `native-v1`; legacy JSON rules are described below.
 
 `punctuation_mode` accepts `normalize` (default for every template and mode) or `preserve`; any other value fails validation. The default can change punctuation and spaces in Chinese text. Use `preserve` when transcribing a contract, notice or letter. In JSON set `theme.punctuation_mode`. This controls text rendering, not the source stored in `report.json`; see “Punctuation and Spaces” below for the exact rules.
+
+## Stated Formats and the Type Scale
+
+Use these only when the user states a format ("正文仿宋三号，行距固定 28 磅", "标题二号小标宋", "字大一点"). They change the chosen template; they do not replace choosing one. Without them a document is built exactly as before.
+
+```markdown
+---
+template: executive-cn-official-docx
+title_font: 方正小标宋简体
+title_size: 二号
+title_line_spacing: 32pt
+body_font: 仿宋_GB2312
+body_latin_font: Times New Roman
+body_size: 三号
+body_line_spacing: 28pt
+heading1_font: 黑体
+heading1_size: 三号
+---
+```
+
+```markdown
+---
+text_scale: large
+---
+```
+
+**Keys.** `text_scale: normal | large`, and for each role `<role>_font`, `<role>_latin_font`, `<role>_size`, `<role>_line_spacing`. Roles: `title` (the document title; on a report, the cover title), `body`, `heading1`, `heading2`, `heading3`, and `heading4` on the official template only. Each key may be written once. There is no key for captions, tables, lists, the subtitle or the contents: they follow the body as described below. Bold, italics, character spacing, a fixed number of lines per page and a size for one paragraph cannot be stated.
+
+**Sizes** are a Chinese size name or points with a unit, in whole or half points from 5 to 72: `16pt`, `16磅`, `10.5pt`. A bare number is refused; nothing is rounded.
+
+| 初号 | 小初 | 一号 | 小一 | 二号 | 小二 | 三号 | 小三 | 四号 | 小四 | 五号 | 小五 | 六号 | 小六 | 七号 | 八号 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 42 | 36 | 26 | 24 | 22 | 18 | 16 | 15 | 14 | 12 | 10.5 | 9 | 7.5 | 6.5 | 5.5 | 5 |
+
+**Line spacing** has three forms: `28pt` or `28磅` is a fixed value; `at-least 28pt` is a minimum; `1.5x` (or `1.5倍`) is a multiple, which must be exact in Word's units (1, 1.15, 1.25, 1.5, 2 …). A bare number is refused.
+
+**Fonts** are written into the document exactly as given, one name per key (a list is refused). `<role>_font` is the Chinese font; `<role>_latin_font` is the Latin font, and it also governs digits, list numbers, curly quotes, the dots of the contents and the page number, because Word treats those as Latin characters. When a stated font is not installed on the building machine the build still succeeds and the document carries the name, but the check `font_not_found` (warning) names the roles and the font: the tool could not confirm how it displays, and a reader's Word or WPS that lacks the font substitutes another one without saying so. That format requirement is not met yet. Ask the user to install or supply a licensed font, or to accept another one; do not swap fonts yourself. `--strict` refuses to build with this warning. For a stated font the font table carries one alternative name, always a font Windows ships: the system twin when the stated font has one (仿宋 for 仿宋_GB2312, 楷体 for 楷体_GB2312, 宋体 for 方正小标宋简体), otherwise the chosen template's font for that role (楷体, 宋体, 黑体 or 仿宋). Word on Windows draws that font when the stated one is missing; this is not a cross-platform guarantee, and it does not make the requirement met.
+
+**`text_scale: large`** is the chosen template with all text at 4/3: sizes to the nearest half point (a 12 pt body becomes 16 pt, 16 pt becomes 21.5 pt), line pitch, paragraph spacing and indents by the same factor. Fonts, bold, border widths, page margins, the header and page-number sizes and the cover's positioning distances do not change. Use it when the user wants bigger type without naming sizes; for exact sizes state them. It never shrinks text to keep a page count: a longer document simply runs to more pages.
+
+**What follows what.** The stated values are applied in a fixed order: the template, then `text_scale`, then the roles that follow the body, then each role's own stated values. A stated value is never overridden by a derived one.
+
+| You state | What follows | What does not |
+| --- | --- | --- |
+| `body_size` | Everything set from the body, by the same ratio: aligned paragraphs, lists (indents and the numbering definition together), quotes, lead and small text, table text, captions, sources, footnotes, the contents entries; and the title, subtitle, contents title and headings that are not stated themselves. First-line indent stays two characters. | Code and the cover's information lines (they follow `text_scale` only); header and page number. |
+| `body_font` | Roles the template sets in the body's own font: on kaiti everything; on song the cover and contents titles, captions and tables; on official the level-3 and level-4 headings, captions and tables. | Roles the template gives their own font (the 黑体 headings of song and official, 方正小标宋简体 and 楷体_GB2312 on official); code. |
+| `body_latin_font` | The whole document, including the roles above, list numbers and page numbers. | A role with its own `<role>_latin_font`; code. |
+| `body_line_spacing` | Roles that use the body's line pitch: aligned paragraphs, lists, quotes. | Headings and the title (they keep their own rule, scaled by their own size); tables, captions and contents (their own ratio to their size). |
+| `title_*` or `heading<n>_*` | Only that role; its spacing before and after scales with its own size. | Everything else. |
+
+Once a size is stated or `text_scale: large` is used, tables are no longer shrunk to a compact size to make them fit: cell text wraps and the table grows. `table_consider_landscape` then says so; use `表[landscape]：` or fewer columns.
+
+**Refused, with the field named:** a fixed line spacing smaller than the role's size (the message gives role, size and spacing and suggests `at-least`); a size outside 5–72 pt or not on a half point; a multiple that is not exact; `heading4_*` on a three-level template; a repeated key. A tall inline formula (a fraction, sum, root …) in a paragraph under a stated fixed line spacing gets the warning `fixed_line_spacing_tall_inline`, which names the block and the formula: fixed spacing does not make room for it and it prints over the neighbouring lines. DocxKit does not switch the spacing for you; write `at-least`, or make the formula a display equation.
+
+**Not available yet** (the wording is fixed, the feature is not built; the build fails and says so): `margin_top`, `margin_bottom`, `margin_left`, `margin_right`, `page_position`, and the containers `::: 表格`, `::: 并排`, `::: 留白`. Do not imitate them with blank lines or spaces; tell the user this part cannot be done yet. `docx-kit templates` lists under `format.features` what this binary can do (`text_scale`, `role_font`, `role_latin_font`, `role_size`, `role_line_spacing`); check it before relying on a stated format with an older installation, which rejects these keys as unknown.
+
+`redline` needs both drafts to have the same effective format and refuses otherwise, naming the differences; `三号` and `16pt`, or a value equal to the template's, count as the same. `--embed-fonts` embeds only the templates' own fonts and Times New Roman: with any other stated font it fails and says which, and the option is not dropped for you.
+
+The build receipt reports what was applied under `effective_document.format` (see "Machine-Readable Results").
 
 ## Titles and Sections
 
@@ -401,7 +460,9 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | `dangling_source_reference` | error | error | `[n]` exceeds the source list; correct the reference or source |
 | `table_row_wider_than_columns` | error | error | Extra cells would be lost; repair the table |
 | `table_row_narrower_than_columns` | warning | warning | Missing cells render blank; check original data |
-| `table_consider_landscape` | warning | warning | Table cannot fit at normal portrait size; consider landscape |
+| `table_consider_landscape` | warning | warning | Table cannot fit at normal portrait size; consider landscape. With a stated size or `text_scale: large` the table is not shrunk either, so cells wrap |
+| `font_not_found` | warning | warning | A stated font is not installed on this machine: the name is written as given, its display is unconfirmed and readers without it get a silent substitute. Ask the user for the font or for permission to use another |
+| `fixed_line_spacing_tall_inline` | warning | warning | A tall inline formula sits in a paragraph under a stated fixed line spacing and will overlap neighbouring lines; write `at-least` or use a display equation |
 | `table_compact_layout_ignored` | warning | warning | Obsolete compact flag; remove it, sizing is automatic |
 | `manual_numbering_in_title` | warning | warning | Author numbering conflicts with `auto`; use `none` when it belongs to the original |
 | `unparsed_inline_markdown` | warning | warning | Unpaired markers remain literal, or a link has an unsupported target; preserve original characters, escape literal stars or repair intended formatting; a lone `__` needs its pair for bold, while three or more underscores are a literal fill-in blank and never warn; use current display numbers such as 表 1 / 表 1.1 for exhibit references |
@@ -438,6 +499,10 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | The receipt shows a report where a plain document was meant (or the reverse) | The text has chapter headings and no `document_mode`, or none and you wanted a cover: write `document_mode` explicitly. |
 | `dangling_caption_reference` | Check the available reference locators listed in the message and the effective numbering policy. Some locators support old input and differ from the displayed number. Opening sections count as chapters when chapter numbering applies. |
 | `caption_reference_renumbered` | Compare the old and new target named at each location. Correct the source reference to the intended object before declaring `native-v1`. |
+| `… is not available yet` / `这一版还不能用` | The setting or container belongs to a later version (margins, `page_position`, `::: 表格`, `::: 并排`, `::: 留白`). Remove it and tell the user that this part cannot be done yet; do not imitate it. |
+| `fixed line spacing … is smaller than the … size` | Use a fixed value of at least the size, or write the spacing as `at-least …`. Do not change the user's size. |
+| `font_not_found` | The stated font is missing here. The document names it anyway. Ask the user to install or supply it, or to accept another font; say so in the hand-over if you deliver. |
+| `--embed-fonts cannot embed the stated font …` | Only the templates' own fonts can be embedded. Tell the user; do not drop the option or change the font on your own. |
 | `unsupported_list_numbering` | Only under `list_numbering: author` (the default for a kaiti or song ordinary document). The named line looks like numbering but is not a supported form, or is indented; it was kept as text and will not renumber in Word. It is `info` and does not block a strict build. In new writing, rewrite it flush left as `1.`, `（1）`, `1、`, `一、`, `(1)` or `（一）` if it is a list; if it is not one (exam options `A. … B. …`) or a transcription must keep the original numbering, leave it. |
 | `legacy_official_reference` / `caption_number_replaced` | Informational compatibility and renumbering notices; read them, but do not change an original merely to clear them. |
 | Punctuation or spaces changed unexpectedly (`text_normalization.applied: true`) | Add `punctuation_mode: preserve`. |
@@ -457,6 +522,8 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 - `qa` results carry `docx_sha256` and `report_sha256`, computed from the same bytes the structural checks inspected; a passing QA always has both digests.
 
 - `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). `page_numbers` is `always`, `none` or `auto` (`auto` does not say whether a number is currently shown); `list_numbering` is `template` or `author`. These are the values the build used, whether written or defaulted. It is null when no usable model is available; on redline it describes the new side.
+- `effective_document.format` is present only when the document states a format. It carries `format_rule` (`format-v1`), `text_scale`, and per role (`title`, `body`, `heading1` …) the `requested` values as normalised and the values in effect: `font`, `latin_font`, `size_pt`, `line_spacing` (`rule` `exact` / `at_least` / `multiple`, `value`), each with a `*_source`: `stated`, `template`, `text_scale`, `body_size`, `text_scale+body_size`, `body_font`, `body_latin_font`, or `role_size` (a heading's line pitch derived from its own stated size). `font_installed` / `latin_font_installed` appear for stated fonts; `false` means this machine could not confirm the display. `derived` gives the values that follow the body: `first_line_indent_pt`, `small_text_size_pt`, `table_text_size_pt`, `caption_size_pt`, `code_size_pt`, `toc_entry_line_pt`, and `tables_shrink_to_fit` (false once a size is stated). It is a snapshot for checking; the settings themselves live in `report.json` under `theme.format`.
+- `docx-kit templates` reports under `format` the stated-format capabilities of this binary: `rule`, `features` (only what is built), `text_scale`, `role_settings`, `size_names` and `line_spacing` forms; each template lists its `format_roles`.
 - `automatic_structure` records this import's changes: `document_title_from_first_h1` consumes the first ordinary-document heading as its title; `section_from_document_title_or_body` and `document_title_from_section_or_default` describe report-mode fallback structure; `document_mode_document_without_chapters` says that `document_mode` was not written and the content has no chapters, so it was built as an ordinary document (a source with chapters built as a report records nothing). It is empty when none was added, including JSON rebuilds that already contain the resolved model. Ordinary documents never gain a synthetic chapter.
 
 - `text_normalization` reports actual emitted-text changes: `mode`, `applied`, `changed_characters`, `punctuation_replacements`, `removed_spaces`, and `scope: emitted_text_including_field_caches_and_revisions`. Every replaced punctuation character and every removed ASCII space counts as one; `changed_characters` is their sum. `applied` is true only when something changed. Repeated text in a TOC cache is counted again; redline includes both sides using each side's own policy. Discarded layout attempts do not inflate the counts. Pure `validate`, `render-copy` and failures before rendering return null. Counts cover generated text, not future Word field updates.
@@ -501,6 +568,7 @@ New JSON fields preserve the input's meaning across rebuilds:
 - Top-level `layout_rule`: `layout-v1` or `legacy-v0`, independent of `numbering_rule`. It records which generation of layout defaults fills in theme settings that are not written out. JSON without it is read as `legacy-v0` and saved back with an explicit `legacy-v0`; Markdown builds persist `layout-v1`. The two differ only for what is not written: under `legacy-v0` a missing `theme.document_mode` means `report` (`document` on the official template) and every mode has `heading_numbering: auto`, `list_numbering: template`, `page_numbers: always`; under `layout-v1` a missing `theme.document_mode` is decided by the content (`report` if any section is a chapter, i.e. `kind: section`; `document` if there are only `kind: body` containers; still `document` on the official template) and a kaiti or song `document` defaults to `none`, `author`, `auto` as in the table under "Metadata". A file that `build` wrote spells out every setting, so it rebuilds the same under either rule. Do not add or change this marker in an existing file; hand-written JSON that wants the new defaults must say `"layout_rule": "layout-v1"`.
 - `theme.document_mode`, `theme.heading_numbering` and `theme.punctuation_mode` match the Markdown options. Omitted `punctuation_mode` means `normalize`; use `preserve` for transcription.
 - `theme.cover`, `theme.toc`, `theme.chapter_header`, `theme.page_numbers` and `theme.list_numbering` match the Markdown options and follow the same rules. Hand-written JSON may omit them to get the defaults of its `layout_rule` and mode.
+- Top-level `format_rule: format-v1` and `theme.format` exist only when a format is stated. Markdown authors never write `format_rule`; a build writes it together with the normalised settings as soon as one stated-format key is used. `theme.format` holds `text_scale` and, per role, `font`, `latin_font`, `size_pt` (points) and `line_spacing` (`{"rule": "exact" | "at_least" | "multiple", "value": …}`); only what was stated is stored, and the derived values are recomputed by the fixed `format-v1` table on every build. JSON with `theme.format` but no `format_rule` is rejected. A document that states no format has neither key, and its report.json, Word file, receipt and bookmark names are what they were before these settings existed. Stating a value equal to the template's, or `三号` instead of `16pt`, does not rename bookmarks; an actual change of format does.
 - `sections[0].kind: body` stores ordinary-document content before any section, without creating a heading. It is allowed only as the first container in document mode, with an empty title and level 1. Other containers are `section` (default). A title-only ordinary document may have an empty sections array; on the kaiti and song templates under `layout-v1` a document with no title and no content is an error.
 - `table`/`figure` blocks may carry `caption_number`, recording the supplied number without overriding automatic numbering.
 - `ordered_list.list_id`: equal nonempty IDs continue one instance, different IDs restart at 1; an omitted/empty ID retains historical document-wide list numbering. Markdown supplies these IDs automatically.
