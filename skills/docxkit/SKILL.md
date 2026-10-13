@@ -1,137 +1,136 @@
 ---
 name: docxkit
-description: Use when prepared content, uploaded materials, Markdown, or report.json should become an editable Word document through the local docx-kit CLI. Supports reports and transcription of contracts, notices, and letters. This skill formats and exports content; it does not gather sources or verify a transcription against its original by itself.
+description: Use when prepared content, uploaded materials, Markdown, or report.json should become an editable Word document through the local docx-kit CLI — reports with a cover and contents, and plain documents such as notices, letters, certificates, contracts, minutes, résumés and oaths, newly written or transcribed. This skill formats and exports content; it does not gather sources or verify a transcription against its original by itself.
 ---
 
 # DocxKit
 
-Use this skill to export prepared content as a Word document the user can continue writing in Word or WPS. First distinguish **writing a report** from **transcribing an existing document**. A transcription must preserve the original wording, clause numbers and masks; report-writing advice is not permission to rewrite it.
+DocxKit turns Markdown (or `report.json`) into a Word `.docx` the user can keep writing in Word or WPS: real styles, native numbering, updatable references. You write the content as ordinary Markdown and run one command. Do not produce the Word file any other way (python, OpenXML, a template of your own), and never patch the generated `.docx`: change the source and rebuild.
 
-## Requirements
+## First decision: does the user want a report?
 
-This skill matches `@dztabel/docxkit >= 0.1.63`. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating. If the local CLI lacks a command or option used below, tell the user instead of building something else.
+| The user wants | Write |
+| --- | --- |
+| A report — most documents with chapters, where a cover and a contents page make sense | `document_mode: report` |
+| A document that certainly needs no cover or contents (notice, letter, certificate, contract, minutes, résumé, oath, form) and has no chapter headings | no `document_mode`; usually no metadata at all |
+| The same, but with chapter headings (`#`) | `document_mode: document`, and the title as `title:` |
 
-```bash
-npm install @dztabel/docxkit@latest
-npx --no-install docx-kit --version
-npx --no-install docx-kit sync-skill
-npx --no-install docx-kit templates
-npx --no-install docx-kit components
+If `document_mode` is not written, the content decides: any chapter heading makes it a report, none makes it a plain document. A first-line `# 标题` is the title, not a chapter (unless the metadata already has `title:`). A numbered line with its own content under it (paragraphs, a list, a table) is a heading — `# 二、议定事项`; a numbered line that is complete in itself is a list item. `effective_document` in the build receipt says what was built — read it every time. A plain document has no cover, contents or header, keeps the heading and list numbers you wrote, and shows page numbers only once it has a second page (on the 公文模板 the template numbers headings and lists, and the page number always shows).
+
+## Two complete inputs
+
+A short document needs no settings:
+
+```markdown
+# 关于召开第三季度经营分析会的通知
+
+::: 顶格
+各部门：
+:::
+
+公司定于近期召开第三季度经营分析会，现将有关事项通知如下：
+
+一、会议时间和地点：2026 年 10 月 20 日上午 9:30，总部三楼第一会议室。
+二、有关要求：请于 10 月 16 日前报送汇报材料。
+
+特此通知。
+
+::: 靠右
+综合管理部
+
+2026 年 10 月 13 日
+:::
 ```
 
-`sync-skill` copies the packaged skill into existing `~/.claude/skills` and `~/.agents/skills` roots. Its changes take effect next session; do not re-read the skill or upgrade the CLI during a build/revision loop. Skip `sync-skill` if the local wrapper does not support it.
-
-## Principles
-
-- Keep Markdown or `report.json` as the source for agent rebuilds. Always pass `--filename <descriptive-name.docx>` to `build`; use only a filename, without directories. Deliver the returned `docx_path`, without copying or renaming it.
-- Users can edit the delivered Word file directly. A later rebuild uses the saved source and does **not** import those Word edits. Before rebuilding a user-edited file, reconcile its content with the source; see [Revising documents](references/revising-documents.md).
-- Choose typography independently of document mode: `executive-cn-docx` uses 楷体, `executive-cn-song-docx` uses 宋体 body and 黑体 headings, and `executive-cn-official-docx` is the 公文模板, with 仿宋_GB2312 body and no callouts. Run `templates` for supported modes and numbering policies; `components` describes content components, not template modes.
-- All three templates support `document_mode: report` (cover and TOC by default) and `document_mode: document` (neither by default). When `document_mode` is not written, 公文 is a `document`; 楷体 and 宋体 follow the content: with chapters it is a `report`, without chapters a `document` (a `# 标题` that opens the text is its title, not a chapter), and `effective_document.document_mode` in the receipt says which. A 楷体 or 宋体 `document` also defaults to no automatic heading numbers, list numbers as written, and page numbers only when there is more than one page. Set the mode explicitly in new source files. `cover`, `toc`, `chapter_header`, `page_numbers` and the figure/table lists can each be switched on or off on top of the mode; see the contract's Metadata section.
-- Use `heading_numbering: auto` for new automatically numbered reports; use `none` to retain an author's clause numbers. Put `numbering_rule: native-v1` in new Markdown templates and examples. Do not add this marker to old source merely to silence a warning: check its reference targets first.
-- Keep fonts unembedded by default. Add `--embed-fonts` only when recipients lack the required fonts and the locally available fonts allow embedding.
-- Do not patch the generated `.docx` or write OpenXML to repair a build. Change the input and rebuild. `--settle-figures` is opt-in; read the contract before using it for a visibly excessive gap before a tall figure.
-
-## Writing the Input
-
-Read [the Markdown contract](references/docx-markdown-contract.md) before writing. [Examples](references/examples.md) includes complete report and ordinary-document inputs.
-
-For a new report:
-
-1. Write unnumbered `#`, `##`, `###` headings with `heading_numbering: auto`; only the 公文模板 accepts `####` in input. Do not skip levels.
-2. Give tables and figures captions in separate blocks, preceded by a blank line: `表：标题`, `图：标题`. Use `表[landscape]：标题` for a wide table. Font size is automatic.
-3. Introduce each exhibit before it with a numbered reference. 楷体/宋体 with numbered chapters use `见表 2.1`; 公文, `none`, and chapterless documents use `见表 1`. The build receipt states the effective policy. Uncaptioned tables do not consume table numbers.
-4. Use inline `[1]` citations and a final `# 资料来源` section with ordered entries. Sources are native numbered lists and citations are updatable references. Do not invent sources.
-5. Use fenced `math` for block equations and `\( ... \)` for inline equations. Equation references use `式 2.1` or `式 1`, following the effective caption policy.
-6. Prefer explanatory paragraphs. Lists support prose; callouts are optional and unavailable in the 公文模板. Do not invent glossary/checklist structures or force page breaks to fill a template.
-
-By default, `punctuation_mode: normalize` changes some ASCII punctuation to Chinese full-width punctuation in Chinese text and removes some spaces beside punctuation. Use `preserve` for transcription or whenever author punctuation and spaces must stay unchanged. This is separate from Markdown escaping; see the contract for exact triggers.
-
-Three escapes exist: `\*` for a literal asterisk, `\|` for a literal pipe inside a table cell, and `1\.` at the start of a line for a paragraph that begins with a number instead of a list item. A masked value such as `Z*****99` is written `Z\*\*\*\*\*99`. Every other backslash is kept as written; code, math and link targets are never unescaped. Three or more consecutive underscores are literal text, so fill-in blanks such as `日期：____年____月____日` are written as they are; only exactly two (`__粗体__`) mark bold.
-
-## Transcribing an Existing Document
-
-For a contract, notice or letter, use `document_mode: document`, `heading_numbering: none`, `punctuation_mode: preserve`, and `numbering_rule: native-v1`. Select the font template that suits the source; do not switch to the 公文模板 just to remove the cover. A flush-left salutation, a right-aligned sign-off or a centred line goes in a `::: 顶格` / `::: 靠右` / `::: 居中` container (see "Paragraph Alignment" in the contract); never position text with spaces or empty paragraphs. On the 楷体 and 宋体 templates an ordinary document keeps the source's own list numbers and forms (`3.`, `（1）`, `1、`, `一、`, `(1)`, `（一）`) as native Word lists set like body paragraphs (see "Lists Numbered as Written" in the contract); on the 公文模板 add `list_numbering: author` to get this, because there only `1.` lines are lists by default and they use the template's numbering from 1. Other numbering (`a.`, `①`, an indented sub-item) is kept as text and reported as `unsupported_list_numbering` (`info`; it does not fail `--strict`).
-
-Ordinary documents have three title cases: with metadata `title`, all `#` headings are real sections; without it, an initial `#` becomes the document title and is consumed; without it and without an initial `#`, the document starts directly with the body. Do not add an invisible title or repeat the title as a section.
-
-Minimal complete input:
+`::: 顶格` sets paragraphs flush left (a salutation), `::: 靠右` right (a sign-off), `::: 居中` centred; inside a container, separate paragraphs with a blank line. The `一、` items become a native Word list numbered as written. The shortest report:
 
 ```markdown
 ---
-title: 资料核对函
-template: executive-cn-song-docx
-document_mode: document
-heading_numbering: none
-punctuation_mode: preserve
+title: 第三季度渠道复盘
+document_mode: report
 numbering_rule: native-v1
 ---
 
-青原资料室：
+# 结论
 
-1\. 请核对资料编号 Z\*\*\*\*\*99。
+本季度各渠道的投入建议见表 1.1。
 
-| 项目 | 内容 |
+表：渠道投入建议
+| 渠道 | 建议 |
 | --- | --- |
-| 交接方式 | 现场\|邮寄 |
+| 伙伴计划 | 继续投入 |
+
+# 下一步
+
+十月底前完成预算调整，十一月复核回款周期。
 ```
 
-Keep the original headings, paragraphs, table cells and characters. Do not add captions, references or sentences the original does not have just to clear a check: in ordinary documents such advice is `info`. The one exception is `caption_before_reference`, a warning in ordinary documents too: keep the original order and say in your delivery note that it follows the original. Captions are still numbered automatically; when the original caption number differs from the generated one, `caption_number_replaced` reports it.
+It gets a cover, a contents page, automatic chapter numbers (so write headings without numbers) and captions numbered by chapter. The cover shows `title` and, when you give them, `subtitle`, `client`, `date` and `confidentiality`. `numbering_rule: native-v1` declares that numbered references follow the current numbering; put it in every new source that refers to tables or figures by number.
 
-If `unparsed_inline_markdown` appears, the text contains an unpaired marker: escape literal stars as `\*`, or pair the markers if emphasis was intended. A lone `__` is kept as written; bold needs a pair, and a blank of three or more underscores raises no check. Never delete original characters to clear a check.
+## The working loop
 
-After building, compare the result with the original — title, paragraph order, clause numbers, every table cell, masked characters — and tell the user which comparisons you made. The tool keeps what it is given; it cannot tell whether the original was transcribed correctly.
+This skill matches `@dztabel/docxkit >= 0.2.0`. An older binary prints `:::` lines as text, turns a short text without settings into a report with a cover, does not know `page_numbers`, `cover`, `toc`, `chapter_header` or lists as written, and rejects a `report.json` written by 0.2.0; if the local CLI is older or lacks something used here (`docx-kit templates` prints `by_structure` on a binary that has all of it), tell the user rather than building something else. Once per session, before the first build, refresh it (fail-soft: offline or on error, continue with the local version; `sync-skill` updates the installed skill for the next session, skip it if unsupported):
 
-## Workflow
+```bash
+npm install @dztabel/docxkit@latest; npx --no-install docx-kit --version; npx --no-install docx-kit sync-skill
+```
 
-1. Save prepared content as `./output_docx/content.md`, or edit the active `report.json`.
-2. Check CLI capabilities once (see Requirements), then build:
+1. Save the content as `./output_docx/content.md` (or edit the existing `report.json`), one output folder per document. This source is what any later rebuild uses; keep it.
+2. Build, always with `--filename <descriptive-name.docx>` (a file name, no directories). The build writes `build-result.json` and `report.json` beside the `.docx`.
+3. Read the whole `build-result.json`. `errors`: fix the named field, line or missing file in the source and rebuild. `effective_document`: is it the kind of document you meant — mode, cover, contents, heading and list numbering? `automatic_structure` lists what was decided for you. `checks` and `warnings`: in new writing resolve every warning (`--strict` makes them failures); `info` needs no action. `text_normalization`: `applied: true` means punctuation or spaces were changed — if the text must stay as written, or you cannot tell what changed, add `punctuation_mode: preserve`.
+4. Run `qa`. It inspects the package, not the content: `check_scope: structure_only` and `not_checked` mean exactly that, and a pass is not delivery approval.
+5. Deliver the `docx_path` the build returned, without copying or renaming it. Give the source path, what you checked (at least the receipt, and `report.json` against what you wrote), any warning you could not resolve and why, and the instructions below.
 
-   ```bash
-   npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx --filename 项目复盘报告.docx
-   ```
+```bash
+npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx --filename 经营分析会通知.docx
+npx --no-install docx-kit qa ./output_docx/经营分析会通知.docx --report-json ./output_docx/report.json --out ./output_docx/qa
+```
 
-3. Read the complete `build-result.json`: `errors`, `warnings`, `checks`, `effective_document`, and `text_normalization`. The effective settings include mode, title block, cover/TOC, heading/caption numbering, punctuation mode, and any automatically supplied structure. `text_normalization` counts actual punctuation replacements and removed spaces; `applied` means a change occurred, not merely that normalization was enabled. Confirm these results match the task.
-4. Resolve every error. For new reports, resolve warning-level checks and formula fallback warnings before delivery; `--strict` makes these failures. For transcription, preserve the original and explain any remaining warning that cannot be resolved without changing it. `info` does not fail strict builds and need not be cleared. QA's empty warnings never cancel build checks.
-5. Run structural QA:
+### Tell the user
 
-   ```bash
-   npx --no-install docx-kit qa ./output_docx/项目复盘报告.docx --report-json ./output_docx/report.json --out ./output_docx/qa
-   ```
-
-   Read `check_scope`, `original_content_consistency`, `original_layout_consistency`, and `scope_notice`. `structure_only`/`not_checked` means content and layout fidelity have not been verified. A passed structure check is not delivery approval.
-6. Review content and layout to the extent the task requires. For LibreOffice or another renderer that cannot recalculate Word fields correctly, first create a render-only copy:
-
-   ```bash
-   npx --no-install docx-kit render-copy ./output_docx/项目复盘报告.docx --out ./output_docx/preview --filename preview.render-only.docx
-   ```
-
-   The command freezes what the fields currently show and never changes the original. For a file edited in Word or WPS, update fields and save before making the copy. Use the copy for preview or conversion only; deliver the original.
-7. Verify `docx_path`, `report.json` and `build-result.json` exist. Deliver the original Word file, source path, review status and any unresolved warnings, together with the applicable continuation instructions below.
-
-## Delivery Instructions — Tell the User
-
-Tell the user, in their language, what they can do with the file. For Chinese deliveries use the lines below, keeping only those that apply to the document:
+Edits made in Word never flow back into the source: before rebuilding a file the user has edited, reconcile it with the source ([Revising documents](references/revising-documents.md)). In the user's language, say what they can do with the file; for Chinese deliveries use these lines — the first and the last always, the others only when the document has what they mention; they may be shortened:
 
 - 这份 Word 可以直接接着写：标题后回车就是正文，表格、代码块后面可以直接输入；改“正文”“标题 1”“题注”“三线表”这些样式，全篇跟着变。
 - 增删表、图、公式或资料来源后，全选按 F9（Mac 上是 fn+F9），编号和正文里的引用会一起更新，Word 和 WPS 都是这样。只想更新某一处，在它上面点右键选“更新域”。
 - 用“插入题注”之前，先在题注对话框里建好“表”“图”标签并设好编号：按章编号的文档勾选“包含章节号”（章节起始样式“标题 1”、分隔符“句点”），全文连续编号的文档不勾。先设置再插入——Word 会按当前设置改写文档里已有的同类题注。WPS 自带这两个标签，在“编号”里勾选“题注关联章节编号”，分隔符改成句点。
 - 新起一个有序列表：复制文档里已有的一条列表项来改，再右键选“重新开始于 1”，样子和原有的列表一致；也可以选中正文点“编号”。
 - 紧跟在标题下面的那一段正文，不要直接点“编号”按钮：Word 会把它接进标题的编号、变成标题（标题带自动编号的 Word 文档都是这样）。从按钮旁的下拉里选一种编号格式就不会。取消编号之后，给这一段再套一次“正文”样式，首行缩进才回来。
-- 新插的图片，给它所在的段落套“图片”样式；自己用“交叉引用”加的来源引用，套“来源引用”样式。
-- 粘贴来的表格，给单元格套“表格文字”样式。
+- 新插的图片，给它所在的段落套“图片”样式；自己用“交叉引用”加的来源引用，套“来源引用”样式；粘贴来的表格，给单元格套“表格文字”样式。
 - WPS 里新插的表格不会自动是三线表；文档在 WPS 里保存过之后，回到 Word 里新插的表格也一样。复制文档里已有的一张表来改最省事。
+- 只有一页的文档不显示页码；写到第二页，页码会自己出现。
 - 在 Word 或 WPS 里改过的内容不会回到源文件；以后需要重新生成时，请把改过的文件一起发来。
 
-## Failure Playbook
+## What you can express
 
-| Situation | Action |
+Rules and edge cases for every row are in [the Markdown contract](references/docx-markdown-contract.md); complete inputs are in [Examples](references/examples.md). `docx-kit templates` and `docx-kit components` list what the installed binary supports.
+
+| Need | Write |
 | --- | --- |
-| Validation/build errors | Fix the named field or missing asset. Do not patch the generated Word file. |
-| `dangling_caption_reference` | Check the available reference locators listed in the message and the effective numbering policy. Some locators support old input and differ from the displayed number. Opening sections count as chapters when chapter numbering applies. |
-| `caption_reference_renumbered` | Compare the old and new target named at each location. Correct the source reference to the intended object before declaring `native-v1`. |
-| `unsupported_list_numbering` | Only under `list_numbering: author` (the default for a 楷体 or 宋体 ordinary document). The named line looks like numbering but is not a supported form, or is indented; it was kept as text and will not renumber in Word. It is `info` and does not block a strict build. In new writing, rewrite it flush left as `1.`, `（1）`, `1、`, `一、`, `(1)` or `（一）` if it is a list; if it is not one (exam options `A. … B. …`) or a transcription must keep the original numbering, leave it. |
-| `legacy_official_reference` / `caption_number_replaced` | Informational compatibility/renumbering notices; inspect their meaning, but do not block strict builds or change an original merely to clear them. |
-| Formula rendered as plain text | Correct the LaTeX or use valid native OMML from the source. Check top-level `warnings` as well as `checks`. |
-| Figure settling skipped/stopped | Inspect `figure_settling` and warn the user; this warning alone does not fail strict builds. A moved figure still needs a reading-order review. |
-| QA fails | Rebuild from source. If it still fails, report the QA result as a tool issue. |
-| Required command/option absent | Report the local capability gap; upgrade only if permitted. Do not silently produce a report when an ordinary document was requested. |
+| Font | Nothing for 楷体 (`executive-cn-docx`). Set `template` to `executive-cn-song-docx` for 宋体 body with 黑体 headings, or to `executive-cn-official-docx` for the 公文模板: 仿宋, headings numbered 一、（一）1.（1）, always a plain document unless you write `report`. Change it only when the user asks for that look. Fonts are not embedded; add `--embed-fonts` to `build` only when recipients lack them |
+| Parts | `cover`, `toc`, `chapter_header`, `list_of_figures`, `list_of_tables`: `true` / `false`. `page_numbers: always / none / auto`. `heading_numbering: auto / none`. Each overrides the mode's default: `cover: false` gives a report that starts with its title and contents |
+| Headings | `#` `##` `###` (`####` only on the 公文模板), no skipped level. Report: no numbers in the text. Plain document: kept as written (`# 第一条 服务内容`) |
+| Alignment | Ordinary paragraphs are indented two characters on the first line. `::: 顶格` for a salutation or label lines (`甲方：…`, `时间：…`), `::: 靠右` for a sign-off, `::: 居中` for a line under the title (author, date). Never position text with spaces or empty paragraphs |
+| Numbered lists | Plain document: six forms are native lists that keep the numbers written — `1. ` `（1）` `1、` `一、` `(1)` `（一）`. Other forms (`a.`, `A.`, `①`, an indented sub-item) stay as text with an `info` check; for two levels make the upper one headings. Report and 公文模板: only `1. ` is a list and the template numbers it; `list_numbering: author` switches them to as-written |
+| Other blocks | `- 条目`; `> 引文`; `> [!note] 标题` callouts (not on the 公文模板); fenced code; `---PAGE---` page break; `**粗体**`; fill-in blanks and places to sign are underscores, `日期：____年____月____日` (three or more are literal) |
+| Tables and figures | Pipe tables. A caption is optional (without one the table has no number and cannot be cited); write it on the line above: `表：标题`, or `表[landscape]：标题` for a wide table on a landscape page. `图：标题` on the line above `![说明](图片.png)`. `--settle-figures` (a large gap before a tall figure) is opt-in; read the contract first |
+| References and sources | The number the reader will see: `见表 2.1` in a report with numbered chapters, `见表 1` in a plain document or on the 公文模板; introduce a table or figure before it appears; a wrong number fails the build and the error lists the valid ones. `[1]` in the text and a final `# 资料来源` with `1. …` entries; never invent a source |
+| Equations | A fenced `math` block; `\( … \)` inline; refer to them as `式 1` / `式 2.1` |
+| Punctuation | Default `normalize` turns ASCII punctuation in Chinese text into full-width and drops the space after it (`A. 甲` becomes `A。甲`); numbers such as `9:30`, `480,000`, `12%` and the spaces in `2026 年 10 月` are left alone. `punctuation_mode: preserve` keeps every character: use it for option letters, codes, mixed-language lines and every transcription |
+
+Warning-level checks name something a reader would notice — an exhibit mentioned only after it appears, an unpaired `**`, a table too wide for the page; the full list with levels and actions is under "Content Checks" and "When a Build or Check Fails" in the contract.
+
+**Transcribing an existing document** (or wording the user says must not change). Keep its wording, numbers, masks and order; nothing in this skill is permission to rewrite it. Add `punctuation_mode: preserve`. On the 公文模板 also add `heading_numbering: none` and `list_numbering: author`. Write a literal asterisk as `\*` (`Z\*\*\*\*\*99`) and a pipe inside a table cell as `\|`. Never add, move or delete original text to clear a check: `info` needs nothing, and for the warning `caption_before_reference` keep the original order and tell the user it follows the original. After building, compare the result with the original — title, order, clause numbers, every table cell, masked characters — and tell the user what you compared; the tool cannot know whether the transcription is right.
+
+## What this version cannot do
+
+Say so to the user instead of improvising with spaces, empty paragraphs, layout tables or another tool. These are planned; do not promise a date.
+
+- A table look other than the three-line table (no full grid, no borderless table), and merged cells for forms.
+- Side-by-side blocks, such as two signature columns, and multi-column pages: write the blocks one under the other, each in its own container; no gap can be added between them.
+- Overriding a font, type size, margin or line spacing; placing text at a chosen height on the page.
+
+## Notes that must not be lost
+
+- **PDF through Word automation.** Call `Repaginate()` on the opened document before exporting. Exporting in the same instant as opening can print list numbers that restart on page 2.
+- **LibreOffice** (preview, PDF, page images) recalculates Word's caption, reference and page-number fields wrongly. First run `npx --no-install docx-kit render-copy <file.docx> --out <dir>` and render the copy; deliver the original.
+- **A lone `# 资料来源`.** A text whose only heading is a first-line `# 资料来源` is a plain document titled 资料来源. Write `document_mode: report` if it is a list of sources.

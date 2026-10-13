@@ -6,7 +6,7 @@ The user can continue writing directly in Word/WPS. Agent rebuilds use Markdown 
 
 - For an agent revision, change the source and rebuild; do not patch generated Word XML.
 - For a file edited by the user in Word/WPS, reconcile those edits with the source before rebuilding. Do not overwrite them with an older source.
-- Preserve the document's mode, title choice, numbering rule, punctuation mode and author-written clause numbers unless the user requests a change. Transcriptions use `document` plus `none` and `punctuation_mode: preserve`; do not turn a letter into a report while revising it.
+- Preserve the document's mode, title choice, numbering rule, punctuation mode and author-written clause numbers unless the user requests a change. A source that was built as a plain document stays one: if a revision adds chapter headings to a text that had none and declared no `document_mode`, write `document_mode: document`, or the rebuild becomes a report with a cover. Transcriptions keep `punctuation_mode: preserve`. A `report.json` already states every setting, so rebuilding it never changes the kind of document.
 
 ## Locating the source
 
@@ -26,7 +26,7 @@ A `report.json` written by docx-kit 0.1.62 or earlier stored headings/captions w
 | Add, delete or move a section | Edit headings and blocks. Recheck source reference numbers against the effective policy. Word edits can update native references, but a Markdown rebuild still parses the locators written in the source. |
 | Add/drop a table, figure or source | Update the block and its source references together. Uncaptioned tables consume no table number. Ordinary documents do not require adding references merely to clear `info`. |
 | Change typography | Change `template:` while retaining mode. Recheck caption numbering: the 公文模板 is continuous. Remove level-4 input headings before switching to 楷体/宋体. |
-| Keep the original clause numbers | Set `heading_numbering: none`; keep author numbers in headings, use line-start `1\.` for literal numbered paragraphs, or `list_numbering: author` to keep numbered lines as native lists with the numbers and form the author wrote. |
+| Keep the original clause numbers | In a plain document on the 楷体 or 宋体 template they are kept as written, in headings and in numbered lines (native lists). On the 公文模板 or in a report, set `heading_numbering: none` and `list_numbering: author`. Line-start `1\.` keeps a numbered line as an ordinary paragraph. |
 | Add a chart | Render a local image, then add its path and a caption. Check the reference before the image in a new report. |
 
 ## Versioning

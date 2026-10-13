@@ -1,6 +1,8 @@
 # DocxKit Markdown Contract
 
-Use this reference when writing Markdown input for `docx-kit build`.
+Use this reference when writing Markdown input for `docx-kit build`. The skill's `SKILL.md` gives the first decision (report or plain document), two complete inputs and the working loop; this file holds the rules behind them.
+
+A short plain document — a notice, a letter, a certificate — needs no metadata at all: start with `# 标题` and write the text. Metadata is for what the content cannot say by itself.
 
 ## Metadata
 
@@ -93,7 +95,7 @@ A figure or table list that is switched on but has nothing to list is skipped wi
 
 `heading_numbering` accepts `auto` or `none` in every template and mode; the default is `none` for a kaiti or song ordinary document and `auto` otherwise. `auto` supplies heading numbers; `none` keeps author-written clause numbers and supplies none of its own. Heading styles and outline levels remain usable. It does not disable list or caption numbering.
 
-Put `numbering_rule: native-v1` in new Markdown. It declares that references were written against the new numbering rules; it does not choose a visual format. Do not add it to an old document before checking its reference targets. Markdown accepts only `native-v1`; legacy JSON rules are described below.
+Put `numbering_rule: native-v1` in new Markdown that refers to tables, figures or equations by number; a text without such references does not need it. It declares that references were written against the new numbering rules; it does not choose a visual format. Do not add it to an old document before checking its reference targets. Markdown accepts only `native-v1`; legacy JSON rules are described below.
 
 `punctuation_mode` accepts `normalize` (default for every template and mode) or `preserve`; any other value fails validation. The default can change punctuation and spaces in Chinese text. Use `preserve` when transcribing a contract, notice or letter. In JSON set `theme.punctuation_mode`. This controls text rendering, not the source stored in `report.json`; see “Punctuation and Spaces” below for the exact rules.
 
@@ -378,6 +380,17 @@ Add `title=` after the fence language to attach a caption below the equation, e.
 
 Use `---PAGE---` only when the user explicitly asks for a hard page break. Normal reports should rely on automatic Word/WPS pagination.
 
+## Transcribing an Existing Document
+
+A transcription keeps the original's wording, clause numbers, masks and order. Nothing in this contract is permission to rewrite it.
+
+- Settings: `punctuation_mode: preserve` always. On the kaiti and song templates an ordinary document already keeps heading numbers and list numbers as written; on the 公文模板 add `heading_numbering: none` and `list_numbering: author`. Write `document_mode: document` when the original has headings, and do not switch to the 公文模板 just to remove a cover.
+- Position: a flush-left salutation, a right-aligned sign-off or a centred line goes in a `::: 顶格` / `::: 靠右` / `::: 居中` container (see "Paragraph Alignment"); never position text with spaces or empty paragraphs.
+- Lists: the six written forms become native lists with the original numbers (see "Lists Numbered as Written"); other numbering (`a.`, `①`, an indented sub-item) is kept as text and reported as `unsupported_list_numbering` (`info`). A numbered line that must stay an ordinary paragraph is written `1\.`.
+- Literal characters: `\*` for an asterisk (`Z\*\*\*\*\*99`), `\|` for a pipe inside a table cell; blanks of three or more underscores are written as they are. If `unparsed_inline_markdown` appears, the text has an unpaired marker: escape literal stars, or pair the markers if emphasis was intended. Never delete original characters to clear a check.
+- Checks: do not add captions, references or sentences the original does not have. In ordinary documents such advice is `info` and needs no action. The exception is `caption_before_reference`, a warning in ordinary documents too: keep the original order and say in the delivery note that it follows the original. Captions are still numbered automatically; when the original's caption number differs from the generated one, `caption_number_replaced` reports it.
+- Afterwards: compare the result with the original — title, paragraph order, clause numbers, every table cell, masked characters — and tell the user which comparisons you made. The tool keeps what it is given; it cannot tell whether the original was transcribed correctly.
+
 ## Content Checks
 
 `build` and `validate` return structured `checks` (`{code, severity, path, message}`). Error-level checks fail the build:
@@ -414,7 +427,26 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 
 `docx-kit components` prints the full machine-readable component contract.
 
-`docx-kit sync-skill` mirrors the packaged skill into the machine-installed copies (`~/.claude/skills/docxkit`, `~/.agents/skills/docxkit`; only roots that already exist) and prints `{ok, command: "sync-skill", source, synced, skipped, errors}`. Updated skill files take effect in the next session.
+`docx-kit sync-skill` mirrors the packaged skill into the machine-installed copies (`~/.claude/skills/docxkit`, `~/.agents/skills/docxkit`; only roots that already exist) and prints `{ok, command: "sync-skill", source, synced, skipped, errors}`. Updated skill files take effect in the next session; do not re-read the skill or upgrade the CLI in the middle of a build and revision loop.
+
+## When a Build or Check Fails
+
+| Situation | Action |
+| --- | --- |
+| Validation or build errors | Fix the named field, line or missing asset in the source. Do not patch the generated Word file. |
+| `the document is empty…` | The input has no title and no content; write at least a title or some text. |
+| The receipt shows a report where a plain document was meant (or the reverse) | The text has chapter headings and no `document_mode`, or none and you wanted a cover: write `document_mode` explicitly. |
+| `dangling_caption_reference` | Check the available reference locators listed in the message and the effective numbering policy. Some locators support old input and differ from the displayed number. Opening sections count as chapters when chapter numbering applies. |
+| `caption_reference_renumbered` | Compare the old and new target named at each location. Correct the source reference to the intended object before declaring `native-v1`. |
+| `unsupported_list_numbering` | Only under `list_numbering: author` (the default for a kaiti or song ordinary document). The named line looks like numbering but is not a supported form, or is indented; it was kept as text and will not renumber in Word. It is `info` and does not block a strict build. In new writing, rewrite it flush left as `1.`, `（1）`, `1、`, `一、`, `(1)` or `（一）` if it is a list; if it is not one (exam options `A. … B. …`) or a transcription must keep the original numbering, leave it. |
+| `legacy_official_reference` / `caption_number_replaced` | Informational compatibility and renumbering notices; read them, but do not change an original merely to clear them. |
+| Punctuation or spaces changed unexpectedly (`text_normalization.applied: true`) | Add `punctuation_mode: preserve`. |
+| Formula rendered as plain text | Correct the LaTeX or use valid native OMML from the source. Check top-level `warnings` as well as `checks`. |
+| Figure settling skipped or stopped | Inspect `figure_settling` and warn the user; this warning alone does not fail strict builds. A moved figure still needs a reading-order review. |
+| QA fails | Rebuild from source. If it still fails, report the QA result as a tool issue. |
+| A command or option is absent | Report the local capability gap; upgrade only if permitted. Do not silently produce a report when a plain document was requested, and do not fall back to generating the Word file another way. |
+
+`docx-kit build` takes `--embed-fonts` when recipients lack the template's fonts and the locally available fonts allow embedding; fonts are otherwise not embedded.
 
 ## Machine-Readable Results (cli-contract 0.2)
 

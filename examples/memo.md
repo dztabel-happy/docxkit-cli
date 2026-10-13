@@ -1,11 +1,6 @@
 ---
 title: 项目复盘备忘
-template: executive-cn-docx
 document_mode: document
-heading_numbering: auto
-numbering_rule: native-v1
-author: 项目组
-date: 2026-07-05
 ---
 
 # 本阶段结论
