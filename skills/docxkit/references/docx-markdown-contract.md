@@ -35,15 +35,37 @@ Available templates (different Chinese font pairing and layout personality):
 
 Body Latin text uses Times New Roman; code, equations and some template roles have their own fonts. Chinese font declarations follow the template, including code and equations. Pick a non-default template only when the user asks for the corresponding typography.
 
-All three templates support both modes. The mode supplies these defaults:
+All three templates support both modes (`document_mode: report` or `document`). A mode is a ready-made set of defaults; every item in it can also be written on its own.
 
-| Template | Default mode | `report` | `document` |
-| --- | --- | --- | --- |
-| `executive-cn-docx` | report | Cover, TOC, chapter-name header | No cover, TOC or chapter-name header |
-| `executive-cn-song-docx` | report | Cover, TOC, chapter-name header | No cover, TOC or chapter-name header |
-| `executive-cn-official-docx` | document | Cover and TOC, no header | No cover, TOC or header |
+| Template and mode | Cover, TOC, chapter-name header | `heading_numbering` | `list_numbering` | `page_numbers` |
+| --- | --- | --- | --- | --- |
+| kaiti or song, `report` | all three | `auto` | `template` | `always` |
+| kaiti or song, `document` (an ordinary document) | none | `none` | `author` | `auto` |
+| official, `document` | none | `auto` (公文序号) | `template` | `always` |
+| official, `report` | cover and TOC, no header | `auto` | `template` | `always` |
 
-Set the mode explicitly in new source. Page numbers are fields that can be updated in Word. Run `docx-kit templates` to query each mode's defaults.
+So an ordinary document on the kaiti or song template has no automatic heading numbers (the numbers the author wrote in headings are kept), keeps list numbers as written, and shows page numbers only when it runs to more than one page. Reports and the official template are as they always were. Page numbers are fields that can be updated in Word. Run `docx-kit templates` to query each mode's defaults.
+
+### When `document_mode` Is Not Written
+
+- Official template: `document`, whatever the content.
+- Kaiti, song, or no `template`: the block structure you wrote decides, before any title or section is inferred.
+  - With no metadata `title`, a `# 标题` line that is the first content block is the document title, not a chapter.
+  - Any other heading means the input has chapters: it is built as a `report`, exactly as before.
+  - With no chapters it is built as a `document` with the defaults above, and that first `# 标题` is used once, as the title.
+
+| Input without `document_mode` (kaiti, song, or no template) | Built as |
+| --- | --- |
+| Body text only; or a `# 标题` first and then body text | document |
+| `# 文档名` first, and later a `##` or another `#` | report |
+| Metadata `title`, and any heading in the body | report |
+| Body text first, and a `# 事项` later | report |
+| `#` inside a code or math fence | not a chapter |
+| `1、事项`, `（1）事项` | not a chapter |
+
+`effective_document.document_mode` in the receipt says which was used. When the content decided on `document`, `automatic_structure` also contains `document_mode_document_without_chapters`. Write `document_mode` whenever you know what the user wants: `report` for a short text that still needs a cover and contents, `document` for a long text with chapters that needs neither.
+
+Two kinds of existing kaiti or song source now give a different result. A source with no `document_mode` and no chapters used to become a report with a cover, contents and one chapter made from the title; it is now an ordinary document. A source that says `document_mode: document` now gets the three defaults in the table; write `heading_numbering: auto`, `list_numbering: template` and `page_numbers: always` to keep the earlier result. Sources with chapters, the official template, and every `report.json` are unaffected (a `report.json` carries its settings; see `layout_rule` below).
 
 `cover`, `toc`, `chapter_header` and `page_numbers` switch the outer parts one at a time, in any template and either mode. Leave them out to get the defaults above; write one only to depart from them.
 
@@ -52,7 +74,9 @@ Set the mode explicitly in new source. Page numbers are fields that can be updat
 | `cover` | `true` / `false` | A cover page with the title, subtitle, `client · date` and `confidentiality`; it never shows a page number. Without a cover, the title and subtitle head the first page as a title block and the other three fields are not shown. |
 | `toc` | `true` / `false` | The main contents. `list_of_figures` and `list_of_tables` are separate switches and no longer depend on the mode or on `toc`. If any of the three has entries, the document gets a contents section numbered i, ii, … and the body starts again at 1; otherwise there is no such section. |
 | `chapter_header` | `true` / `false` | A header on body pages naming the current chapter (level-1 heading). In a document with no level-1 heading it shows the document title instead. |
-| `page_numbers` | `always` / `none` | `always` (the default everywhere) puts the page number in the footer of contents and body pages; `none` shows no page number anywhere. |
+| `page_numbers` | `always` / `none` / `auto` | `always` puts the page number in the footer of contents and body pages; `none` shows no page number anywhere; `auto` shows page numbers only when the whole document has more than one page. Default: `auto` for a kaiti or song ordinary document, `always` otherwise. |
+
+`page_numbers: auto` writes a conditional field into the footer (`IF NUMPAGES > 1`, counting every page of the file). Word and WPS evaluate it as they lay the pages out: a one-page document shows no number, the numbers appear when it grows to a second page and disappear when it shrinks back, with nothing to update by hand. The receipt therefore does not say whether a number is currently shown. LibreOffice does not evaluate this footer and shows no page number at all, so `render-copy` puts a plain page number into the preview copy instead: previews of several pages are right, and the preview of a one-page document shows a "1" that the delivered file does not have. Binaries older than this feature reject `page_numbers: auto`.
 
 `document_mode` keeps deciding everything else: title and section rules, caption numbering and check severities. Typical uses: `cover: false` for a report that starts with its title and contents; `toc: false` for a short report; `document_mode: document` with `toc: true` or `cover: true` for a long ordinary document.
 
@@ -61,13 +85,13 @@ These fail validation instead of producing an empty part:
 - `toc: true` in an ordinary document with no chapters (`theme.toc is true but the document has no chapters…`). Add `#` headings or leave `toc` off; no chapter is created for you.
 - `chapter_header: true` with neither a level-1 heading nor a title.
 - `cover: true` with no title.
-- `page_numbers: auto` (`… is not available yet`).
+- An ordinary document on the kaiti or song template with no title and no content at all (`the document is empty: it has no title and no content…`). This is what an empty Markdown file, or one with only metadata and no `title`, now gives; it is not built into a blank document. A document with only a title, or only body text, is fine. The official template and `report.json` without `layout_rule` are unchanged.
 
 A figure or table list that is switched on but has nothing to list is skipped with a warning.
 
-`list_numbering` accepts `template` (default) or `author` in every template and mode. `template` shows ordered lists in the template's format, each starting at 1; `author` keeps the form and numbers the author wrote. See "Lists Numbered as Written".
+`list_numbering` accepts `template` or `author` in every template and mode; the default is `author` for a kaiti or song ordinary document and `template` otherwise. `template` shows ordered lists in the template's format, each starting at 1; `author` keeps the form and numbers the author wrote. See "Lists Numbered as Written".
 
-`heading_numbering` accepts `auto` (default) or `none` in every template and mode. `auto` supplies heading numbers; `none` keeps author-written clause numbers and supplies none of its own. Heading styles and outline levels remain usable. It does not disable list or caption numbering.
+`heading_numbering` accepts `auto` or `none` in every template and mode; the default is `none` for a kaiti or song ordinary document and `auto` otherwise. `auto` supplies heading numbers; `none` keeps author-written clause numbers and supplies none of its own. Heading styles and outline levels remain usable. It does not disable list or caption numbering.
 
 Put `numbering_rule: native-v1` in new Markdown. It declares that references were written against the new numbering rules; it does not choose a visual format. Do not add it to an old document before checking its reference targets. Markdown accepts only `native-v1`; legacy JSON rules are described below.
 
@@ -135,7 +159,7 @@ An ordered list is one numbering instance. Items separated only by blank lines r
 
 ## Lists Numbered as Written (`list_numbering: author`)
 
-By default (`list_numbering: template`) only lines written `1. 条目` are ordered lists, they are shown in the template's own format, and every list starts at 1 — the rules in "Blocks" above. Add `list_numbering: author` to the metadata, in any template and either mode, to keep the form and the numbers the author wrote. Nothing changes unless the option is written: a line such as `（1）正文` in an existing source stays a paragraph.
+Under `list_numbering: template` only lines written `1. 条目` are ordered lists, they are shown in the template's own format, and every list starts at 1 — the rules in "Blocks" above. Under `list_numbering: author` the form and the numbers the author wrote are kept. `author` is the default for an ordinary document on the kaiti or song template; in a report or on the official template write `list_numbering: author` in the metadata to get it. In reports and on the official template nothing changes unless the option is written: a line such as `（1）正文` in an existing source stays a paragraph.
 
 | Written in Markdown | `list_format` | Shown in Word |
 | --- | --- | --- |
@@ -169,7 +193,7 @@ How lines are grouped into lists:
 
 One protection for sentences: a line with `、` whose number is not 1, that neither continues a list nor is followed by the next number, and whose text goes on like an enumeration (`2026、2027 年完成`, `三、四层的住户`, `10、20、30 三档`) is read as text, so a wrapped paragraph is not cut in two. A line that starts at 1 is always an item.
 
-Numbering that is not one of the six forms gets no native numbering. Each such line is kept as it was written, as a paragraph of its own (consecutive lines are not joined), and `build` / `validate` report it with the warning `unsupported_list_numbering`, which names the line: Word will not renumber it when items are added or deleted. This covers:
+Numbering that is not one of the six forms gets no native numbering. Each such line is kept as it was written, as a paragraph of its own (consecutive lines are not joined), and `build` / `validate` report it with the check `unsupported_list_numbering` (level `info`), which names the line: Word will not renumber it when items are added or deleted. It is information, not a fault — the check cannot know whether the line was meant as a list (the options of a multiple-choice question, `A. … B. …`, are written exactly like this) — so it never fails `--strict`. This covers:
 
 - letters and roman numerals (`a.`, `A、`, `(b)`, `iv.`, `Ⅳ、`), circled or parenthesised number symbols (`①`, `⑴`), full-width digits (`１.`);
 - leading zeros and zero (`01.`, `0、`), a lone closing bracket or mixed brackets (`1)`, `1）`, `（1)`);
@@ -303,7 +327,7 @@ Measurement uses Word on Windows, otherwise LibreOffice plus poppler. Missing to
 docx-kit render-copy ./report/report.docx --out ./report/preview --filename report.render-only.docx
 ```
 
-LibreOffice and similar renderers recalculate Word caption and reference fields incorrectly. `render-copy` writes a copy in which those fields are replaced by what they currently show; the original is never changed, and tables of contents, page numbers, headers and footers keep their fields. A freshly built document can be copied directly; for a file edited in Word or WPS, update fields and save first. The default output is `<input-stem>.render-only.docx` beside the input. Use the copy for preview and conversion only; deliver the original.
+LibreOffice and similar renderers recalculate Word caption and reference fields incorrectly. `render-copy` writes a copy in which those fields are replaced by what they currently show; the original is never changed, and tables of contents, page numbers, headers and footers keep their fields — with one exception: the conditional footer of `page_numbers: auto`, which LibreOffice does not display, becomes a plain page number in the copy (see `page_numbers` under "Metadata"). A freshly built document can be copied directly; for a file edited in Word or WPS, update fields and save first. The default output is `<input-stem>.render-only.docx` beside the input. Use the copy for preview and conversion only; deliver the original.
 
 The result is JSON on stdout with `command: render-copy`, `input_sha256`, `docx_path` and `artifacts.render_copy`; `template_id` is `not-applicable`, and no `report.json` is created.
 
@@ -368,14 +392,14 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 | `table_compact_layout_ignored` | warning | warning | Obsolete compact flag; remove it, sizing is automatic |
 | `manual_numbering_in_title` | warning | warning | Author numbering conflicts with `auto`; use `none` when it belongs to the original |
 | `unparsed_inline_markdown` | warning | warning | Unpaired markers remain literal, or a link has an unsupported target; preserve original characters, escape literal stars or repair intended formatting; a lone `__` needs its pair for bold, while three or more underscores are a literal fill-in blank and never warn; use current display numbers such as 表 1 / 表 1.1 for exhibit references |
-| `unsupported_list_numbering` | warning | warning | Under `list_numbering: author`, a Markdown line looks like list numbering but is not one of the six supported forms, or is indented; it is kept as a paragraph without native numbering. Rewrite it flush left in a supported form if it should renumber, or leave it if the original must be kept |
+| `unsupported_list_numbering` | info | info | Under `list_numbering: author`, a Markdown line looks like list numbering but is not one of the six supported forms, or is indented; it is kept as a paragraph without native numbering and will not renumber in Word. Rewrite it flush left in a supported form if it should renumber; leave it if it is not a list or the original must be kept. Never fails `--strict` |
 | `caption_reference_renumbered` | warning | warning | Undeclared Markdown's table reference changes target under new counting; inspect both targets before declaring the rule |
 | `legacy_official_reference` | info | info | A legacy chapter locator was resolved to the intended object and displayed with its new number |
 | `caption_number_replaced` | info | info | Supplied caption number differs from generated number; check fidelity |
 | `table_missing_caption` | warning | info | Uncaptioned table consumes no number, enters no table list and cannot be referenced by table number; add a separate caption only if those functions are needed |
 | `figure_missing_caption` | warning | info | Figure has neither caption nor alt text |
 | `unreferenced_caption` | warning | info | Captioned table/figure has no body reference |
-| `caption_before_reference` | warning | info | Table/figure occurs before its first numbered introduction |
+| `caption_before_reference` | warning | warning | Table/figure occurs before its first numbered introduction. A warning in ordinary documents too; when transcribing an existing document, do not move or rewrite the original to clear it — say in your delivery note that the order follows the original |
 | `positional_caption_reference` | warning | info | Position-based exhibit wording such as 上图/下表; new reports should reference the current displayed number, such as 表 1 or 表 1.1 |
 | `checklist_like_bullet_items` | warning | info | Three or more bullet items start with status labels |
 | `section_reads_like_checklist` | warning | info | Many list items with no explanatory prose |
@@ -400,8 +424,8 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 - `build` and `validate` results carry `input_sha256`: the SHA-256 of the exact input bytes that were parsed (a successful result always has a real 64-hex digest; an unreadable input leaves it empty). `redline` and `error` results keep it empty instead of fabricating one.
 - `qa` results carry `docx_sha256` and `report_sha256`, computed from the same bytes the structural checks inspected; a passing QA always has both digests.
 
-- `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). `page_numbers` is `always` or `none`; `list_numbering` is currently always `template`. These are the values the build used, whether written or defaulted. It is null when no usable model is available; on redline it describes the new side.
-- `automatic_structure` records this import's changes: `document_title_from_first_h1` consumes the first ordinary-document heading as its title; `section_from_document_title_or_body` and `document_title_from_section_or_default` describe report-mode fallback structure. It is empty when none was added, including JSON rebuilds that already contain the resolved model. Ordinary documents never gain a synthetic chapter.
+- `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). `page_numbers` is `always`, `none` or `auto` (`auto` does not say whether a number is currently shown); `list_numbering` is `template` or `author`. These are the values the build used, whether written or defaulted. It is null when no usable model is available; on redline it describes the new side.
+- `automatic_structure` records this import's changes: `document_title_from_first_h1` consumes the first ordinary-document heading as its title; `section_from_document_title_or_body` and `document_title_from_section_or_default` describe report-mode fallback structure; `document_mode_document_without_chapters` says that `document_mode` was not written and the content has no chapters, so it was built as an ordinary document (a source with chapters built as a report records nothing). It is empty when none was added, including JSON rebuilds that already contain the resolved model. Ordinary documents never gain a synthetic chapter.
 
 - `text_normalization` reports actual emitted-text changes: `mode`, `applied`, `changed_characters`, `punctuation_replacements`, `removed_spaces`, and `scope: emitted_text_including_field_caches_and_revisions`. Every replaced punctuation character and every removed ASCII space counts as one; `changed_characters` is their sum. `applied` is true only when something changed. Repeated text in a TOC cache is counted again; redline includes both sides using each side's own policy. Discarded layout attempts do not inflate the counts. Pure `validate`, `render-copy` and failures before rendering return null. Counts cover generated text, not future Word field updates.
 - With only the paragraph `甲,  乙: 丙.`, the default receipt reports 3 punctuation replacements, 3 removed spaces, and 6 changed characters. Preserve mode reports zero changes and `applied: false`.
@@ -442,10 +466,10 @@ inline_math
 New JSON fields preserve the input's meaning across rebuilds:
 
 - Top-level `numbering_rule`: `native-v1` or `legacy-v0`; omitted historical JSON means the latter. New Markdown builds persist `native-v1`.
-- Top-level `layout_rule`: `layout-v1` or `legacy-v0`, independent of `numbering_rule`. It records which generation of layout defaults fills in theme settings that are not written out. JSON without it is read as `legacy-v0` and saved back with an explicit `legacy-v0`; Markdown builds persist `layout-v1`. Both rules currently give the same defaults. Do not add or change this marker in an existing file.
+- Top-level `layout_rule`: `layout-v1` or `legacy-v0`, independent of `numbering_rule`. It records which generation of layout defaults fills in theme settings that are not written out. JSON without it is read as `legacy-v0` and saved back with an explicit `legacy-v0`; Markdown builds persist `layout-v1`. The two differ only for what is not written: under `legacy-v0` a missing `theme.document_mode` means `report` (`document` on the official template) and every mode has `heading_numbering: auto`, `list_numbering: template`, `page_numbers: always`; under `layout-v1` a missing `theme.document_mode` is decided by the content (`report` if any section is a chapter, i.e. `kind: section`; `document` if there are only `kind: body` containers; still `document` on the official template) and a kaiti or song `document` defaults to `none`, `author`, `auto` as in the table under "Metadata". A file that `build` wrote spells out every setting, so it rebuilds the same under either rule. Do not add or change this marker in an existing file; hand-written JSON that wants the new defaults must say `"layout_rule": "layout-v1"`.
 - `theme.document_mode`, `theme.heading_numbering` and `theme.punctuation_mode` match the Markdown options. Omitted `punctuation_mode` means `normalize`; use `preserve` for transcription.
-- `theme.cover`, `theme.toc`, `theme.chapter_header`, `theme.page_numbers` and `theme.list_numbering` match the Markdown options and follow the same rules. Hand-written JSON may omit them to get the mode's defaults.
-- `sections[0].kind: body` stores ordinary-document content before any section, without creating a heading. It is allowed only as the first container in document mode, with an empty title and level 1. Other containers are `section` (default). A title-only ordinary document may have an empty sections array.
+- `theme.cover`, `theme.toc`, `theme.chapter_header`, `theme.page_numbers` and `theme.list_numbering` match the Markdown options and follow the same rules. Hand-written JSON may omit them to get the defaults of its `layout_rule` and mode.
+- `sections[0].kind: body` stores ordinary-document content before any section, without creating a heading. It is allowed only as the first container in document mode, with an empty title and level 1. Other containers are `section` (default). A title-only ordinary document may have an empty sections array; on the kaiti and song templates under `layout-v1` a document with no title and no content is an error.
 - `table`/`figure` blocks may carry `caption_number`, recording the supplied number without overriding automatic numbering.
 - `ordered_list.list_id`: equal nonempty IDs continue one instance, different IDs restart at 1; an omitted/empty ID retains historical document-wide list numbering. Markdown supplies these IDs automatically.
 - `ordered_list.list_format` and `ordered_list.list_start`: the written form and the start number of a list kept as the author wrote it; only under `theme.list_numbering: author`. Omitted means the template's numbering from 1. See "Lists Numbered as Written".
