@@ -19,8 +19,8 @@ confidentiality: 内部资料
 ---
 ```
 
-Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`, `document_mode`, `heading_numbering`, `punctuation_mode`, `numbering_rule`, `list_of_figures`, `list_of_tables`.
-Unknown keys fail the build. `list_of_figures` and `list_of_tables` accept only `true` / `false`, `yes` / `no`, or `1` / `0`.
+Supported keys: `title`, `subtitle`, `author`, `client`, `date`, `language`, `confidentiality`, `template`, `document_mode`, `heading_numbering`, `punctuation_mode`, `numbering_rule`, `list_of_figures`, `list_of_tables`, `cover`, `toc`, `chapter_header`, `page_numbers`, `list_numbering`.
+Unknown keys fail the build. `list_of_figures`, `list_of_tables`, `cover`, `toc` and `chapter_header` accept only `true` / `false`, `yes` / `no`, or `1` / `0`.
 `language` currently accepts only `zh-CN`.
 
 `template` defaults to `executive-cn-docx`. `executive-cn` is accepted as a ReportKit alias.
@@ -44,6 +44,8 @@ All three templates support both modes:
 | `executive-cn-official-docx` | document | Cover and TOC, no header | No cover, TOC or header |
 
 Set the mode explicitly in new source. Only `report` can enable `list_of_figures: true` or `list_of_tables: true`; these add linked figure/table lists after the main TOC. Page numbers are fields that can be updated in Word. Run `docx-kit templates` to query the actual installed capabilities.
+
+`cover`, `toc`, `chapter_header`, `page_numbers` (`none`, `always`, `auto`) and `list_numbering` (`template`, `author`) name the parts that a mode brings with it. **They cannot be chosen independently yet.** A value is accepted only when it equals what the selected template and mode already give: the table above for `cover`, `toc` and `chapter_header`; `page_numbers: always` and `list_numbering: template` for every template and mode. Any other value, including `page_numbers: none`, `page_numbers: auto` and `list_numbering: author`, fails validation with `theme.<key> <value> is not available yet`. Leave these keys out of new source and select the combination with `document_mode`; `docx-kit templates` lists the values for each template and mode.
 
 `heading_numbering` accepts `auto` (default) or `none` in every template and mode. `auto` supplies heading numbers; `none` keeps author-written clause numbers and supplies none of its own. Heading styles and outline levels remain usable. It does not disable list or caption numbering.
 
@@ -299,7 +301,7 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 - `build` and `validate` results carry `input_sha256`: the SHA-256 of the exact input bytes that were parsed (a successful result always has a real 64-hex digest; an unreadable input leaves it empty). `redline` and `error` results keep it empty instead of fabricating one.
 - `qa` results carry `docx_sha256` and `report_sha256`, computed from the same bytes the structural checks inspected; a passing QA always has both digests.
 
-- `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `heading_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). It is null when no usable model is available; on redline it describes the new side.
+- `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). `page_numbers` is currently always `always` and `list_numbering` always `template`. It is null when no usable model is available; on redline it describes the new side.
 - `automatic_structure` records this import's changes: `document_title_from_first_h1` consumes the first ordinary-document heading as its title; `section_from_document_title_or_body` and `document_title_from_section_or_default` describe report-mode fallback structure. It is empty when none was added, including JSON rebuilds that already contain the resolved model. Ordinary documents never gain a synthetic chapter.
 
 - `text_normalization` reports actual emitted-text changes: `mode`, `applied`, `changed_characters`, `punctuation_replacements`, `removed_spaces`, and `scope: emitted_text_including_field_caches_and_revisions`. Every replaced punctuation character and every removed ASCII space counts as one; `changed_characters` is their sum. `applied` is true only when something changed. Repeated text in a TOC cache is counted again; redline includes both sides using each side's own policy. Discarded layout attempts do not inflate the counts. Pure `validate`, `render-copy` and failures before rendering return null. Counts cover generated text, not future Word field updates.
@@ -313,7 +315,7 @@ Use direct `report.json` only when Markdown cannot express the required structur
 
 `report.json` is a strict contract: unknown properties, invalid enum values, null object/array fields, and non-empty `appendices` fail validation instead of being ignored.
 
-The `report.json` that `build` persists alongside the named Word deliverable omits fields equal to their defaults (empty strings/arrays, `emphasis: "normal"`, `language: "zh-CN"`, default `theme`, …) — a paragraph is just `{"type": "paragraph", "text": "…"}`. Reading is unchanged: omitted fields deserialize to the same defaults, and the slim form round-trips losslessly — section titles and table/figure/equation captions are stored as written, inline markers included, so rebuilding from `report.json` any number of times gives the same content and formatting. Selective inline emphasis inside a paragraph is expressed with the inline markers above (e.g. `"text": "弃电率为 **16.6%**。"`), not a separate runs structure.
+The `report.json` that `build` persists alongside the named Word deliverable omits content fields equal to their defaults (empty strings/arrays, `emphasis: "normal"`, `language: "zh-CN"`, …) — a paragraph is just `{"type": "paragraph", "text": "…"}`. Layout settings are the exception: `layout_rule`, `numbering_rule` and a complete `theme` (`template`, `document_mode`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `list_of_figures`, `list_of_tables`, `punctuation_mode`) are always written with the values the build actually used, including `false`, `none` and the default template, so a later rebuild does not depend on defaults. Reading is unchanged: omitted fields deserialize to the same defaults, and the slim form round-trips losslessly — section titles and table/figure/equation captions are stored as written, inline markers included, so rebuilding from `report.json` any number of times gives the same content and formatting. Selective inline emphasis inside a paragraph is expressed with the inline markers above (e.g. `"text": "弃电率为 **16.6%**。"`), not a separate runs structure.
 
 ```text
 paragraph
@@ -341,9 +343,11 @@ inline_math
 New JSON fields preserve the input's meaning across rebuilds:
 
 - Top-level `numbering_rule`: `native-v1` or `legacy-v0`; omitted historical JSON means the latter. New Markdown builds persist `native-v1`.
+- Top-level `layout_rule`: `layout-v1` or `legacy-v0`, independent of `numbering_rule`. It records which generation of layout defaults fills in theme settings that are not written out. JSON without it is read as `legacy-v0` and saved back with an explicit `legacy-v0`; Markdown builds persist `layout-v1`. Both rules currently give the same defaults. Do not add or change this marker in an existing file.
 - `theme.document_mode`, `theme.heading_numbering` and `theme.punctuation_mode` match the Markdown options. Omitted `punctuation_mode` means `normalize`; use `preserve` for transcription.
+- `theme.cover`, `theme.toc`, `theme.chapter_header`, `theme.page_numbers` and `theme.list_numbering` match the Markdown options, with the same restriction: for now only the values implied by `theme.template` and `theme.document_mode` are accepted. Hand-written JSON may omit them.
 - `sections[0].kind: body` stores ordinary-document content before any section, without creating a heading. It is allowed only as the first container in document mode, with an empty title and level 1. Other containers are `section` (default). A title-only ordinary document may have an empty sections array.
 - `table`/`figure` blocks may carry `caption_number`, recording the supplied number without overriding automatic numbering.
 - `ordered_list.list_id`: equal nonempty IDs continue one instance, different IDs restart at 1; an omitted/empty ID retains historical document-wide list numbering. Markdown supplies these IDs automatically.
 
-Documents generated from different inputs never share bookmark names, so a chapter copied from one into another keeps its own references. Copies of the same document share names, as copies of any Word document do.
+Documents generated from different inputs never share bookmark names, so a chapter copied from one into another keeps its own references. Copies of the same document share names, as copies of any Word document do. Saving the layout settings explicitly does not rename anything: a rebuild from the persisted `report.json` has the same bookmark names as the build that wrote it.
