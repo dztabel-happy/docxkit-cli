@@ -1,45 +1,61 @@
-# Revising an Already-Generated Report
+# Revising an Already-Generated Document
 
-When the user is not satisfied with a `.docx` DocxKit produced and asks for changes, this is fast and safe — **because the source of truth is the Markdown / `report.json`, not the `.docx`.** You never edit the Word file or its OOXML. You edit the source and rebuild; the gate loop re-validates automatically.
+The user can continue writing directly in Word/WPS. Agent rebuilds use Markdown or `report.json`; they do not import edits from the Word file. First establish which copy contains the latest content.
 
 ## The rule
 
-- **Never hand-edit the generated `.docx`.** It is a derived artifact. Any change made directly in Word/WPS is lost on the next rebuild and cannot be merged back.
-- **Always change the editable source, then rebuild.** The source is `./output_docx/content.md` (if you kept the Markdown) or `./output_docx/report.json` (always written by every build, and fully round-trippable — you can rebuild straight from it).
+- For an agent revision, change the source and rebuild; do not patch generated Word XML.
+- For a file edited by the user in Word/WPS, reconcile those edits with the source before rebuilding. Do not overwrite them with an older source.
+- Preserve the document's mode, title choice, numbering rule, punctuation mode and author-written clause numbers unless the user requests a change. Transcriptions use `document` plus `none` and `punctuation_mode: preserve`; do not turn a letter into a report while revising it.
 
 ## Locating the source
 
-1. If `content.md` is still in the output directory, edit that.
-2. Otherwise edit `report.json` — it is the canonical editable artifact and `docx-kit build ./output_docx/report.json --out ./output_docx --filename 原交付文件名.docx` regenerates everything.
-3. If neither is available (the user only has the `.docx` and it was hand-edited outside DocxKit), you cannot cleanly merge. Reconstruct the content as Markdown and treat it as a fresh build — say so plainly to the user.
+1. Use the saved `content.md` if it is current.
+2. Otherwise use `report.json`, which every successful build writes. Rebuild it with the same output filename.
+3. If only a hand-edited `.docx` is available, reconstruct its content as source and compare it against that file. This is a new transcription, not an automatic merge.
 
-`report.json` stores headings and captions as written, inline markers included; the document shows them with the markers removed. Edit them the same way you would in Markdown — keep the backticks around literal `*` / `~` characters (`` `电量*电价` ``).
+Headings and captions retain the source text in `report.json`. Keep escapes such as `\*` and code spans that intentionally protect literal characters. JSON strings require the backslash itself to be escaped (`"text": "Z\\*\\*\\*\\*\\*99"`). Switching to JSON does not bypass inline parsing.
 
-A `report.json` written by docx-kit 0.1.62 or earlier stored headings and captions with the markers already removed, so backticks that protected literal `*` / `~` are gone from it. If the original had such a heading or caption, rebuild from `content.md`; with only the old `report.json`, re-add the backticks there before rebuilding.
+A `report.json` written by docx-kit 0.1.62 or earlier stored headings/captions with markers removed. If it lost protective backticks, return to the Markdown or restore the intended literal text before rebuilding. Historical JSON without `numbering_rule` retains old reference lookup; do not change it to `native-v1` without checking every affected target.
 
 ## Common revisions
 
 | Ask | What to change |
 | --- | --- |
-| Reword / fix a fact / tighten prose | Edit the paragraph text in the source. |
-| Add / remove / reorder a section | Add, delete, or move the `#`/`##` heading and its blocks. Table/figure/equation numbers renumber automatically; re-check any `见表/图/式 x.x` references (the `dangling_caption_reference` error lists the new numbers). |
-| Add or drop a table / figure / source | Edit the block and its prose reference together; keep every captioned exhibit referenced (avoids `unreferenced_caption`). |
-| Switch typography (楷体 / 宋体+黑体 / 公文范式) | Change `template:` in the frontmatter; content is untouched. Remove `####` headings before switching away from the official template. |
-| Add a chart | If ChartKit is installed, render the figure to `assets/*.png`, then reference it with `图：` — DocxKit places, numbers, and cross-references it. |
+| Reword, correct a fact or shorten prose | Edit source paragraphs; preserve original text in a transcription unless asked to change it. |
+| Add, delete or move a section | Edit headings and blocks. Recheck source reference numbers against the effective policy. Word edits can update native references, but a Markdown rebuild still parses the locators written in the source. |
+| Add/drop a table, figure or source | Update the block and its source references together. Uncaptioned tables consume no table number. Ordinary documents do not require adding references merely to clear `info`. |
+| Change typography | Change `template:` while retaining mode. Recheck caption numbering: the 公文模板 is continuous. Remove level-4 input headings before switching to 楷体/宋体. |
+| Keep the original clause numbers | Set `heading_numbering: none`; keep author numbers in headings, use line-start `1\.` for literal numbered paragraphs. |
+| Add a chart | Render a local image, then add its path and a caption. Check the reference before the image in a new report. |
 
 ## Versioning
 
-- **Overwrite** the same `--out ./output_docx` when the user wants the previous build replaced (the default).
-- **Keep both** by building into a versioned sibling: `docx-kit build ./output_docx/content.md --out ./output_docx_v2 --filename 原交付文件名.docx`. Use this when the user may want to compare or revert.
+Overwrite the same output directory only when replacing the old build is intended. Otherwise use a sibling directory. For a runnable example from the repository root:
+
+```bash
+docx-kit build examples/contract.md --out ./contract --filename contract.docx --strict
+docx-kit build ./contract/report.json --out ./contract_v2 --filename contract.docx --strict
+```
+
+The second command rebuilds the saved model. Edit a copy of the source before using this pattern for an actual revision.
 
 ## After every revision
 
-Re-run the same gate loop as a first build: read `errors` / `warnings` / `checks` in the result, fix at the reported `path`, and rebuild until clean. Then return the new `.docx` path and the edited source path.
+Read build `errors`, `warnings`, `checks`, `effective_document` and `text_normalization`; resolve errors, review warnings, and keep legitimate `info`. Run QA on the original generated document and review the content/layout required by the task. QA checks structure only; it does not compare a transcription with its original. Return the authoritative `docx_path`, source path, and the review status.
+
+For LibreOffice preview or conversion, create a `render-copy` after building. For a user-edited file, update fields and save in Word/WPS first. The render-only copy freezes displayed results without recomputation and is not the editable deliverable.
 
 ## Showing what changed (tracked changes)
 
-To hand the user a Word file with tracked-changes markup of what changed between two versions you generated, use `docx-kit redline --from <old.report.json> --to <new.report.json> --out <dir>` — it renders the new report with insertions/deletions marked, reviewable and acceptable in Word/WPS. This works only between DocxKit-generated versions (both sources available); it is not for redlining an arbitrary uploaded `.docx`.
+`redline` compares two DocxKit sources (Markdown or JSON), including ordinary documents and escaped literal text. It does not compare arbitrary uploaded Word files. For example, after preparing old and new source files:
 
-Redline compares report structure only. It does not compare the bytes of external image or chart assets, so replacing an asset at the same path is visible only in the rebuilt final document. Headings and table/figure/equation captions are compared as the reader sees them: a change to inline markers that leaves the displayed text the same is not a change (`**概况**` vs `概况`), while one that alters it is (`` `A*B*C` `` shows `A*B*C`; without the backticks it shows `ABC`). The `redline` summary (`added` / `removed` / `changed`) counts changed blocks and is taken from the same comparison the tracked changes are drawn from.
+```bash
+docx-kit redline --from ./old.md --to ./new.md --out ./revision
+```
 
-Redline v1 always renders in portrait. Use it to review changes, then rebuild the final document to restore landscape tables.
+Read `redline-result.json` and deliver its returned Word path. Accepting all revisions yields the new text; rejecting all yields the old text. Each side retains its own punctuation mode; the normalization receipt counts the emitted text from both sides. After accepting or rejecting revisions, update fields so the numbers and references match the side that was kept.
+
+Redline compares document structure, not the bytes of external image assets. Replacing an image at the same path is visible in a rebuilt final document but is not an image-content diff. Headings/captions are compared as displayed: `**概况**` versus `概况` has the same displayed text, whereas a code-protected `A*B*C` differs from unprotected emphasis. The `added`/`removed`/`changed` summary comes from the same comparison used for the document.
+
+Tell users that a later rebuild from source does not include changes they made in Word.

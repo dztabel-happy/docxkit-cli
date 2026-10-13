@@ -1,14 +1,18 @@
 # DocxKit Markdown Examples
 
-Use these examples as patterns. Replace content with the user's prepared material; do not invent sources.
+Use these patterns after choosing between a new report and a transcription. The examples are fictional; replace their content and illustrative source links with verified user materials. All new inputs declare `numbering_rule: native-v1`.
 
-## Flagship Example — Full-Featured Formal Report
+## Full-Featured Formal Report
 
-This is the shape a serious deliverable should take: `##` subsection hierarchy, prose-led sections, captioned tables (including a landscape one), a figure, numbered block equations cited from prose, inline math, and inline `[n]` citations tied to the source chapter.
+Save this as `examples/report.md` in this repository; its image is supplied at `examples/assets/migration.png`. It uses a cover and TOC, real subsections, a landscape table, a figure, native equations and source references.
 
 ````markdown
 ---
 title: 华东区渠道效能季度评估
+template: executive-cn-docx
+document_mode: report
+heading_numbering: auto
+numbering_rule: native-v1
 subtitle: 2026 年第二季度
 author: 咨询项目组
 client: 示例集团
@@ -19,7 +23,7 @@ list_of_tables: true
 
 # 执行摘要
 
-本季度华东区渠道整体效能稳中有升，线索质量改善但转化节奏放缓[1]。核心判断是：预算应从泛投放转向高意向渠道，配套调整销售承接节奏。
+以下内容与数据均为虚构演示，不作为业务结论。本季度华东区渠道整体效能稳中有升，线索质量改善但转化节奏放缓[1]。核心判断是：预算应从泛投放转向高意向渠道，配套调整销售承接节奏。
 
 # 渠道效能分析
 
@@ -75,11 +79,15 @@ E = \frac{1}{n} \sum_{i=1}^{n} \frac{R_i}{C_i}
 
 ## Minimal Example — Short Memo
 
-For short deliverables a flat structure is fine; keep prose first and sources real.
+Save as `examples/memo.md`. The same 楷体 template can produce an ordinary document without a cover or TOC. This is new writing, so automatic section numbering is appropriate.
 
 ```markdown
 ---
 title: 项目复盘备忘
+template: executive-cn-docx
+document_mode: document
+heading_numbering: auto
+numbering_rule: native-v1
 author: 项目组
 date: 2026-07-05
 ---
@@ -96,3 +104,118 @@ date: 2026-07-05
 1. 扩充真实交付样例。
 2. 将质量门禁纳入例行验收。
 ```
+
+## Transcription — Contract, Notice and Letter
+
+Use `document` plus `none` to keep the original clause numbers, and `punctuation_mode: preserve` to keep the original punctuation and spaces. Do not add sections, captions or references the original does not have.
+
+### Contract — explicit title
+
+The metadata supplies the title; both `#` headings are clauses. Save as `examples/contract.md`.
+
+```markdown
+---
+title: 资料整理服务协议
+template: executive-cn-song-docx
+document_mode: document
+heading_numbering: none
+punctuation_mode: preserve
+numbering_rule: native-v1
+---
+
+甲方：青原资料室
+
+乙方：松溪档案服务组
+
+# 第一条 服务内容
+
+1\. 乙方按甲方提供的清单整理纸质资料，保持原有卷次顺序。
+
+2\. 甲方联系人电话：138\*\*\*\*5678。
+
+# 第二条 交接
+
+交接物品见表 1。
+
+表1：交接清单
+| 项目 | 说明 |
+| --- | --- |
+| 资料编号 | Z\*\*\*\*\*99 |
+| 交付形式 | 纸质\|电子 |
+```
+
+### Notice — first heading as title
+
+There is no metadata title, so the first `#` becomes the document title and appears once. Later headings keep their own numbering. Save as `examples/notice.md`.
+
+```markdown
+---
+template: executive-cn-official-docx
+document_mode: document
+heading_numbering: none
+punctuation_mode: preserve
+numbering_rule: native-v1
+---
+
+# 关于开展年度档案清点的通知
+
+各部门：
+
+# 一、清点安排
+
+1\. 清点时间为 10 月 20 日至 24 日。
+
+2\. 各部门联系人工号按 A\*\*\*\*07 的形式登记。
+
+# 二、提交材料
+
+需提交的材料见表 1。
+
+表1：材料清单
+| 名称 | 份数 |
+| --- | --- |
+| 档案清点表 | 2 |
+```
+
+### Letter — no title
+
+The body starts with a salutation and the document has no title. The table has no caption, so it takes no table number. Save as `examples/letter.md`.
+
+```markdown
+---
+template: executive-cn-docx
+document_mode: document
+heading_numbering: none
+punctuation_mode: preserve
+numbering_rule: native-v1
+---
+
+青原资料室：
+
+来函收悉。现就资料交接事项答复如下。
+
+1\. 交接时间定于 10 月 28 日上午。
+
+2\. 经办人电话：139\*\*\*\*2468。
+
+| 核对项 | 内容 |
+| --- | --- |
+| 交接方式 | 现场\|邮寄 |
+| 资料编号 | Z\*\*\*\*\*99 |
+
+松溪档案服务组
+```
+
+## Build the Examples
+
+Run from this repository's root after installing the CLI:
+
+```bash
+docx-kit build examples/report.md --out ./report --filename report.docx --strict
+docx-kit build examples/memo.md --out ./memo --filename memo.docx --strict
+docx-kit build examples/contract.md --out ./contract --filename contract.docx --strict
+docx-kit build examples/notice.md --out ./notice --filename notice.docx --strict
+docx-kit build examples/letter.md --out ./letter --filename letter.docx --strict
+```
+
+`--strict` fails on warning and error checks; `info` checks do not fail it.

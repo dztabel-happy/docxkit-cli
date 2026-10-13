@@ -1,82 +1,136 @@
 ---
 name: docxkit
-description: Use when prepared report content, uploaded user materials, Markdown, or report.json should be delivered as a polished editable Word .docx through the local docx-kit CLI. Use at the final report-export step after content is available, when a task naturally needs a formal Chinese Word deliverable, or when the user explicitly asks to use DocxKit. This skill formats and exports reports; it does not gather sources by itself.
+description: Use when prepared content, uploaded materials, Markdown, or report.json should become an editable Word document through the local docx-kit CLI. Supports reports and transcription of contracts, notices, and letters. This skill formats and exports content; it does not gather sources or verify a transcription against its original by itself.
 ---
 
 # DocxKit
 
-Use this skill when the next deliverable is a polished, editable Word report. The user may have uploaded materials for the agent to organize, the current task may naturally end in a report, or the user may explicitly ask to use DocxKit.
-
-This skill drives the local CLI after the agent has prepared content, sources, Markdown, or `report.json`. It does not replace the agent's normal research or source-reading work.
+Use this skill to export prepared content as a Word document the user can continue writing in Word or WPS. First distinguish **writing a report** from **transcribing an existing document**. A transcription must preserve the original wording, clause numbers and masks; report-writing advice is not permission to rewrite it.
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.1.63`. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
+This skill matches `@dztabel/docxkit >= 0.1.63`. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating. If the local CLI lacks a command or option used below, tell the user instead of building something else.
 
 ```bash
-npm install @dztabel/docxkit@latest   # session-start upgrade; on failure keep the local install
+npm install @dztabel/docxkit@latest
 npx --no-install docx-kit --version
-npx --no-install docx-kit sync-skill  # mirrors the packaged skill into ~/.claude/skills and ~/.agents/skills
+npx --no-install docx-kit sync-skill
+npx --no-install docx-kit templates
+npx --no-install docx-kit components
 ```
 
-`sync-skill` refreshes the machine-installed skill copies from the npm package (only into skills roots that already exist); an updated skill takes effect in the next session — do not re-read it mid-session. Skip the command silently if the local CLI predates it. Do not run `npm install` again mid-session: the CLI version must stay stable across a build/redline loop.
+`sync-skill` copies the packaged skill into existing `~/.claude/skills` and `~/.agents/skills` roots. Its changes take effect next session; do not re-read the skill or upgrade the CLI during a build/revision loop. Skip `sync-skill` if the local wrapper does not support it.
 
 ## Principles
 
-- Keep the editable source as Markdown (`./output_docx/content.md`) or `report.json`; the CLI generates one user-facing Word file plus diagnostics into the same `--out` directory (default `./output_docx`; use a versioned sibling like `./output_docx_v2` when the old build must be preserved).
-- Always pass `--filename <descriptive-name.docx>` on `build`. Use a concise name derived from the report title, with no directory components. The returned `docx_path` is the only Word deliverable: never copy or rename it, and never expose a second `.docx` from the same build.
-- Default template is `executive-cn-docx` (楷体 body and headings). Use `executive-cn-song-docx` for 宋体正文 + 黑体标题. Use `executive-cn-official-docx` only for a 公文范式 request: 方正小标宋简体 title, no-prefix 楷体_GB2312 subtitle, 仿宋_GB2312 三号 body, bold H2/H3, 小四 tables and table captions, no header, four official heading levels and fixed 30 pt line spacing.
-- `executive-cn-official-docx` defaults to `document`: notices, plans, implementation schemes and ordinary official documents start with an inline title/subtitle and have no separate cover or TOC. Set `document_mode: report` only when the user explicitly requests a cover or TOC, or the deliverable is genuinely a long report that needs them.
-- Keep the default font behavior (no embedding): fonts map across Windows/macOS Word/WPS via alt-name chains, so files stay small and fully editable. Add `--embed-fonts` only when recipients may lack Chinese fonts (for example overseas readers on non-Chinese systems).
-- Never hand-edit the generated `.docx` or write OpenXML directly; all changes go through the Markdown/`report.json` source and a rebuild.
-- `--settle-figures` is opt-in: add it to `build` only when the user asks to reduce the blank space a tall figure leaves at the bottom of the previous page, or you can see that problem in the delivered file. Read the contract's “Tall figures and blank page bottoms” section first.
+- Keep Markdown or `report.json` as the source for agent rebuilds. Always pass `--filename <descriptive-name.docx>` to `build`; use only a filename, without directories. Deliver the returned `docx_path`, without copying or renaming it.
+- Users can edit the delivered Word file directly. A later rebuild uses the saved source and does **not** import those Word edits. Before rebuilding a user-edited file, reconcile its content with the source; see [Revising documents](references/revising-documents.md).
+- Choose typography independently of document mode: `executive-cn-docx` uses 楷体, `executive-cn-song-docx` uses 宋体 body and 黑体 headings, and `executive-cn-official-docx` is the 公文模板, with 仿宋_GB2312 body and no callouts. Run `templates` for supported modes and numbering policies; `components` describes content components, not template modes.
+- All three templates support `document_mode: report` (cover and TOC) and `document_mode: document` (neither). 楷体 and 宋体 default to `report`; 公文 defaults to `document`. Set the mode explicitly in new source files. Ordinary documents have no chapter-name header and cannot enable figure/table lists.
+- Use `heading_numbering: auto` for new automatically numbered reports; use `none` to retain an author's clause numbers. Put `numbering_rule: native-v1` in new Markdown templates and examples. Do not add this marker to old source merely to silence a warning: check its reference targets first.
+- Keep fonts unembedded by default. Add `--embed-fonts` only when recipients lack the required fonts and the locally available fonts allow embedding.
+- Do not patch the generated `.docx` or write OpenXML to repair a build. Change the input and rebuild. `--settle-figures` is opt-in; read the contract before using it for a visibly excessive gap before a tall figure.
 
 ## Writing the Input
 
-`references/docx-markdown-contract.md` is the single authoritative writing contract — read it before writing. `references/examples.md` shows a full-featured report to imitate. When unsure which component fits, run `docx-kit components` for the machine-readable component contract (purpose, use/avoid, fields, visual behavior).
+Read [the Markdown contract](references/docx-markdown-contract.md) before writing. [Examples](references/examples.md) includes complete report and ordinary-document inputs.
 
-The highest-frequency rules:
+For a new report:
 
-1. Headings are unnumbered (`# 研究背景`, never `# 一、背景`), and long chapters get real `##` subsections. `####` is reserved for `executive-cn-official-docx`; the two legacy templates accept only `#` through `###`.
-2. Every table gets `表：标题` on the line before it (`表[landscape]：` for wide tables that must stay intact); every image gets `图：题注`. Table font size is automatic — never try to control it.
-3. Introduce each table/figure in the prose before it appears, referencing it by number as `见表 x.x` / `如图 x.x` — these become clickable cross-references. Never point by position (“上图”“下图”“如下表所示”): it reads wrong as soon as the exhibit lands on another page.
-4. Cite sources inline as `[1]` after the supported claim and list them in a final `# 资料来源` chapter as ordered `[名称](url)，出处，日期。` items — never invent sources, never paste naked URLs.
-5. Block formulas go in ```` ```math ```` fences (LaTeX, auto-numbered, cite as `式 x.x` in prose); inline math uses `\( ... \)` spans inside body text.
-6. Prose first: conclusions and explanations are paragraphs; lists support them. `executive-cn-official-docx` forbids callouts; with the other templates use callouts (`> [!note]` / `> [!risk]`) sparingly. Avoid `---PAGE---`, and never fabricate glossary/checklist blocks in Markdown.
+1. Write unnumbered `#`, `##`, `###` headings with `heading_numbering: auto`; only the 公文模板 accepts `####` in input. Do not skip levels.
+2. Give tables and figures captions in separate blocks, preceded by a blank line: `表：标题`, `图：标题`. Use `表[landscape]：标题` for a wide table. Font size is automatic.
+3. Introduce each exhibit before it with a numbered reference. 楷体/宋体 with numbered chapters use `见表 2.1`; 公文, `none`, and chapterless documents use `见表 1`. The build receipt states the effective policy. Uncaptioned tables do not consume table numbers.
+4. Use inline `[1]` citations and a final `# 资料来源` section with ordered entries. Sources are native numbered lists and citations are updatable references. Do not invent sources.
+5. Use fenced `math` for block equations and `\( ... \)` for inline equations. Equation references use `式 2.1` or `式 1`, following the effective caption policy.
+6. Prefer explanatory paragraphs. Lists support prose; callouts are optional and unavailable in the 公文模板. Do not invent glossary/checklist structures or force page breaks to fill a template.
+
+By default, `punctuation_mode: normalize` changes some ASCII punctuation to Chinese full-width punctuation in Chinese text and removes some spaces beside punctuation. Use `preserve` for transcription or whenever author punctuation and spaces must stay unchanged. This is separate from Markdown escaping; see the contract for exact triggers.
+
+Three escapes exist: `\*` for a literal asterisk, `\|` for a literal pipe inside a table cell, and `1\.` at the start of a line for a paragraph that begins with a number instead of a list item. A masked value such as `Z*****99` is written `Z\*\*\*\*\*99`. Every other backslash is kept as written; code, math and link targets are never unescaped.
+
+## Transcribing an Existing Document
+
+For a contract, notice or letter, use `document_mode: document`, `heading_numbering: none`, `punctuation_mode: preserve`, and `numbering_rule: native-v1`. Select the font template that suits the source; do not switch to the 公文模板 just to remove the cover.
+
+Ordinary documents have three title cases: with metadata `title`, all `#` headings are real sections; without it, an initial `#` becomes the document title and is consumed; without it and without an initial `#`, the document starts directly with the body. Do not add an invisible title or repeat the title as a section.
+
+Minimal complete input:
+
+```markdown
+---
+title: 资料核对函
+template: executive-cn-song-docx
+document_mode: document
+heading_numbering: none
+punctuation_mode: preserve
+numbering_rule: native-v1
+---
+
+青原资料室：
+
+1\. 请核对资料编号 Z\*\*\*\*\*99。
+
+| 项目 | 内容 |
+| --- | --- |
+| 交接方式 | 现场\|邮寄 |
+```
+
+Keep the original headings, paragraphs, table cells and characters. Do not add captions, references or sentences the original does not have just to clear a check: in ordinary documents such advice is `info`. Captions are still numbered automatically; when the original caption number differs from the generated one, `caption_number_replaced` reports it.
+
+If `unparsed_inline_markdown` appears, the text contains unpaired `*`: escape literal stars as `\*`, or pair the markers if emphasis was intended. Never delete original characters to clear a check.
+
+After building, compare the result with the original — title, paragraph order, clause numbers, every table cell, masked characters — and tell the user which comparisons you made. The tool keeps what it is given; it cannot tell whether the original was transcribed correctly.
 
 ## Workflow
 
-1. Prepare content per the contract and save it as `./output_docx/content.md` (or edit the active `report.json`).
-2. Ensure the CLI is current (see Requirements).
-3. Build:
+1. Save prepared content as `./output_docx/content.md`, or edit the active `report.json`.
+2. Check CLI capabilities once (see Requirements), then build:
 
    ```bash
    npx --no-install docx-kit build ./output_docx/content.md --out ./output_docx --filename 项目复盘报告.docx
    ```
 
-   The full result JSON is also written to `./output_docx/build-result.json` — read that file; no `tee` needed.
-
-4. **Gate loop** — `ok: true` is not enough; read `errors`, `warnings`, and `checks` (a list of `{code, severity, path, message}`):
-   - `severity: error` fails the build (dangling `表/图/式 x.x` references, `[n]` beyond the source list, table rows wider than the header). Fix the content at the reported `path` and rebuild — never work around the gate.
-   - `severity: warning` and formula-fallback `warnings` should be fixed too; iterate until `checks` and `warnings` are clean. Leave a warning only when the user explicitly wants that shape, and say so when delivering.
-5. Run structural QA (package structure, Word fields, internal link anchors, style names, font declarations):
+3. Read the complete `build-result.json`: `errors`, `warnings`, `checks`, `effective_document`, and `text_normalization`. The effective settings include mode, title block, cover/TOC, heading/caption numbering, punctuation mode, and any automatically supplied structure. `text_normalization` counts actual punctuation replacements and removed spaces; `applied` means a change occurred, not merely that normalization was enabled. Confirm these results match the task.
+4. Resolve every error. For new reports, resolve warning-level checks and formula fallback warnings before delivery; `--strict` makes these failures. For transcription, preserve the original and explain any remaining warning that cannot be resolved without changing it. `info` does not fail strict builds and need not be cleared. QA's empty warnings never cancel build checks.
+5. Run structural QA:
 
    ```bash
    npx --no-install docx-kit qa ./output_docx/项目复盘报告.docx --report-json ./output_docx/report.json --out ./output_docx/qa
    ```
 
-6. Verify the single `.docx` at `docx_path`, plus `report.json` and `build-result.json`, exist.
-7. Deliver only `docx_path` as the Word file, together with the editable source path and any intentionally remaining warning.
+   Read `check_scope`, `original_content_consistency`, `original_layout_consistency`, and `scope_notice`. `structure_only`/`not_checked` means content and layout fidelity have not been verified. A passed structure check is not delivery approval.
+6. Review content and layout to the extent the task requires. For LibreOffice or another renderer that cannot recalculate Word fields correctly, first create a render-only copy:
 
-When the user wants changes to an already-generated report — including asking for tracked-changes markup of what changed — read `references/revising-documents.md`. The short version: edit the same editable source (`content.md` or the always-written `report.json`), never the `.docx`, then rebuild and rerun the gate loop.
+   ```bash
+   npx --no-install docx-kit render-copy ./output_docx/项目复盘报告.docx --out ./output_docx/preview --filename preview.render-only.docx
+   ```
+
+   The command freezes what the fields currently show and never changes the original. For a file edited in Word or WPS, update fields and save before making the copy. Use the copy for preview or conversion only; deliver the original.
+7. Verify `docx_path`, `report.json` and `build-result.json` exist. Deliver the original Word file, source path, review status and any unresolved warnings, together with the applicable continuation instructions below.
+
+## Delivery Instructions — Tell the User
+
+Tell the user, in their language, what they can do with the file. For Chinese deliveries use the lines below, keeping only those that apply to the document:
+
+- 这份 Word 可以直接接着写：标题后回车就是正文，表格、代码块后面可以直接输入；改“正文”“标题 1”“题注”“三线表”这些样式，全篇跟着变。
+- 增删表、图、公式或资料来源后，全选按 F9（Mac 上是 fn+F9），编号和正文里的引用会一起更新，Word 和 WPS 都是这样。只想更新某一处，在它上面点右键选“更新域”。
+- 用“插入题注”之前，先在题注对话框里建好“表”“图”标签并设好编号：按章编号的文档勾选“包含章节号”（章节起始样式“标题 1”、分隔符“句点”），全文连续编号的文档不勾。先设置再插入——Word 会按当前设置改写文档里已有的同类题注。WPS 自带这两个标签，在“编号”里勾选“题注关联章节编号”，分隔符改成句点。
+- 新起一个有序列表：复制文档里已有的一条列表项来改，再右键选“重新开始于 1”，样子和原有的列表一致；也可以选中正文点“编号”。
+- 紧跟在标题下面的那一段正文，不要直接点“编号”按钮：Word 会把它接进标题的编号、变成标题（标题带自动编号的 Word 文档都是这样）。从按钮旁的下拉里选一种编号格式就不会。取消编号之后，给这一段再套一次“正文”样式，首行缩进才回来。
+- 新插的图片，给它所在的段落套“图片”样式；自己用“交叉引用”加的来源引用，套“来源引用”样式。
+- 粘贴来的表格，给单元格套“表格文字”样式。
+- WPS 里新插的表格不会自动是三线表；文档在 WPS 里保存过之后，回到 Word 里新插的表格也一样。复制文档里已有的一张表来改最省事。
+- 在 Word 或 WPS 里改过的内容不会回到源文件；以后需要重新生成时，请把改过的文件一起发来。
 
 ## Failure Playbook
 
 | Situation | Action |
 | --- | --- |
-| `errors` from validate/build (missing fields, unknown template, missing image) | Fix the structure at the reported path; each message names the field. |
-| `checks` with `severity: error` | Fix the content at `path`; the code table in the contract explains every code. `dangling_caption_reference` messages list the document's actual auto-generated numbers — use those instead of guessing (执行摘要/导论 also counts as chapter 1). |
-| `warnings` like `formula rendered as plain text` | Repair the LaTeX (subset listed in the contract) or switch that formula to an ```` ```omml ```` fence. |
-| `warnings` starting with `图位置整理未执行` / `图位置整理中止` (only with `--settle-figures`) | Not a content problem, and the document was still delivered — either the normal one or an arrangement measured before the pass stopped. Do not try to "fix" the content. Whether paragraphs were moved is told by `figure_settling.moved_paragraphs`, not by the warning: if it is above 0, check the moved paragraphs as usual. Tell the user; measuring needs Microsoft Word on Windows, or LibreOffice plus poppler elsewhere. |
-| `qa` fails | Do not hand-edit the docx; rebuild, and if QA still fails report the QA JSON to the user as a tool issue. |
-| `docx-kit` not found | `npm install @dztabel/docxkit`, then use `npx --no-install docx-kit ...`. |
+| Validation/build errors | Fix the named field or missing asset. Do not patch the generated Word file. |
+| `dangling_caption_reference` | Check the available reference locators listed in the message and the effective numbering policy. Some locators support old input and differ from the displayed number. Opening sections count as chapters when chapter numbering applies. |
+| `caption_reference_renumbered` | Compare the old and new target named at each location. Correct the source reference to the intended object before declaring `native-v1`. |
+| `legacy_official_reference` / `caption_number_replaced` | Informational compatibility/renumbering notices; inspect their meaning, but do not block strict builds or change an original merely to clear them. |
+| Formula rendered as plain text | Correct the LaTeX or use valid native OMML from the source. Check top-level `warnings` as well as `checks`. |
+| Figure settling skipped/stopped | Inspect `figure_settling` and warn the user; this warning alone does not fail strict builds. A moved figure still needs a reading-order review. |
+| QA fails | Rebuild from source. If it still fails, report the QA result as a tool issue. |
+| Required command/option absent | Report the local capability gap; upgrade only if permitted. Do not silently produce a report when an ordinary document was requested. |

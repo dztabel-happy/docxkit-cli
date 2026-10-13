@@ -1,6 +1,6 @@
 <h1 align="center">DocxKit</h1>
 
-<p align="center">Word report export for agents</p>
+<p align="center">Editable Word documents for agents</p>
 
 <p align="center">
   <a href="README.zh-CN.md">中文</a>
@@ -19,7 +19,7 @@
 
 ---
 
-Users provide source material or a report goal. The agent organizes the content, and DocxKit exports the final result as a polished, editable Word `.docx` report.
+Users provide materials or a writing goal. The agent prepares the content, and DocxKit exports a Word `.docx` they can keep editing. It supports both reports and ordinary documents transcribed from contracts, notices or letters, retaining their wording and clause numbers.
 
 Users can provide any material the agent can read and understand, such as:
 
@@ -125,14 +125,34 @@ $docxkit Compress the report you just generated to 8 pages, rewrite chapter 2 fo
 /docxkit Compress the report you just generated to 8 pages, rewrite chapter 2 for management readers, and export a new Word document.
 ```
 
-The agent handles source reading, research, writing, formatting, and Word export.
+### 5. Transcribe an existing document into Word
+
+```text
+$docxkit Transcribe this contract into an ordinary Word document without a cover or TOC. Retain clause numbers, masks, punctuation and spaces, and compare it against the original.
+/docxkit Transcribe this contract into an ordinary Word document without a cover or TOC. Retain clause numbers, masks, punctuation and spaces, and compare it against the original.
+```
+
+The agent reads the material, writes or transcribes it, exports Word, and performs the review required by the task.
+
+## Keep Writing in the Result
+
+The exported Word file is meant to be worked on, not just read:
+
+- Captions, equation numbers, sources and the references to them use Word's own numbering. After adding or removing a table, figure or source, select all and press F9 (fn+F9 on a Mac); the numbers and every "see Table 1.3" or "[3]" update together.
+- Layout lives in styles. Change the body, Heading 1, caption or three-line table style and the whole document follows.
+- Enter after a heading gives body text; you can type straight after a table or code block; a table inserted in Word is a three-line table.
+- Each ordered list numbers from 1 on its own and can be demoted and promoted.
+
+A few operations need a small setting in Word or WPS first; the agent explains them on delivery (see the [Skill delivery instructions](skills/docxkit/SKILL.md#delivery-instructions--tell-the-user)). Edits made in Word do not flow back into the source used for rebuilding.
 
 ## Technical Details
 
 The agent turns the material into DocxKit-ready intermediate content and runs:
 
 ```bash
-docx-kit build prepared-report.md --out ./report --filename project-review.docx
+docx-kit templates
+docx-kit components
+docx-kit build examples/report.md --out ./report --filename project-review.docx --strict
 docx-kit qa ./report/project-review.docx --report-json ./report/report.json --out ./report/qa
 ```
 
@@ -147,9 +167,27 @@ report/qa/qa-result.json
 
 Generated `.docx` files do not embed fonts by default. Each template declares its required font names and cross-platform fallback chain in the font table, so Word/WPS uses fonts installed on the recipient's computer while keeping the document editable. Pass `--embed-fonts` only to embed locally available fonts that may legally be embedded.
 
-Three templates are built in: `executive-cn-docx` (default KaiTi business style), `executive-cn-song-docx` (SimSun body with non-bold SimHei headings), and `executive-cn-official-docx` (16 pt FangSong_GB2312 body, 12 pt tables and table captions, bold level-2/3 official headings, no header, fixed 30 pt line spacing, and no callouts). The official template defaults to an inline title/subtitle with no separate cover or TOC; set `document_mode: report` only when a cover and TOC are required. Select one with `template:` in the Markdown frontmatter.
+Three templates are built in: `executive-cn-docx` (KaiTi), `executive-cn-song-docx` (SimSun body, SimHei headings), and `executive-cn-official-docx` (Chinese official-document typography, FangSong body, no header or callouts). All support `document_mode: report` (cover and TOC) and `document_mode: document` (neither). KaiTi and SimSun default to report mode; the official-document template defaults to ordinary-document mode. `templates` lists supported combinations; `components` describes content components.
 
-Supports equations (block and inline LaTeX, editable native Word math), clickable cross-references for tables/figures/equations/sources, and optional lists of figures/tables; every build runs a content lint gate (dangling references fail the build — see the checks field in the output JSON).
+Ordinary-document mode (`document_mode: document`) turns an existing contract, notice or letter into Word as it is: no cover or table of contents, and a title is optional. `heading_numbering: none` keeps the original clause numbers; `punctuation_mode: preserve` keeps the original punctuation and spaces. Write a literal asterisk as `\*` (for example `138\*\*\*\*5678`), a pipe inside a table cell as `\|`, and a paragraph that starts with a number but is not a list item as `1\.`.
+
+Captions and references are numbered automatically: by chapter in the KaiTi and SimSun templates (Table 1.1), continuously in the official-document template and in documents without heading numbers (Table 1). A table without a caption takes no number. New documents declare `numbering_rule: native-v1` at the top.
+
+Punctuation is normalized by default: in Chinese text some half-width punctuation becomes full-width and extra spaces beside punctuation are removed. Use `punctuation_mode: preserve` to leave it untouched.
+
+Supports native editable Word equations, references to tables, figures, equations and sources, and lists of figures and tables. In the build result, `checks` lists content problems (error-level ones such as dangling references fail the build) and `effective_document` states the document mode and numbering that took effect. `qa` checks the file structure; it does not compare the content with an original.
+
+The [examples](examples/README.md) include a report, a memo, a contract, a notice and a letter, all buildable as they are.
+
+LibreOffice and similar tools recalculate Word's numbering incorrectly. To preview or convert to PDF with them, make a render-only copy first:
+
+```bash
+docx-kit render-copy ./report/project-review.docx --out ./report/preview --filename preview.render-only.docx
+```
+
+The copy is for preview and conversion only and never changes the original; deliver the original Word file.
+
+`docx-kit redline` compares two source files and produces a Word file with tracked changes: accepting all gives the new version, rejecting all gives the old one. See the [revision instructions](skills/docxkit/references/revising-documents.md).
 
 Headings stay on the same page as the paragraph that follows them. When a tall figure is pushed to the next page and leaves the previous page half empty, `docx-kit build ... --settle-figures` (opt-in) measures the real pagination — with Microsoft Word on Windows, with LibreOffice elsewhere — and lets the figure fall back by a paragraph or two in the delivered document so the page fills; the source and `report.json` keep the author's order.
 
