@@ -46,7 +46,7 @@ For a new report:
 
 By default, `punctuation_mode: normalize` changes some ASCII punctuation to Chinese full-width punctuation in Chinese text and removes some spaces beside punctuation. Use `preserve` for transcription or whenever author punctuation and spaces must stay unchanged. This is separate from Markdown escaping; see the contract for exact triggers.
 
-Three escapes exist: `\*` for a literal asterisk, `\|` for a literal pipe inside a table cell, and `1\.` at the start of a line for a paragraph that begins with a number instead of a list item. A masked value such as `Z*****99` is written `Z\*\*\*\*\*99`. Every other backslash is kept as written; code, math and link targets are never unescaped.
+Three escapes exist: `\*` for a literal asterisk, `\|` for a literal pipe inside a table cell, and `1\.` at the start of a line for a paragraph that begins with a number instead of a list item. A masked value such as `Z*****99` is written `Z\*\*\*\*\*99`. Every other backslash is kept as written; code, math and link targets are never unescaped. Three or more consecutive underscores are literal text, so fill-in blanks such as `日期：____年____月____日` are written as they are; only exactly two (`__粗体__`) mark bold.
 
 ## Transcribing an Existing Document
 
@@ -77,7 +77,7 @@ numbering_rule: native-v1
 
 Keep the original headings, paragraphs, table cells and characters. Do not add captions, references or sentences the original does not have just to clear a check: in ordinary documents such advice is `info`. Captions are still numbered automatically; when the original caption number differs from the generated one, `caption_number_replaced` reports it.
 
-If `unparsed_inline_markdown` appears, the text contains unpaired `*`: escape literal stars as `\*`, or pair the markers if emphasis was intended. Never delete original characters to clear a check.
+If `unparsed_inline_markdown` appears, the text contains an unpaired marker: escape literal stars as `\*`, or pair the markers if emphasis was intended. A lone `__` is kept as written; bold needs a pair, and a blank of three or more underscores raises no check. Never delete original characters to clear a check.
 
 After building, compare the result with the original — title, paragraph order, clause numbers, every table cell, masked characters — and tell the user which comparisons you made. The tool keeps what it is given; it cannot tell whether the original was transcribed correctly.
 
