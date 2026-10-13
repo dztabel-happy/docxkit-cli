@@ -50,7 +50,7 @@ Three escapes exist: `\*` for a literal asterisk, `\|` for a literal pipe inside
 
 ## Transcribing an Existing Document
 
-For a contract, notice or letter, use `document_mode: document`, `heading_numbering: none`, `punctuation_mode: preserve`, and `numbering_rule: native-v1`. Select the font template that suits the source; do not switch to the 公文模板 just to remove the cover.
+For a contract, notice or letter, use `document_mode: document`, `heading_numbering: none`, `punctuation_mode: preserve`, and `numbering_rule: native-v1`. Select the font template that suits the source; do not switch to the 公文模板 just to remove the cover. A flush-left salutation, a right-aligned sign-off or a centred line goes in a `::: 顶格` / `::: 靠右` / `::: 居中` container (see "Paragraph Alignment" in the contract); never position text with spaces or empty paragraphs.
 
 Ordinary documents have three title cases: with metadata `title`, all `#` headings are real sections; without it, an initial `#` becomes the document title and is consumed; without it and without an initial `#`, the document starts directly with the body. Do not add an invisible title or repeat the title as a section.
 
