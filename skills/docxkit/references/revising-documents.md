@@ -54,6 +54,10 @@ For LibreOffice preview or conversion, create a `render-copy` after building. Fo
 docx-kit redline --from ./old.md --to ./new.md --out ./revision
 ```
 
+Both sources must resolve to the same `cover`, `toc`, `chapter_header` and `page_numbers` (and, with a chapter header, both must have level-1 headings or both must lack them). Otherwise `redline` fails with `redline needs both drafts to have the same cover, toc, chapter_header and page_numbers…`: give both sources the same settings, or build the two versions separately.
+
+The contents section must also exist in both sources or in neither. This only matters when `toc` is off: the section then exists only while a figure or table list that is switched on has something to list, so deleting the last captioned table (or adding the first one, or switching the list on or off in one source) makes `redline` fail with `redline needs the contents section to exist in both drafts or in neither…`. Switch `toc` on in both sources, switch the lists off in both, or build the two versions separately. With `toc` on in both, the figure and table lists may differ freely.
+
 Read `redline-result.json` and deliver its returned Word path. Accepting all revisions yields the new text; rejecting all yields the old text. Each side retains its own punctuation mode; the normalization receipt counts the emitted text from both sides. After accepting or rejecting revisions, update fields so the numbers and references match the side that was kept.
 
 Redline compares document structure, not the bytes of external image assets. Replacing an image at the same path is visible in a rebuilt final document but is not an image-content diff. Headings/captions are compared as displayed: `**概况**` versus `概况` has the same displayed text, whereas a code-protected `A*B*C` differs from unprotected emphasis. The `added`/`removed`/`changed` summary comes from the same comparison used for the document.

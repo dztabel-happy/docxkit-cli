@@ -35,7 +35,7 @@ Available templates (different Chinese font pairing and layout personality):
 
 Body Latin text uses Times New Roman; code, equations and some template roles have their own fonts. Chinese font declarations follow the template, including code and equations. Pick a non-default template only when the user asks for the corresponding typography.
 
-All three templates support both modes:
+All three templates support both modes. The mode supplies these defaults:
 
 | Template | Default mode | `report` | `document` |
 | --- | --- | --- | --- |
@@ -43,9 +43,27 @@ All three templates support both modes:
 | `executive-cn-song-docx` | report | Cover, TOC, chapter-name header | No cover, TOC or chapter-name header |
 | `executive-cn-official-docx` | document | Cover and TOC, no header | No cover, TOC or header |
 
-Set the mode explicitly in new source. Only `report` can enable `list_of_figures: true` or `list_of_tables: true`; these add linked figure/table lists after the main TOC. Page numbers are fields that can be updated in Word. Run `docx-kit templates` to query the actual installed capabilities.
+Set the mode explicitly in new source. Page numbers are fields that can be updated in Word. Run `docx-kit templates` to query each mode's defaults.
 
-`cover`, `toc`, `chapter_header`, `page_numbers` (`none`, `always`, `auto`) and `list_numbering` (`template`, `author`) name the parts that a mode brings with it. **They cannot be chosen independently yet.** A value is accepted only when it equals what the selected template and mode already give: the table above for `cover`, `toc` and `chapter_header`; `page_numbers: always` and `list_numbering: template` for every template and mode. Any other value, including `page_numbers: none`, `page_numbers: auto` and `list_numbering: author`, fails validation with `theme.<key> <value> is not available yet`. Leave these keys out of new source and select the combination with `document_mode`; `docx-kit templates` lists the values for each template and mode.
+`cover`, `toc`, `chapter_header` and `page_numbers` switch the outer parts one at a time, in any template and either mode. Leave them out to get the defaults above; write one only to depart from them.
+
+| Key | Values | Effect |
+| --- | --- | --- |
+| `cover` | `true` / `false` | A cover page with the title, subtitle, `client · date` and `confidentiality`; it never shows a page number. Without a cover, the title and subtitle head the first page as a title block and the other three fields are not shown. |
+| `toc` | `true` / `false` | The main contents. `list_of_figures` and `list_of_tables` are separate switches and no longer depend on the mode or on `toc`. If any of the three has entries, the document gets a contents section numbered i, ii, … and the body starts again at 1; otherwise there is no such section. |
+| `chapter_header` | `true` / `false` | A header on body pages naming the current chapter (level-1 heading). In a document with no level-1 heading it shows the document title instead. |
+| `page_numbers` | `always` / `none` | `always` (the default everywhere) puts the page number in the footer of contents and body pages; `none` shows no page number anywhere. |
+
+`document_mode` keeps deciding everything else: title and section rules, caption numbering and check severities. Typical uses: `cover: false` for a report that starts with its title and contents; `toc: false` for a short report; `document_mode: document` with `toc: true` or `cover: true` for a long ordinary document.
+
+These fail validation instead of producing an empty part:
+
+- `toc: true` in an ordinary document with no chapters (`theme.toc is true but the document has no chapters…`). Add `#` headings or leave `toc` off; no chapter is created for you.
+- `chapter_header: true` with neither a level-1 heading nor a title.
+- `cover: true` with no title.
+- `page_numbers: auto` and `list_numbering: author` (`… is not available yet`); `list_numbering` accepts only `template` for now.
+
+A figure or table list that is switched on but has nothing to list is skipped with a warning.
 
 `heading_numbering` accepts `auto` (default) or `none` in every template and mode. `auto` supplies heading numbers; `none` keeps author-written clause numbers and supplies none of its own. Heading styles and outline levels remain usable. It does not disable list or caption numbering.
 
@@ -301,7 +319,7 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break. Norma
 - `build` and `validate` results carry `input_sha256`: the SHA-256 of the exact input bytes that were parsed (a successful result always has a real 64-hex digest; an unreadable input leaves it empty). `redline` and `error` results keep it empty instead of fabricating one.
 - `qa` results carry `docx_sha256` and `report_sha256`, computed from the same bytes the structural checks inspected; a passing QA always has both digests.
 
-- `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). `page_numbers` is currently always `always` and `list_numbering` always `template`. It is null when no usable model is available; on redline it describes the new side.
+- `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). `page_numbers` is `always` or `none`; `list_numbering` is currently always `template`. These are the values the build used, whether written or defaulted. It is null when no usable model is available; on redline it describes the new side.
 - `automatic_structure` records this import's changes: `document_title_from_first_h1` consumes the first ordinary-document heading as its title; `section_from_document_title_or_body` and `document_title_from_section_or_default` describe report-mode fallback structure. It is empty when none was added, including JSON rebuilds that already contain the resolved model. Ordinary documents never gain a synthetic chapter.
 
 - `text_normalization` reports actual emitted-text changes: `mode`, `applied`, `changed_characters`, `punctuation_replacements`, `removed_spaces`, and `scope: emitted_text_including_field_caches_and_revisions`. Every replaced punctuation character and every removed ASCII space counts as one; `changed_characters` is their sum. `applied` is true only when something changed. Repeated text in a TOC cache is counted again; redline includes both sides using each side's own policy. Discarded layout attempts do not inflate the counts. Pure `validate`, `render-copy` and failures before rendering return null. Counts cover generated text, not future Word field updates.
@@ -345,7 +363,7 @@ New JSON fields preserve the input's meaning across rebuilds:
 - Top-level `numbering_rule`: `native-v1` or `legacy-v0`; omitted historical JSON means the latter. New Markdown builds persist `native-v1`.
 - Top-level `layout_rule`: `layout-v1` or `legacy-v0`, independent of `numbering_rule`. It records which generation of layout defaults fills in theme settings that are not written out. JSON without it is read as `legacy-v0` and saved back with an explicit `legacy-v0`; Markdown builds persist `layout-v1`. Both rules currently give the same defaults. Do not add or change this marker in an existing file.
 - `theme.document_mode`, `theme.heading_numbering` and `theme.punctuation_mode` match the Markdown options. Omitted `punctuation_mode` means `normalize`; use `preserve` for transcription.
-- `theme.cover`, `theme.toc`, `theme.chapter_header`, `theme.page_numbers` and `theme.list_numbering` match the Markdown options, with the same restriction: for now only the values implied by `theme.template` and `theme.document_mode` are accepted. Hand-written JSON may omit them.
+- `theme.cover`, `theme.toc`, `theme.chapter_header`, `theme.page_numbers` and `theme.list_numbering` match the Markdown options and follow the same rules. Hand-written JSON may omit them to get the mode's defaults.
 - `sections[0].kind: body` stores ordinary-document content before any section, without creating a heading. It is allowed only as the first container in document mode, with an empty title and level 1. Other containers are `section` (default). A title-only ordinary document may have an empty sections array.
 - `table`/`figure` blocks may carry `caption_number`, recording the supplied number without overriding automatic numbering.
 - `ordered_list.list_id`: equal nonempty IDs continue one instance, different IDs restart at 1; an omitted/empty ID retains historical document-wide list numbering. Markdown supplies these IDs automatically.
