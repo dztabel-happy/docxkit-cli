@@ -114,6 +114,7 @@ Rules and edge cases for every row are in [the Markdown contract](references/doc
 | Numbered lists | Plain document: six forms are native lists that keep the numbers written — `1. ` `（1）` `1、` `一、` `(1)` `（一）`. Other forms (`a.`, `A.`, `①`, an indented sub-item) stay as text with an `info` check; for two levels make the upper one headings. Report and 公文模板: only `1. ` is a list and the template numbers it; `list_numbering: author` switches them to as-written |
 | Other blocks | `- 条目`; `> 引文`; `> [!note] 标题` callouts (not on the 公文模板); fenced code; `---PAGE---` page break; `**粗体**`; fill-in blanks and places to sign are underscores, `日期：____年____月____日` (three or more are literal) |
 | Tables and figures | Pipe tables. A caption is optional (without one the table has no number and cannot be cited); write it on the line above: `表：标题`, or `表[landscape]：标题` for a wide table on a landscape page. `图：标题` on the line above `![说明](图片.png)`. `--settle-figures` (a large gap before a tall figure) is opt-in; read the contract first |
+| Table looks | A plain pipe table is the three-line table. For anything else wrap ONE table in `::: 表格 …` / `:::` (caption line inside, above the table): `appearance=grid` (all lines) or `borderless` (none, e.g. A–D options); `header=false` when the first row is data too (forms); `spacing=roomy` or `extra` for cells to be filled in by hand; `widths=1,2,1,2`; `alignments=left,center,right`; `layout=landscape`. Rows must be equal in length, text is never shrunk, merged cells do not exist. First confirm `docx-kit templates` lists `table_appearance` under `format.features` |
 | References and sources | The number the reader will see: `见表 2.1` in a report with numbered chapters, `见表 1` in a plain document or on the 公文模板; introduce a table or figure before it appears; a wrong number fails the build and the error lists the valid ones. `[1]` in the text and a final `# 资料来源` with `1. …` entries; never invent a source |
 | Equations | A fenced `math` block; `\( … \)` inline; refer to them as `式 1` / `式 2.1` |
 | Punctuation | Default `normalize` turns ASCII punctuation in Chinese text into full-width and drops the space after it (`A. 甲` becomes `A。甲`); numbers such as `9:30`, `480,000`, `12%` and the spaces in `2026 年 10 月` are left alone. `punctuation_mode: preserve` keeps every character: use it for option letters, codes, mixed-language lines and every transcription |
@@ -126,9 +127,9 @@ Warning-level checks name something a reader would notice — an exhibit mention
 
 Say so to the user instead of improvising with spaces, empty paragraphs, layout tables or another tool. These are planned; do not promise a date.
 
-- A table look other than the three-line table (no full grid, no borderless table), and merged cells for forms.
+- Merged cells in a table (a form row that spans several columns): write the cells the row has and tell the user.
 - Side-by-side blocks, such as two signature columns, and multi-column pages: write the blocks one under the other, each in its own container; no gap can be added between them.
-- Setting page margins; placing text at a chosen height on the page (`margin_*`, `page_position`, `::: 表格`, `::: 并排` and `::: 留白` are refused as not available yet). Bold, character spacing or a size for a single paragraph cannot be stated either.
+- Setting page margins; placing text at a chosen height on the page (`margin_*`, `page_position`, `::: 并排` and `::: 留白` are refused as not available yet). Bold, character spacing or a size for a single paragraph cannot be stated either.
 
 ## Notes that must not be lost
 
