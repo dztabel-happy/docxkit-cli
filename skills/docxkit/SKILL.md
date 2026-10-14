@@ -111,6 +111,7 @@ Rules and edge cases for every row are in [the Markdown contract](references/doc
 | Parts | `cover`, `toc`, `chapter_header`, `list_of_figures`, `list_of_tables`: `true` / `false`. `page_numbers: always / none / auto`. `heading_numbering: auto / none`. Each overrides the mode's default: `cover: false` gives a report that starts with its title and contents |
 | Headings | `#` `##` `###` (`####` only on the 公文模板), no skipped level. Report: no numbers in the text. Plain document: kept as written (`# 第一条 服务内容`) |
 | Alignment | Ordinary paragraphs are indented two characters on the first line. `::: 顶格` for a salutation or label lines (`甲方：…`, `时间：…`), `::: 靠右` for a sign-off, `::: 居中` for a line under the title (author, date). Never position text with spaces or empty paragraphs |
+| Room and side by side | Room for a stamp or signature: a line `::: 留白 一行` / `两行` / `三行` in front of the paragraph that should stand lower (above the container line when that paragraph is in `::: 靠右` etc.); never blank lines. Two blocks next to each other (the two parties' signature columns, a job line with its dates at the right): `::: 并排 widths=1,1`, the left text, a line `---COLUMN---`, the right text, `:::`; panes hold ordinary paragraphs only, may use `::: 靠右` / `::: 居中` and `::: 留白`. A block of up to 10 lines is never split across pages. Space before a body paragraph is lost when it lands at the top of a page; inside `::: 并排` it is kept. First confirm `docx-kit templates` lists `paragraph_spacing` and `parallel` under `format.features` |
 | Numbered lists | Plain document: six forms are native lists that keep the numbers written — `1. ` `（1）` `1、` `一、` `(1)` `（一）`. Other forms (`a.`, `A.`, `①`, an indented sub-item) stay as text with an `info` check; for two levels make the upper one headings. Report and 公文模板: only `1. ` is a list and the template numbers it; `list_numbering: author` switches them to as-written |
 | Other blocks | `- 条目`; `> 引文`; `> [!note] 标题` callouts (not on the 公文模板); fenced code; `---PAGE---` page break; `**粗体**`; fill-in blanks and places to sign are underscores, `日期：____年____月____日` (three or more are literal) |
 | Tables and figures | Pipe tables. A caption is optional (without one the table has no number and cannot be cited); write it on the line above: `表：标题`, or `表[landscape]：标题` for a wide table on a landscape page. `图：标题` on the line above `![说明](图片.png)`. `--settle-figures` (a large gap before a tall figure) is opt-in; read the contract first |
@@ -128,8 +129,8 @@ Warning-level checks name something a reader would notice — an exhibit mention
 Say so to the user instead of improvising with spaces, empty paragraphs, layout tables or another tool. These are planned; do not promise a date.
 
 - Merged cells in a table (a form row that spans several columns): write the cells the row has and tell the user.
-- Side-by-side blocks, such as two signature columns, and multi-column pages: write the blocks one under the other, each in its own container; no gap can be added between them.
-- Setting page margins; placing text at a chosen height on the page (`margin_*`, `page_position`, `::: 并排` and `::: 留白` are refused as not available yet). Bold, character spacing or a size for a single paragraph cannot be stated either.
+- Multi-column pages (text flowing from one column into the next) and more than two blocks side by side.
+- Setting page margins; placing text at a chosen height on the page (`margin_*` and `page_position` are refused as not available yet). Bold, character spacing or a size for a single paragraph cannot be stated either.
 
 ## Notes that must not be lost
 

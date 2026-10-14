@@ -154,7 +154,7 @@ Once a size is stated or `text_scale: large` is used, tables are no longer shrun
 
 **Refused, with the field named:** a fixed line spacing smaller than the role's size (the message gives role, size and spacing and suggests `at-least`); a size outside 5–72 pt or not on a half point; a multiple that is not exact; `heading4_*` on a three-level template; a repeated key. A tall inline formula (a fraction, sum, root …) in a paragraph under a stated fixed line spacing gets the warning `fixed_line_spacing_tall_inline`, which names the block and the formula: fixed spacing does not make room for it and it prints over the neighbouring lines. DocxKit does not switch the spacing for you; write `at-least`, or make the formula a display equation.
 
-**Not available yet** (the wording is fixed, the feature is not built; the build fails and says so): `margin_top`, `margin_bottom`, `margin_left`, `margin_right`, `page_position`, and the containers `::: 并排`, `::: 留白`. Do not imitate them with blank lines or spaces; tell the user this part cannot be done yet. `docx-kit templates` lists under `format.features` what this binary can do (`text_scale`, `role_font`, `role_latin_font`, `role_size`, `role_line_spacing`); check it before relying on a stated format with an older installation, which rejects these keys as unknown.
+**Not available yet** (the wording is fixed, the feature is not built; the build fails and says so): `margin_top`, `margin_bottom`, `margin_left`, `margin_right`, `page_position`. Do not imitate them with blank lines or spaces; tell the user this part cannot be done yet. `docx-kit templates` lists under `format.features` what this binary can do (`text_scale`, `role_font`, `role_latin_font`, `role_size`, `role_line_spacing`); check it before relying on a stated format with an older installation, which rejects these keys as unknown.
 
 `redline` needs both drafts to have the same effective format and refuses otherwise, naming the differences; `三号` and `16pt`, or a value equal to the template's, count as the same. `--embed-fonts` embeds only the templates' own fonts and Times New Roman: with any other stated font it fails and says which, and the option is not dropped for you.
 
@@ -297,6 +297,75 @@ Body paragraphs are justified with a first-line indent. Three block containers c
 - The names describe the shape only (flush left / right / centre); there are no "salutation" or "signature" components, and no trailing-attribute syntax.
 - In `report.json` the same thing is `"alignment": "left" | "right" | "center"` on a `paragraph` block (`normal`, the default, is omitted). An aligned paragraph must keep `emphasis: normal`; combining it with `lead` or `small` fails validation.
 - Binaries older than this feature print the `:::` lines as text. Check `docx-kit components` (the `paragraph` component lists `alignment`) before relying on it.
+
+## Space Before a Paragraph (`::: 留白`)
+
+When the user wants room left on the page, for a stamp, a signature, or simply air before a sign-off, write a one-line directive in front of the paragraph that should stand lower:
+
+```markdown
+特此证明。
+
+::: 留白 三行
+::: 靠右
+青原科技有限公司（盖章）
+
+2026 年 10 月 13 日
+:::
+```
+
+- The directive is `::: 留白 一行`, `::: 留白 两行` or `::: 留白 三行`, alone on its line. It has no closing `:::` and produces no text. There are only these three levels: one, two or three body lines (22.2 pt each on the default template, 30 pt on the official one; with a stated body line spacing, that value). Numbers, millimetres and words such as 盖章 are refused. "留出盖章的位置" is three lines; look at the result.
+- It moves the next ordinary paragraph down: an indented paragraph, a paragraph in `::: 顶格` or `::: 居中`, or a whole `::: 靠右` group (the group stays together, with no gap inside it). In front of an alignment container, write it above the container line.
+- When what follows is not a paragraph (a table, a list, a side-by-side block), the space is attached after the ordinary paragraph directly above instead. With no ordinary paragraph on either side there is nothing to attach it to, and the build fails.
+- It is the larger of the paragraph's own spacing and the stated lines, never the sum: a `::: 靠右` group already stands one line below the text, so `一行` in front of it changes nothing and `三行` gives three. Between two paragraphs Word also uses the larger of "space after" and "space before".
+- It is spacing in a paragraph style (named, for example, 正文·段前三行), not empty paragraphs. Pressing Enter after such a paragraph in Word gives an ordinary paragraph without the extra space. Never add blank lines, empty paragraphs or spaces to make room.
+- **At the top of a page the space is gone.** Word does not keep the space before a body paragraph that lands first on a page, after an automatic page break or a `---PAGE---`; inside a side-by-side block the space is always kept, also at the top of a page. So room for a stamp is dependable inside `::: 并排`, and in the body only away from a page boundary. For a box that must keep its height wherever it lands, use a table with `spacing=roomy` or `extra`.
+
+Errors, each with the line number, never silently dropped: a value other than the three levels; two directives in a row (use `三行`; levels do not add up); a directive at the end of the file, before a heading, next to `---PAGE---`, between two tables or two other blocks that are not paragraphs, at the end of a pane, or inside an alignment container.
+
+## Side by Side (`::: 并排`)
+
+Two blocks of text next to each other, tops aligned: the two parties of a contract, or a line with a date at the right margin.
+
+```markdown
+::: 并排 widths=1,1
+甲方（盖章）：青原科技有限公司
+
+::: 留白 三行
+代表人（签字）：____________
+
+日期：____年____月____日
+---COLUMN---
+乙方（盖章）：北辰数据服务有限公司
+
+::: 留白 三行
+代表人（签字）：____________
+
+日期：____年____月____日
+:::
+```
+
+A résumé row, two thirds for the text and one third for the date, which stays at the right margin when the text on the left wraps:
+
+```markdown
+::: 并排 widths=2,1
+**青原科技有限公司　产品经理**
+---COLUMN---
+::: 靠右
+2021.03—至今
+:::
+:::
+```
+
+- `::: 并排` opens the block, one line `---COLUMN---` separates exactly two panes, a line `:::` closes it. `widths=左,右` gives the relative widths (two positive numbers); without it the panes are equal. The block is as wide as the text area; between the panes there is a gap of one body character. Text, size and line spacing are the body's.
+- A pane holds ordinary paragraphs, flush left with no first-line indent. Inside a pane you may use `::: 顶格`, `::: 居中` and `::: 靠右` (each closed by its own `:::`) and the `::: 留白` directive before a paragraph of the same pane. A `::: 靠右` group inside a pane does not get the one line of space that it has in the body.
+- Nothing else goes inside: no headings, lists (a line starting with `1.` or `- ` is a list), tables, figures, display equations, code, quotes, page breaks, another `::: 并排` or `::: 表格`. Write those outside the block. There are two panes, not three, and this is not a multi-column page: text does not flow from one pane into the other.
+- **Staying together.** A short block is never split across pages: when it does not fit at the foot of a page it moves to the next page as a whole, so a stamp line and its signature line are not separated. "Short" means the taller pane comes to at most 10 body lines, counting each paragraph by the lines it wraps to in its pane and adding the lines of space written in front of paragraphs (the signature block above is 6). A longer block may break at the foot of a page and continue on the next, each pane where it stopped. If a block of more than 10 lines must stay whole, put `---PAGE---` before it.
+- Several `::: 并排` blocks in a row are laid out as rows of one table with nothing between them (that is how the résumé rows above stack). Put a paragraph between two blocks to separate them, and use `::: 留白` for more distance.
+- In Word the block is a borderless one-row table. Pressing Enter inside a pane continues in that pane.
+
+Errors, each with the line number: no `---COLUMN---`, or more than one; an empty pane; an option other than `widths`, or not two positive numbers; anything in a pane that is not an ordinary paragraph; a block that is not closed; `---COLUMN---` outside a block.
+
+Both features make the document `format-v1` (the tool writes `format_rule` into `report.json`), and an older binary rejects them: check `docx-kit templates` → `format.features` for `paragraph_spacing` and `parallel`. `redline` refuses when a side-by-side block differs between the two drafts in any way, or when a paragraph's spacing level changed; unchanged blocks pass through and the rest of the document is compared as usual.
 
 ## Inline Formatting
 
@@ -550,10 +619,13 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | The receipt shows a report where a plain document was meant (or the reverse) | The text has chapter headings and no `document_mode`, or none and you wanted a cover: write `document_mode` explicitly. |
 | `dangling_caption_reference` | Check the available reference locators listed in the message and the effective numbering policy. Some locators support old input and differ from the displayed number. Opening sections count as chapters when chapter numbering applies. |
 | `caption_reference_renumbered` | Compare the old and new target named at each location. Correct the source reference to the intended object before declaring `native-v1`. |
-| `… is not available yet` / `这一版还不能用` | The setting or container belongs to a later version (margins, `page_position`, `::: 并排`, `::: 留白`). Remove it and tell the user that this part cannot be done yet; do not imitate it. |
+| `… is not available yet` / `这一版还不能用` | The setting or container belongs to a later version (margins, `page_position`). Remove it and tell the user that this part cannot be done yet; do not imitate it. |
 | `fixed line spacing … is smaller than the … size` | Use a fixed value of at least the size, or write the spacing as `at-least …`. Do not change the user's size. |
 | `font_not_found` | The stated font is missing here. The document names it anyway. Ask the user to install or supply it, or to accept another font; say so in the hand-over if you deliver. |
 | `--embed-fonts cannot embed the stated font …` | Only the templates' own fonts can be embedded. Tell the user; do not drop the option or change the font on your own. |
+| `留白要写在…` / `…留白没有东西可以附着` | The `::: 留白` directive is not in front of an ordinary paragraph (or between an ordinary paragraph and the table after it). Move it; do not replace it with blank lines. |
+| `…的栏里只能放普通段落` | A `::: 并排` pane contains a heading, list, table, figure or another container. Move that content outside the block. |
+| `redline cannot show a changed side-by-side block yet` / `… a change of paragraph spacing yet` | Build the two drafts separately, or keep that block and that spacing identical in both drafts. |
 | `unsupported_list_numbering` | Only under `list_numbering: author` (the default for a kaiti or song ordinary document). The named line looks like numbering but is not a supported form, or is indented; it was kept as text and will not renumber in Word. It is `info` and does not block a strict build. In new writing, rewrite it flush left as `1.`, `（1）`, `1、`, `一、`, `(1)` or `（一）` if it is a list; if it is not one (exam options `A. … B. …`) or a transcription must keep the original numbering, leave it. |
 | `legacy_official_reference` / `caption_number_replaced` | Informational compatibility and renumbering notices; read them, but do not change an original merely to clear them. |
 | Punctuation or spaces changed unexpectedly (`text_normalization.applied: true`) | Add `punctuation_mode: preserve`. |
@@ -574,7 +646,7 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 
 - `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). `page_numbers` is `always`, `none` or `auto` (`auto` does not say whether a number is currently shown); `list_numbering` is `template` or `author`. These are the values the build used, whether written or defaulted. It is null when no usable model is available; on redline it describes the new side.
 - `effective_document.format` is present only when the document states a format. It carries `format_rule` (`format-v1`), `text_scale`, and per role (`title`, `body`, `heading1` …) the `requested` values as normalised and the values in effect: `font`, `latin_font`, `size_pt`, `line_spacing` (`rule` `exact` / `at_least` / `multiple`, `value`), each with a `*_source`: `stated`, `template`, `text_scale`, `body_size`, `text_scale+body_size`, `body_font`, `body_latin_font`, `role_size` (a heading's line pitch derived from its own stated size), or `higher_heading` (a derived heading size held down to the size of the level above it). `font_installed` / `latin_font_installed` appear for stated fonts; `false` means this machine could not confirm the display. `derived` gives the values that follow the body: `first_line_indent_pt`, `small_text_size_pt`, `table_text_size_pt`, `caption_size_pt`, `code_size_pt`, `toc_entry_line_pt`, and `tables_shrink_to_fit` (false once a size is stated). It is a snapshot for checking; the settings themselves live in `report.json` under `theme.format`.
-- `docx-kit templates` reports under `format` the stated-format capabilities of this binary: `rule`, `features` (only what is built), `text_scale`, `role_settings`, `size_names` and `line_spacing` forms, and `table` (the container name, its options and their values); each template lists its `format_roles`.
+- `docx-kit templates` reports under `format` the stated-format capabilities of this binary: `rule`, `features` (only what is built), `text_scale`, `role_settings`, `size_names` and `line_spacing` forms, `table` (the container name, its options and their values), `spacing` (the directive and its three levels) and `parallel` (container, column separator, options, and `keep_together_lines`, the limit under which a block is not split); each template lists its `format_roles`.
 - `automatic_structure` records this import's changes: `document_title_from_first_h1` consumes the first ordinary-document heading as its title; `section_from_document_title_or_body` and `document_title_from_section_or_default` describe report-mode fallback structure; `document_mode_document_without_chapters` says that `document_mode` was not written and the content has no chapters, so it was built as an ordinary document (a source with chapters built as a report records nothing). It is empty when none was added, including JSON rebuilds that already contain the resolved model. Ordinary documents never gain a synthetic chapter.
 
 - `text_normalization` reports actual emitted-text changes: `mode`, `applied`, `changed_characters`, `punctuation_replacements`, `removed_spaces`, and `scope: emitted_text_including_field_caches_and_revisions`. Every replaced punctuation character and every removed ASCII space counts as one; `changed_characters` is their sum. `applied` is true only when something changed. Repeated text in a TOC cache is counted again; redline includes both sides using each side's own policy. Discarded layout attempts do not inflate the counts. Pure `validate`, `render-copy` and failures before rendering return null. Counts cover generated text, not future Word field updates.
@@ -619,6 +691,7 @@ New JSON fields preserve the input's meaning across rebuilds:
 - Top-level `layout_rule`: `layout-v1` or `legacy-v0`, independent of `numbering_rule`. It records which generation of layout defaults fills in theme settings that are not written out. JSON without it is read as `legacy-v0` and saved back with an explicit `legacy-v0`; Markdown builds persist `layout-v1`. The two differ only for what is not written: under `legacy-v0` a missing `theme.document_mode` means `report` (`document` on the official template) and every mode has `heading_numbering: auto`, `list_numbering: template`, `page_numbers: always`; under `layout-v1` a missing `theme.document_mode` is decided by the content (`report` if any section is a chapter, i.e. `kind: section`; `document` if there are only `kind: body` containers; still `document` on the official template) and a kaiti or song `document` defaults to `none`, `author`, `auto` as in the table under "Metadata". A file that `build` wrote spells out every setting, so it rebuilds the same under either rule. Do not add or change this marker in an existing file; hand-written JSON that wants the new defaults must say `"layout_rule": "layout-v1"`.
 - `theme.document_mode`, `theme.heading_numbering` and `theme.punctuation_mode` match the Markdown options. Omitted `punctuation_mode` means `normalize`; use `preserve` for transcription.
 - `theme.cover`, `theme.toc`, `theme.chapter_header`, `theme.page_numbers` and `theme.list_numbering` match the Markdown options and follow the same rules. Hand-written JSON may omit them to get the defaults of its `layout_rule` and mode.
+- `paragraph.space_before` and `paragraph.space_after` (0–3, body lines) are what `::: 留白` compiles to; the directive itself is not stored. A `parallel` block has `panes`, exactly two, each `{"blocks": [...]}` holding `paragraph` blocks only (with optional `alignment` and `space_before`), and an optional `widths` of two relative weights. All of them need top-level `format_rule`; default values are omitted and do not rename bookmarks. Build receipts count the paragraphs inside panes as paragraphs; there is no separate count for parallel blocks.
 - `table.appearance` (`three-line` / `grid` / `borderless`), `table.header` (boolean) and `table.spacing` (`normal` / `roomy` / `extra`) match the container options; a table that uses any of them needs top-level `format_rule`. With `header: false`, `columns` is an empty array and `rows` holds every line, the first included, all of equal length. `widths` and `alignments` are the existing fields. Default values are omitted and do not rename bookmarks.
 - Top-level `format_rule: format-v1` and `theme.format` exist only when a format is stated. Markdown authors never write `format_rule`; a build writes it together with the normalised settings as soon as one stated-format key is used. `theme.format` holds `text_scale` and, per role, `font`, `latin_font`, `size_pt` (points) and `line_spacing` (`{"rule": "exact" | "at_least" | "multiple", "value": …}`); only what was stated is stored, and the derived values are recomputed by the fixed `format-v1` table on every build. JSON with `theme.format` but no `format_rule` is rejected. A document that states no format has neither key, and its report.json, Word file, receipt and bookmark names are what they were before these settings existed. Stating a value equal to the template's, or `三号` instead of `16pt`, does not rename bookmarks; an actual change of format does.
 - `sections[0].kind: body` stores ordinary-document content before any section, without creating a heading. It is allowed only as the first container in document mode, with an empty title and level 1. Other containers are `section` (default). A title-only ordinary document may have an empty sections array; on the kaiti and song templates under `layout-v1` a document with no title and no content is an error.
