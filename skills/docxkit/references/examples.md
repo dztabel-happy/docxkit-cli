@@ -171,7 +171,7 @@ numbering_rule: native-v1
 
 ## Transcription — Contract
 
-A transcription keeps the original clause numbers and characters: `punctuation_mode: preserve` keeps punctuation and spaces, the clause headings stay as written (the default in a plain document on 楷体 and 宋体), and the numbered lines keep their numbers. Do not add sections, captions or references the original does not have. The metadata supplies the title; both `#` headings are clauses. It is set in 宋体 only because this user asked for it. Two signature blocks cannot be set side by side in this version, so they follow one another. Save as `examples/contract.md`.
+A transcription keeps the original clause numbers and characters: `punctuation_mode: preserve` keeps punctuation and spaces, the clause headings stay as written (the default in a plain document on 楷体 and 宋体), and the numbered lines keep their numbers. Do not add sections, captions or references the original does not have. The metadata supplies the title; both `#` headings are clauses. It is set in 宋体 only because this user asked for it. The two parties sign side by side: one `::: 并排` block, each pane with three lines of room for the stamp (inside a pane the room is kept wherever the block lands on the page). Save as `examples/contract.md`.
 
 ```markdown
 ---
@@ -203,12 +203,122 @@ numbering_rule: native-v1
 | 资料编号 | Z\*\*\*\*\*99 |
 | 交付形式 | 纸质\|电子 |
 
-::: 靠右
-甲方（盖章）：____________
+::: 并排 widths=1,1
+甲方（盖章）：
 
-乙方（盖章）：____________
-
+::: 留白 三行
 签订日期：____年____月____日
+---COLUMN---
+乙方（盖章）：
+
+::: 留白 三行
+签订日期：____年____月____日
+:::
+```
+
+## Forms, Room for a Stamp, a Stated Format
+
+These use what `docx-kit templates` lists under `format.features`; check it first on an installation you did not just update.
+
+### Form to be filled in by hand
+
+A grid with no header row (the first row is data too), roomy cells and stated column widths. Merged cells do not exist: this form pairs its fields so that no row needs to span the width; when the user's form has a row that must, write the cells the row has and tell the user they are not merged. Save as `examples/form.md`.
+
+```markdown
+# 培训报名表
+
+::: 表格 appearance=grid header=false spacing=roomy widths=1,2,1,2
+| 姓名 |  | 部门 |  |
+| --- | --- | --- | --- |
+| 工号 |  | 联系电话 |  |
+| 培训班次 |  | 报名日期 |  |
+| 参训理由 |  | 负责人意见 |  |
+:::
+
+::: 靠右
+填表人（签字）：____________
+:::
+```
+
+### Certificate with room for the stamp
+
+`::: 留白 三行` stands on the line above the `::: 靠右` container, so the whole sign-off moves down together. Save as `examples/certificate.md`.
+
+```markdown
+# 在职证明
+
+兹证明林晓（工号 A\*\*\*\*07）自 2021 年 3 月起在我公司工作，现任市场部经理。
+
+特此证明。
+
+::: 留白 三行
+::: 靠右
+青原科技有限公司（盖章）
+
+2026 年 10 月 14 日
+:::
+```
+
+### Notice in a stated format
+
+The user named sizes, a fixed line spacing and the four margins; only those are written, and the receipt's `effective_document.format` shows what took effect. Fonts the user names go in the same way (`title_font: 方正小标宋简体`, `body_font: 仿宋_GB2312`) and should be written; this example leaves them out only so that it builds with `--strict` on any machine — on one that lacks a stated font the build warns with `font_not_found`. As in the other 公文 notice, the template numbers the headings. Save as `examples/stated-format.md`.
+
+```markdown
+---
+template: executive-cn-official-docx
+title_size: 二号
+body_size: 三号
+body_line_spacing: 28pt
+margin_top: 3.7cm
+margin_bottom: 3.5cm
+margin_left: 2.8cm
+margin_right: 2.6cm
+---
+
+# 关于调整办公时间的通知
+
+::: 顶格
+各部门：
+:::
+
+根据季节变化，经研究决定，自 11 月 1 日起调整办公时间，现将有关事项通知如下。
+
+# 办公时间
+
+上午 8:30 至 12:00，下午 13:30 至 17:30。
+
+# 有关要求
+
+各部门要提前安排好值班和对外服务窗口，确保工作衔接。
+
+特此通知。
+
+::: 靠右
+青原科技有限公司综合管理部
+
+2026 年 10 月 14 日
+:::
+```
+
+### A line with its date at the right (résumé)
+
+One side-by-side block per line; consecutive blocks stack as rows with nothing between them.
+
+```markdown
+::: 并排 widths=2,1
+**青原科技有限公司　市场部经理**
+---COLUMN---
+::: 靠右
+2021.03 — 至今
+:::
+:::
+
+::: 并排 widths=2,1
+**松溪档案服务组　项目助理**
+---COLUMN---
+::: 靠右
+2018.07 — 2021.02
+:::
 :::
 ```
 
@@ -222,6 +332,9 @@ docx-kit build examples/memo.md --out ./memo --filename memo.docx --strict
 docx-kit build examples/contract.md --out ./contract --filename contract.docx --strict
 docx-kit build examples/notice.md --out ./notice --filename notice.docx --strict
 docx-kit build examples/letter.md --out ./letter --filename letter.docx --strict
+docx-kit build examples/form.md --out ./form --filename form.docx --strict
+docx-kit build examples/certificate.md --out ./certificate --filename certificate.docx --strict
+docx-kit build examples/stated-format.md --out ./stated-format --filename stated-format.docx --strict
 ```
 
 `--strict` fails on warning and error checks; `info` checks do not fail it.
