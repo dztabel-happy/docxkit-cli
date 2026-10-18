@@ -771,7 +771,7 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | Formula rendered as plain text | Correct the LaTeX or use valid native OMML from the source. Check top-level `warnings` as well as `checks`. |
 | Figure settling skipped or stopped | Inspect `figure_settling` and warn the user; this warning alone does not fail strict builds. A moved figure still needs a reading-order review. |
 | QA fails | Rebuild from source. If it still fails, report the QA result as a tool issue. |
-| A command or option is absent | The installed binary is older than this contract. The CLI is updated once at session start (`npm install @dztabel/docxkit@latest`, fail-soft, see `SKILL.md`), never in the middle of a build and redline loop; if it is still missing, report the local capability gap. Do not silently produce a report when a plain document was requested, and do not fall back to generating the Word file another way. |
+| A command or option is absent | The installed binary is older than this contract. The CLI is updated once at session start, fail-soft, as `SKILL.md` describes, never in the middle of a build and redline loop; if it is still missing, report the local capability gap. Do not silently produce a report when a plain document was requested, and do not fall back to generating the Word file another way. |
 
 `docx-kit build` takes `--embed-fonts` when recipients lack the template's fonts and the locally available fonts allow embedding; fonts are otherwise not embedded.
 
