@@ -152,7 +152,7 @@ A heading size that is derived, not stated, never exceeds the level above it: wi
 
 Once a size is stated or `text_scale: large` is used, tables are no longer shrunk to a compact size to make them fit: cell text wraps and the table grows. `table_consider_landscape` then says so; use `表[landscape]：` or fewer columns.
 
-**Refused, with the field named:** a fixed line spacing smaller than the role's size (the message gives role, size and spacing and suggests `at-least`); a size outside 5–72 pt or not on a half point; a multiple that is not exact; `heading4_*` on a three-level template; a repeated key. A tall inline formula (a fraction, sum, root …) in a paragraph under a stated fixed line spacing gets the warning `fixed_line_spacing_tall_inline`, which names the block and the formula: fixed spacing does not make room for it and it prints over the neighbouring lines. DocxKit does not switch the spacing for you: the paragraph is set at the fixed value you stated, exactly as the receipt says. Write `at-least`, or make the formula a display equation. This holds whenever `body_line_spacing` is stated as a fixed value, also when it equals the template's own (30pt on the official template). Only where no fixed line spacing is stated does the official template's built-in 30 pt keep its old protection: a paragraph with a formula is set at "at least 30 pt", without a warning.
+**Refused, with the field named:** a fixed line spacing smaller than the role's size (the message gives role, size and spacing and suggests `at-least`); a size outside 5–72 pt or not on a half point; a multiple that is not exact; `heading4_*` on a three-level template; a repeated key. **A tall inline formula under a stated fixed line spacing.** A fixed line does not make room for an inline formula taller than the line (a fraction, root, sum, integral, product, a limit written above or below, a matrix), and WPS cuts it off — the denominator of a fraction disappears. So the paragraph that contains one gets "at least" the stated value on that paragraph only: its lines without the formula keep the stated height, the line with the formula grows as much as the formula needs, and every other paragraph keeps the stated fixed value. The warning `fixed_line_spacing_tall_inline` names the block and the formula and says that this paragraph's line spacing is not the stated fixed value; tell the user, or make the formula a display equation if the whole text must keep one spacing. Subscripts, accents and other formulas no taller than the line change nothing. Only `\( … \)` is an inline formula (`$…$` is printed as written). This holds whenever `body_line_spacing` is stated as a fixed value, also when it equals the template's own (30pt on the official template). Where no fixed line spacing is stated, the official template's built-in 30 pt protects every paragraph with a formula or a picture the same way, without a warning.
 
 `docx-kit templates` lists under `format.features` what this binary can do; check it before relying on any of the following with an installation you did not just update — an older binary rejects the keys and containers as unknown (one from just before page position refuses `page_position` as "not available yet"), or prints `:::` lines as text.
 
@@ -350,7 +350,7 @@ Numbering that is not one of the six forms gets no native numbering. Each such l
 - Chinese numerals outside 一…九十九 or not in the usual spelling (`一百、`, `一十、`), and Chinese numerals in other shapes (`(一)`, `一.`);
 - any numbered line that is indented. Below a list item that is a nested list, and multi-level import is not supported, so it is not flattened into the parent list or changed to another form: write the lower level flush left in another form, as in the example above. (Indented bullets are unchanged.)
 
-Like every paragraph, a kept line follows `punctuation_mode`: under `normalize` an ASCII `. ` next to Chinese becomes `。`; transcriptions use `preserve`. Dates, decimals, version numbers and ordinary sentences (`2026.10.13`, `1.5 倍`, `v1.2.3`, `A、B 两栋`, numbers above 32767) are not numbering and are not reported.
+Like every paragraph, a kept line follows `punctuation_mode`: under `normalize` an ASCII `. ` next to Chinese becomes `。`, except a single letter and its period at the start of the line (`A. 继续工作` stays; the `B.` after it does not); transcriptions use `preserve`. Dates, decimals, version numbers and ordinary sentences (`2026.10.13`, `1.5 倍`, `v1.2.3`, `A、B 两栋`, numbers above 32767) are not numbering and are not reported.
 
 Unaffected by the option: `# 资料来源` sections (`1.` entries there are still the `[n]` source list; the other forms there are paragraphs), quotes, callouts, table cells, code blocks, `:::` alignment containers (numbered lines inside them stay text) and bullet lists.
 
@@ -378,7 +378,7 @@ Body paragraphs are justified with a first-line indent. Three block containers c
 :::
 ```
 
-- Inside a container the ordinary paragraph rules apply: a blank line separates paragraphs, and adjacent non-blank lines join into one paragraph. **A two-line sign-off therefore needs a blank line between the organisation and the date**, as above; without it the two lines become one paragraph.
+- Inside a container the ordinary paragraph rules apply: a blank line separates paragraphs, and adjacent non-blank lines join into one paragraph (see "Punctuation and Spaces" for the space at the join). **A two-line sign-off therefore needs a blank line between the organisation and the date**, as above; without it the two lines become one paragraph.
 - Adjacent right-aligned paragraphs sit directly under each other, and the group keeps one line of space from what precedes it. Do not add empty paragraphs or spaces to position text.
 - Only ordinary paragraphs are allowed inside, with the usual inline markers. A heading, table, list, quote, callout, code block, image, page break or another container inside one is an error — also when it stands directly under a line of text, where it is not read as a continuation of that paragraph — as are an unknown name (`::: 落款`), a container that is never closed, an empty container and a stray closing `:::`. Each error names the line number; nothing is printed as text. Inside a code fence `:::` stays literal.
 - The names describe the shape only (flush left / right / centre); there are no "salutation" or "signature" components, and no trailing-attribute syntax.
@@ -476,6 +476,10 @@ Markers must be paired and hug their content (`**9.1%**`, not `** 9.1% **`); unp
 **The default is `punctuation_mode: normalize`.** In text that contains Chinese characters, the ASCII punctuation `, ; : ? ! .` becomes `，；：？！。`, and ASCII spaces between that punctuation and Chinese characters are removed. For example, `甲,  乙: 丙.` becomes `甲，乙：丙。`.
 
 Left alone in either mode: bare `http(s)` URLs and email addresses, link targets, code spans and code blocks, native equations, and colons, commas and dots inside Latin or numeric text such as `10:00`, `1,000` and `Node.js`. A Windows drive colon next to Chinese text is not protected: `C:\资料` can become `C：\资料`.
+
+**A letter enumerator at the start keeps its period.** When a paragraph or a list item starts with one Latin letter, a period, and then a space or Chinese text (`A. 继续工作`, `b.核对材料`), that period stays a half-width `.`. Only this shape: two letters (`AB.`, `IV.`), a digit (`1.` is list syntax), an `A.` later in the paragraph, a period followed by something else (`A.1`), and the start of a quote, callout, table cell, heading or caption follow the rule above.
+
+**Lines joined into one paragraph.** Adjacent lines of a paragraph (also in alignment containers and side-by-side panes) are joined with no space where the characters on both sides are Chinese — characters, kana, Chinese punctuation, and a curly quote, dash or ellipsis next to them — because a line break in Chinese is not a space: `第一，先切断电源。` + line break + `第二，……` gives `第一，先切断电源。第二，……`. Where both sides are Latin, or one side is Latin, the lines are joined with one space as before. This holds in both punctuation modes.
 
 Set `punctuation_mode: preserve` to skip this step. Author punctuation and spaces are then kept character for character. Markdown structure, inline markers, the three escapes and automatic numbering still apply. Half-width spaces and tabs at the edges of a table cell or heading are Markdown padding and are dropped; full-width spaces there are kept, so `| 甲方：　　　　 |` keeps its blank for a signature. The source text in `report.json` is never rewritten in either mode; the build receipt reports how many characters normalization changed.
 
@@ -605,13 +609,30 @@ Word cannot split a figure across pages. A figure taller than the space left on 
 - **Refused before building**: together with stated page margins (it still measures pages with the template's own margins) and together with `page_position: center` (it judges a page by the space under its last line, which a centred page splits above and below). Build without one of the two.
 - It cannot help when the figure is followed by a table, another figure, a list, or the end of the section: there is no paragraph to bring forward. Shrink the figure, move it, or accept the blank.
 
+### PDF (`docx-kit pdf`)
+
+```bash
+docx-kit pdf ./report/report.docx --out ./report --filename 季度复盘.pdf
+```
+
+When the user wants a PDF, make it with `docx-kit pdf`; never run LibreOffice on the delivered file directly. It never changes the input. On Windows with Microsoft Word installed it exports through Word: its own invisible instance, a copy of the document, repaginated first; the user's open documents are not touched. Everywhere else it exports with LibreOffice from an internal render copy, so captions, references and the page-number footer come out as Word shows them (a one-page document of `page_numbers: auto` has no page number, as in Word). `DOCXKIT_SOFFICE` names LibreOffice; `DOCXKIT_PDF_WITH=libreoffice` forces it.
+
+It prints one JSON object (exit code 0 on success, 1 otherwise; the JSON is plain ASCII, non-ASCII characters as `\uXXXX`):
+
+```json
+{"ok": true, "command": "pdf", "pdf_path": "/abs/report/季度复盘.pdf", "engine": "libreoffice", "engine_version": "26.2.3.2",
+ "notes": ["Exported with LibreOffice 26.2.3.2 from an internal render copy (...)"], "errors": []}
+```
+
+`engine` is `word` or `libreoffice`. On failure `pdf_path`, `engine` and `engine_version` are null and `errors` holds `{code, message}`: `invalid_arguments`, `input_not_found`, `not_a_docx`, `export_failed`, or `no_pdf_engine` — neither Word nor LibreOffice is available here; tell the user to open the file in Word or WPS and export it as PDF. Read `notes`: they name the engine, say when Word failed and LibreOffice was used instead, and say when the document centres its pages (`page_position: center`) — LibreOffice does not, so that PDF starts every page at the top; export it from Word or WPS to keep the centring. Fonts the machine lacks are substituted by the engine. Deliver the PDF beside the Word file, never instead of it unless the user asked only for a PDF.
+
 ### Render-only copies
 
 ```bash
 docx-kit render-copy ./report/report.docx --out ./report/preview --filename report.render-only.docx
 ```
 
-LibreOffice and similar renderers recalculate Word caption and reference fields incorrectly. `render-copy` writes a copy in which those fields are replaced by what they currently show; the original is never changed, and tables of contents, page numbers, headers and footers keep their fields — with one exception: the conditional footer of `page_numbers: auto`, which LibreOffice does not display, becomes a plain page number in the copy (see `page_numbers` under "Metadata"). A freshly built document can be copied directly; for a file edited in Word or WPS, update fields and save first. The default output is `<input-stem>.render-only.docx` beside the input. Use the copy for preview and conversion only; deliver the original.
+LibreOffice and similar renderers recalculate Word caption and reference fields incorrectly. For a PDF use `docx-kit pdf` (above), which does this internally. `render-copy` writes a copy in which those fields are replaced by what they currently show; the original is never changed, and tables of contents, page numbers, headers and footers keep their fields — with one exception: the conditional footer of `page_numbers: auto`, which LibreOffice does not display, becomes a plain page number in the copy (see `page_numbers` under "Metadata"). A freshly built document can be copied directly; for a file edited in Word or WPS, update fields and save first. The default output is `<input-stem>.render-only.docx` beside the input. Use the copy for preview and conversion only; deliver the original.
 
 The result is JSON on stdout with `command: render-copy`, `input_sha256`, `docx_path` and `artifacts.render_copy`; `template_id` is `not-applicable`, and no `report.json` is created.
 
@@ -685,7 +706,7 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | `table_row_narrower_than_columns` | warning | warning | Missing cells render blank; check original data |
 | `table_consider_landscape` | warning | warning | Table cannot fit at normal portrait size; consider landscape. With a stated size or `text_scale: large` the table is not shrunk either, so cells wrap |
 | `font_not_found` | warning | warning | A stated font is not installed on this machine: the name is written as given, its display is unconfirmed and readers without it get a silent substitute. Ask the user for the font or for permission to use another |
-| `fixed_line_spacing_tall_inline` | warning | warning | A tall inline formula sits in a paragraph under a stated fixed line spacing and will overlap neighbouring lines; write `at-least` or use a display equation |
+| `fixed_line_spacing_tall_inline` | warning | warning | A paragraph under a stated fixed line spacing holds an inline formula taller than the line; to keep it whole (WPS cuts it off) that paragraph was given "at least" the stated value, the other paragraphs keep the fixed value. Tell the user, or make the formula a display equation |
 | `chapter_header_may_not_fit` | warning | warning | With the stated margins the longest chapter title may wrap to a second header line and reach past the top margin; Word then pushes that page's text down. Check the page in Word; raise `margin_top`, shorten the heading or turn the header off |
 | `table_compact_layout_ignored` | warning | warning | Obsolete compact flag; remove it, sizing is automatic |
 | `manual_numbering_in_title` | warning | warning | Author numbering conflicts with `auto`; use `none` when it belongs to the original |
@@ -752,6 +773,7 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 
 - All paths in results (`input_path`, `output_dir`, `report_path`, `docx_path`, `artifacts.*`) are absolute. Pass `--filename <name.docx>` to `build`; it accepts a file name only, not a path. `docx_path` is the single authoritative Word deliverable and must not be copied or renamed by the agent.
 - `build` and `validate` results carry `input_sha256`: the SHA-256 of the exact input bytes that were parsed (a successful result always has a real 64-hex digest; an unreadable input leaves it empty). `redline` and `error` results keep it empty instead of fabricating one.
+- `docx-kit pdf` prints its own object (see "PDF"), described by `schemas/cli-pdf-result.schema.json` in the CLI repository; it carries no `contract_version`.
 - `qa` results carry `docx_sha256` and `report_sha256`, computed from the same bytes the structural checks inspected; a passing QA always has both digests.
 
 - `effective_document` on build/validate/redline describes the actual `template`, `document_mode`, `title_block`, `cover`, `toc`, `chapter_header`, `page_numbers`, `heading_numbering`, `list_numbering`, `caption_numbering` (`chapter` or `continuous`), and `punctuation_mode` (`normalize` or `preserve`). `page_numbers` is `always`, `none` or `auto` (`auto` does not say whether a number is currently shown); `list_numbering` is `template` or `author`. These are the values the build used, whether written or defaulted. It is null when no usable model is available; on redline it describes the new side.
