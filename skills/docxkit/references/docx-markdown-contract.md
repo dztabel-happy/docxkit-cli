@@ -1,6 +1,6 @@
 # DocxKit Markdown Contract
 
-Use this reference when writing Markdown input for `docx-kit build`. The skill's `SKILL.md` gives the first decision (report or plain document), two complete inputs and the working loop; this file holds the rules behind them.
+Use this reference when writing Markdown input for `docx-kit build`, and read it before writing. The skill's `SKILL.md` gives the first decision (report or plain document), two complete inputs, the highest-frequency writing rules and the working loop; this file holds the rules behind them.
 
 A short plain document — a notice, a letter, a certificate — needs no metadata at all: start with `# 标题` and write the text. Metadata is for what the content cannot say by itself.
 
@@ -31,8 +31,8 @@ Available templates (different Chinese font pairing and layout personality):
 
 | template id | 正文 | 章节标题 | 题注 | 封面/目录标题 | 版式 |
 | --- | --- | --- | --- | --- | --- |
-| `executive-cn-docx`（默认） | 楷体 | 楷体加粗 | 楷体 | 楷体（封面加粗） | 楷体正文 |
-| `executive-cn-song-docx` | 宋体 | 黑体（不加粗） | 宋体 | 宋体加粗 | 宋体正文，行距 20 磅 |
+| `executive-cn-docx`（默认） | 楷体 | 楷体加粗 | 楷体 | 楷体（封面加粗） | 现代商务风 |
+| `executive-cn-song-docx` | 宋体 | 黑体（不加粗，GB/T 9704 搭配） | 宋体 | 宋体加粗 | 正式规范风（行距 20 磅、标题段距阶梯、清北学位论文体系） |
 | `executive-cn-official-docx` | 仿宋_GB2312 三号 | H1 黑体；H2 楷体_GB2312 加粗；H3 仿宋_GB2312 加粗；H4 仿宋_GB2312 | 仿宋_GB2312 小四号，表题同字号 | 方正小标宋简体（二号封面标题） | 首页副标题无前缀、无页眉、A4 默认页边距、固定 30 磅行距、公文序号“一、”“（一）”“1.”“（1）”；禁止 callout |
 
 Body Latin text uses Times New Roman; code, equations and some template roles have their own fonts. Chinese font declarations follow the template, including code and equations. Pick a non-default template only when the user asks for the corresponding typography.
@@ -50,7 +50,7 @@ So an ordinary document on the kaiti or song template has no automatic heading n
 
 ### When `document_mode` Is Not Written
 
-- Official template: `document`, whatever the content.
+- Official template: `document`, whatever the content. Notices, plans, implementation schemes and ordinary official documents start with their title on page 1 and have no cover or contents. Set `document_mode: report` on the official template only when the user explicitly requests a cover or contents, or the deliverable is genuinely a long report that needs them.
 - Kaiti, song, or no `template`: the block structure you wrote decides, before any title or section is inferred.
   - With no metadata `title`, a `# 标题` line that is the first content block is the document title, not a chapter.
   - Any other heading means the input has chapters: it is built as a `report`, exactly as before.
@@ -89,7 +89,7 @@ These fail validation instead of producing an empty part:
 - `cover: true` with no title.
 - An ordinary document on the kaiti or song template with no title and no content at all (`the document is empty: it has no title and no content…`). This is what an empty Markdown file, or one with only metadata and no `title`, now gives; it is not built into a blank document. A document with only a title, or only body text, is fine. The official template and `report.json` without `layout_rule` are unchanged.
 
-A figure or table list that is switched on but has nothing to list is skipped with a warning.
+`list_of_figures: true` / `list_of_tables: true` add 图目录 / 表目录 after the main contents; their entries link to the captions, and their page numbers refresh when Word updates fields. Switch them on only for figure- or table-heavy reports. A figure or table list that is switched on but has nothing to list is skipped with a warning.
 
 `list_numbering` accepts `template` or `author` in every template and mode; the default is `author` for a kaiti or song ordinary document and `template` otherwise. `template` shows ordered lists in the template's format, each starting at 1; `author` keeps the form and numbers the author wrote. See "Lists Numbered as Written".
 
@@ -247,7 +247,7 @@ Ordinary documents (`document_mode: document`) have three title cases:
 
 A document without sections does not acquire a synthetic section. Never use whitespace or invisible characters as a title. For a report, use an explicit metadata title: legacy Markdown title inference and automatic section creation remain active in report mode and are disclosed in `effective_document.automatic_structure`.
 
-Use `#` through `###`; only the 公文模板 accepts `####` in source input. The first real section must be level 1, and levels cannot be skipped. For automatically numbered reports, do not add author numbering:
+Use `#` through `###`; only the 公文模板 accepts `####` in source input. The first real section must be level 1, and levels cannot be skipped (invalid hierarchy fails validation instead of producing numbers such as `1.0.1`). In a report, split long chapters into `##` subsections rather than long flat runs of paragraphs (`flat_section_structure`); the 楷体 and 宋体 templates number them 2.1 / 2.2, the 公文模板 “一、”“（一）”“1.”“（1）”. For automatically numbered reports, do not add author numbering — write `# 研究背景与方法论`, not `# 一、研究背景与方法论`:
 
 ```markdown
 # 市场规模与需求结构
@@ -273,7 +273,7 @@ For transcriptions with `heading_numbering: none`, retain `# 第一条 整理范
 | 公文, any mode or heading policy | 表 1、图 1、（1） throughout the document | 见表 1、如图 1、式 1 |
 | Any template with `heading_numbering: none`, without chapters, or with captions before the first ordinary-document chapter | Continuous integers throughout the document | 见表 1、如图 1、式 1 |
 
-Each numbered level-1 section counts as a chapter, including an opening summary. Tables, figures and equations have separate sequences. **An uncaptioned table consumes no table number.** Captions and their body references display a space between label and number, even when the source omits it. Captions/equation numbers use native Word fields; body table/figure/equation/source references are clickable, updatable fields. Editing in Word requires updating fields; rebuilding Markdown requires updating the source's reference locators as well.
+Each numbered level-1 section counts as a chapter, including an opening summary: an opening `# 执行摘要` or `# 导论` is chapter 1 and pushes the later chapters up. When `dangling_caption_reference` fires, its message lists the numbers that exist — copy from there instead of guessing, or write the skeleton first, build once, then fill in the references. Tables, figures and equations have separate sequences. **An uncaptioned table consumes no table number.** Captions and their body references display a space between label and number, even when the source omits it. Captions/equation numbers use native Word fields; body table/figure/equation/source references are clickable, updatable fields. Editing in Word requires updating fields; rebuilding Markdown requires updating the source's reference locators as well.
 
 Old 公文 references such as `见表 2.1` remain accepted: they locate the first table in the old second chapter, counting uncaptioned tables, then display its current number. `legacy_official_reference` is `info`, including under `--strict`. Integer reference recognition has boundaries: `附表 1`, `统计表 2 张` and `图 3 月` are not automatically treated as references.
 
@@ -294,6 +294,18 @@ Undeclared Markdown uses the new counting rule. If an old table locator and the 
 Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks for normal report content. Use callouts only for rare high-signal emphasis. The official template rejects callouts. The default kaiti template draws an admonition box (colored left bar, light fill for risk/warning); the song template renders a plain body paragraph led by a bold label（标题或默认"风险提示"/"注"）— the formal-report idiom, no box or color.
 
 An ordered list is one numbering instance. Items separated only by blank lines remain one list, even if every item is written as `1.`. After an intervening paragraph, code block, table or bullet list, numbering one greater than the last authored item number continues the same instance (even when earlier items were all written as `1.`); restarting at `1.` starts a new instance. New instances display from 1. Word supports demoting/promoting list items; this is not a new Markdown nested-list syntax.
+
+### Callouts
+
+```markdown
+> [!note] 关键说明
+> 这句话必须从正文中被快速扫到。
+
+> [!risk] 风险提示
+> 只在用户明确需要视觉风险框时使用。
+```
+
+Supported kinds: `note`, `insight`, `risk`, `warning`; `tip` is read as `note`. Use them sparingly, for the one sentence a reader must not miss; `[!risk]` only when the user wants a visible risk box. The official template rejects callouts.
 
 ## Lists Numbered as Written (`list_numbering: author`)
 
@@ -572,11 +584,26 @@ The generated `report.json` rebases relative figure paths to its own output dire
 PNG, JPEG, GIF, and BMP files are embedded directly. PDF figures use the first page and require `pdftoppm` on `PATH` (macOS can fall back to `sips`); otherwise convert the figure to PNG/JPEG before building.
 Unsupported extensions, mismatched file signatures, and corrupt bitmap files fail validation instead of producing a broken Word image.
 
+### Chart manifests (ChartKit)
+
+If `<image>-manifest.json` sits next to a figure image (e.g. `assets/chart.png` + `assets/chart-manifest.json`), Markdown import reads `layout.recommended_insert_width_mm` (falling back to `layout.rendered_width_mm`) to size the figure. Discovery is fail-soft: a sidecar that is not valid JSON or has no usable width is treated as absent and never blocks or changes a build. An explicit `width` on the figure always wins over the manifest.
+
+In direct `report.json`, `chart_manifest` on a figure block is a strict reference: the file must exist and parse, otherwise the build fails with a structured error.
+
 ### Tall figures and blank page bottoms (`--settle-figures`, opt-in)
 
-Word moves an indivisible tall figure to the next page if it cannot fit. On request, add `--settle-figures` to `build` to measure pagination and try moving it after following ordinary paragraphs. Only the delivered document is rearranged; source and `report.json` keep the author's order. Review the moved paragraphs for reading order.
+Word cannot split a figure across pages. A figure taller than the space left on the page moves to the next page as a whole and leaves the bottom of the previous page empty — often a third to two thirds of it.
 
-Measurement uses Word on Windows, otherwise LibreOffice plus poppler. Missing tools or an interrupted measurement produce warnings and still deliver a document; these warnings alone do not fail `--strict`. Inspect `figure_settling.measured`, `moved_paragraphs`, `improved`, `measurements`, `figures`, `held` and `notes`. The built-in LibreOffice path uses a render-only copy; a custom converter uses the original unless `DOCXKIT_DOCX2PDF_RENDER_COPY=1` is explicitly set. Do not promise that this option will eliminate every gap.
+`docx-kit build <input> --out <dir> --filename <name.docx> --settle-figures` measures the real pagination after the normal build and, **in the delivered `.docx` only**, lets such a figure fall back by one or two of the ordinary paragraphs that follow it, so those paragraphs fill the page and the figure opens the next one. The paragraphs keep their order and wording; only the figure's position among them changes. The input and `report.json` keep the author's order, and every build starts again from that order.
+
+- **Use it only on request**: when the user asks to reduce the blank space before a figure, or you can see that problem in the delivered file. It is not a default and it does not replace sizing a figure sensibly.
+- **What it measures with**: on Windows with Microsoft Word installed, Word itself (the reader's pagination). Otherwise LibreOffice (`soffice` on `PATH`, `DOCXKIT_SOFFICE`, or the standard install location) plus poppler's `pdftotext`; LibreOffice measures a render-only copy. `DOCXKIT_SETTLE_WITH=libreoffice` skips Word; `DOCXKIT_DOCX2PDF=<executable>` uses your own converter (`<it> <input.docx> <output.pdf>`), on the original document unless `DOCXKIT_DOCX2PDF_RENDER_COPY=1` is set.
+- **LibreOffice is not the reader's Word**: the two paginate these documents a line or two apart per page. A LibreOffice-measured arrangement is re-checked with the page one or two lines taller and shorter and is delivered only if it is no worse than the draft both ways; even so, in our sample roughly one changed document in nine came out worse in real Word. For a document that matters, measure with Word.
+- **A figure never moves past** a paragraph that points at it (“上图”“图中”“如上所示”), its note or source line (“注：”“资料来源：”), a paragraph describing what is on it (“右上区域”“虚线”“箭头”), a lead-in sentence (ends with a colon, “如下”“以下”), a salutation, sign-off or centred line (a `::: 顶格`, `::: 靠右` or `::: 居中` paragraph), or a paragraph directly followed by a table, figure, list, equation or other non-paragraph block (it is most likely that block's lead-in; a hard page break after it does not count); it never leaves a preceding sentence that points down at it (“如下图所示：”), and a figure placed directly after another figure stays with it. These word lists only stop a move — they do not prove a paragraph is position-independent. Referring to figures by number (`见图 2.1`) is what makes a move safe.
+- **Read the result**: with the flag, `build-result.json` gains `figure_settling` — `requested`, `measured`, `moved_paragraphs`, `improved`, `renderer` / `renderer_version`, `rounds`, `before_page_count` / `after_page_count`, `before_pages` / `after_pages` (pages whose bottom is ≥ 25% blank: `page`, `bottom_whitespace`, `figure`), `measurements` (`round`, `figure`, `score`, `page_count`, `outcome`: `draft` / `kept` / `undone`), `figures` (`figure`, `paragraph_count`, `paragraph_starts`, `blank_before`, `blank_after`), `held` (`figure`, `why` — figures still preceded by a blank page bottom and the reason they were not moved), `notes`, `reason`, `message`. When `moved_paragraphs > 0`, **check that the paragraphs listed in `figures[].paragraph_starts` still read naturally ahead of their figure** before delivering; if one does not, rebuild without the flag. Without the flag the field is absent.
+- **It never fails a build**: with missing tools or a probe error the document is still delivered — the normal one, or the best arrangement already measured — and one entry is added to `warnings` (`图位置整理未执行: …` / `图位置整理中止: …`). That entry is not a content problem: leave it, tell the user, and note that `--strict` does not fail on it. The whole pass has a time budget of about three minutes; when it runs out, the best arrangement measured so far is delivered and `figure_settling.notes` says so. Do not promise that the option removes every gap.
+- **Refused before building**: together with stated page margins (it still measures pages with the template's own margins) and together with `page_position: center` (it judges a page by the space under its last line, which a centred page splits above and below). Build without one of the two.
+- It cannot help when the figure is followed by a table, another figure, a list, or the end of the section: there is no paragraph to bring forward. Shrink the figure, move it, or accept the blank.
 
 ### Render-only copies
 
@@ -633,7 +660,7 @@ Add `title=` after the fence language to attach a caption below the equation, e.
 
 ## Page Breaks
 
-Use `---PAGE---` only when the user explicitly asks for a hard page break. Normal reports should rely on automatic Word/WPS pagination.
+Use `---PAGE---` only when the user explicitly asks for a hard page break, or before a side-by-side block of more than 10 lines that must stay whole (see "Side by Side"). Normal documents rely on automatic Word/WPS pagination.
 
 ## Transcribing an Existing Document
 
@@ -669,17 +696,17 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | `caption_number_replaced` | info | info | Supplied caption number differs from generated number; check fidelity |
 | `table_missing_caption` | warning | info | Uncaptioned table consumes no number, enters no table list and cannot be referenced by table number; add a separate caption only if those functions are needed |
 | `figure_missing_caption` | warning | info | Figure has neither caption nor alt text |
-| `unreferenced_caption` | warning | info | Captioned table/figure has no body reference |
+| `unreferenced_caption` | warning | info | Captioned table/figure has no body reference; introduce it in the prose with “见表/图 x.x” or a sentence that leads to it |
 | `caption_before_reference` | warning | warning | Table/figure occurs before its first numbered introduction. A warning in ordinary documents too; when transcribing an existing document, do not move or rewrite the original to clear it — say in your delivery note that the order follows the original |
-| `positional_caption_reference` | warning | info | Position-based exhibit wording such as 上图/下表; new reports should reference the current displayed number, such as 表 1 or 表 1.1 |
+| `positional_caption_reference` | warning | info | Position-based exhibit wording such as 上图/下表/如下表所示/见上表: it points at the wrong exhibit as soon as one moves to another page or is added or removed. New reports reference the displayed number instead (“见图 x.x”“表 x.x 中”, or 表 1). Only clear phrases are matched, and a document with no table and no figure is not checked |
 | `checklist_like_bullet_items` | warning | info | Three or more bullet items start with status labels |
 | `section_reads_like_checklist` | warning | info | Many list items with no explanatory prose |
 | `flat_section_structure` | warning | info | Large chapters without subsections; the TOC follows heading levels, while numbering depends on `heading_numbering` |
-| `mechanical_section_nesting` | warning | info | Repeated single-child section structure |
+| `mechanical_section_nesting` | warning | info | Most level-1 chapters hold a single level-2 section, as if spread out to fill pages; merge them into fewer chapters, each with several level-2 sections |
 
 `manual_numbering_in_title` is suppressed by `heading_numbering: none`; unpaired-marker warnings are not. For new reports, resolve errors and warnings before delivery. In ordinary-document transcription, do not add or rewrite original text to clear `info`. It remains useful evidence when comparing with the original.
 
-`build --strict` fails on warning-level checks and rendering warnings, including formula fallback or a requested figure/table list with no entries; `info` never fails it. An interrupted/skipped figure-settling pass can put a warning in top-level `warnings` without failing strict mode. Read both `checks` and `warnings`, not just `ok`.
+`build --strict` fails on warning-level checks and rendering warnings, including formula fallback or a requested figure/table list with no entries; `info` never fails it. It is intended for CI and batch pipelines; the default for a delivery is to iterate until `checks` and `warnings` are clean. An interrupted or skipped figure-settling pass puts a warning in top-level `warnings` without failing strict mode. Read both `checks` and `warnings`, not just `ok`.
 
 `qa` is separate: it checks package structure, fields, links, styles and font declarations. Its output explicitly says `check_scope: structure_only`, `original_content_consistency: not_checked`, and `original_layout_consistency: not_checked`; read `scope_notice`. Passing QA does not mean the text matches an original, the layout matches an original, or the document is ready to deliver. It does not cancel build checks.
 
@@ -715,7 +742,7 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | Formula rendered as plain text | Correct the LaTeX or use valid native OMML from the source. Check top-level `warnings` as well as `checks`. |
 | Figure settling skipped or stopped | Inspect `figure_settling` and warn the user; this warning alone does not fail strict builds. A moved figure still needs a reading-order review. |
 | QA fails | Rebuild from source. If it still fails, report the QA result as a tool issue. |
-| A command or option is absent | Report the local capability gap; upgrade only if permitted. Do not silently produce a report when a plain document was requested, and do not fall back to generating the Word file another way. |
+| A command or option is absent | The installed binary is older than this contract. The CLI is updated once at session start (`npm install @dztabel/docxkit@latest`, fail-soft, see `SKILL.md`), never in the middle of a build and redline loop; if it is still missing, report the local capability gap. Do not silently produce a report when a plain document was requested, and do not fall back to generating the Word file another way. |
 
 `docx-kit build` takes `--embed-fonts` when recipients lack the template's fonts and the locally available fonts allow embedding; fonts are otherwise not embedded.
 
@@ -739,7 +766,7 @@ Any upstream system can verify what was built by comparing these digests against
 
 ## Direct report.json
 
-Use direct `report.json` only when Markdown cannot express the required structure or exact table widths. Run `components` for component fields and usage guidance.
+Use direct `report.json` only when Markdown cannot express the required structure — the compatibility blocks listed below, a figure width — or when you are revising a `report.json` that already exists. Column widths no longer need it: write them with `::: 表格 widths=…` (in JSON, `widths` holds the same relative weights). Run `components` for component fields and usage guidance.
 
 `report.json` is a strict contract: unknown properties, invalid enum values, null object/array fields, and non-empty `appendices` fail validation instead of being ignored.
 

@@ -1,10 +1,10 @@
 # DocxKit Markdown Examples
 
-Use these patterns after deciding whether the user wants a report or a plain document (see `SKILL.md`). The examples are fictional; replace their content and illustrative source links with verified user materials. Inputs that refer to tables or figures by number declare `numbering_rule: native-v1`; a short text without such references needs no metadata at all.
+Use these examples as patterns, after deciding whether the user wants a report or a plain document (see `SKILL.md`). The examples are fictional: replace their content with the user's prepared material and their illustrative source links with verified ones; do not invent sources. Inputs that refer to tables or figures by number declare `numbering_rule: native-v1`; a short text without such references needs no metadata at all.
 
 ## Full-Featured Formal Report
 
-Save this as `examples/report.md` in this repository; its image is supplied at `examples/assets/migration.png`. It uses a cover and TOC, real subsections, a landscape table, a figure, native equations and source references.
+This is the shape a serious deliverable should take: a `##` subsection hierarchy, prose-led sections, captioned tables (including a landscape one) and a figure introduced by number before they appear, numbered block equations cited from the prose, inline math, and inline `[n]` citations tied to the source chapter. Save it as `examples/report.md` in this repository; its image is supplied at `examples/assets/migration.png`.
 
 ````markdown
 ---
@@ -109,7 +109,7 @@ No metadata: the content has no chapter headings, so it is built as a plain docu
 
 ### Memo — a plain document with chapters
 
-Chapter headings would make an undeclared input a report, so `document_mode: document` is written and the title goes in the metadata. Headings carry no automatic numbers. Save as `examples/memo.md`.
+For short deliverables a flat structure is fine; keep prose first and sources real. Chapter headings would make an undeclared input a report, so `document_mode: document` is written and the title goes in the metadata. Headings carry no automatic numbers. Save as `examples/memo.md`.
 
 ```markdown
 ---
@@ -327,14 +327,14 @@ One side-by-side block per line; consecutive blocks stack as rows with nothing b
 Run from this repository's root after installing the CLI:
 
 ```bash
-docx-kit build examples/report.md --out ./report --filename report.docx --strict
-docx-kit build examples/memo.md --out ./memo --filename memo.docx --strict
-docx-kit build examples/contract.md --out ./contract --filename contract.docx --strict
-docx-kit build examples/notice.md --out ./notice --filename notice.docx --strict
-docx-kit build examples/letter.md --out ./letter --filename letter.docx --strict
-docx-kit build examples/form.md --out ./form --filename form.docx --strict
-docx-kit build examples/certificate.md --out ./certificate --filename certificate.docx --strict
-docx-kit build examples/stated-format.md --out ./stated-format --filename stated-format.docx --strict
+docx-kit build examples/report.md --out ./report --filename report.docx
+docx-kit build examples/memo.md --out ./memo --filename memo.docx
+docx-kit build examples/contract.md --out ./contract --filename contract.docx
+docx-kit build examples/notice.md --out ./notice --filename notice.docx
+docx-kit build examples/letter.md --out ./letter --filename letter.docx
+docx-kit build examples/form.md --out ./form --filename form.docx
+docx-kit build examples/certificate.md --out ./certificate --filename certificate.docx
+docx-kit build examples/stated-format.md --out ./stated-format --filename stated-format.docx
 ```
 
-`--strict` fails on warning and error checks; `info` checks do not fail it.
+Each builds with no error and no warning. `--strict`, which fails on warning-level checks (never on `info`), is for CI and batch pipelines; when you deliver, build without it and iterate until `checks` and `warnings` are clean.
