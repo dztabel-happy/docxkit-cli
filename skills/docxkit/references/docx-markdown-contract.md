@@ -54,6 +54,7 @@ So an ordinary document on the kaiti or song template has no automatic heading n
 - Kaiti, song, or no `template`: the block structure you wrote decides, before any title or section is inferred.
   - With no metadata `title`, a `# 标题` line that is the first content block is the document title, not a chapter.
   - Any other heading means the input has chapters: it is built as a `report`, exactly as before.
+  - A sources heading never counts: `# 资料来源` (also 参考来源, 参考文献, 来源, References, Sources, at any level, with or without author numbering such as `六、资料来源`) is not a chapter and is never taken as the document title.
   - With no chapters it is built as a `document` with the defaults above, and that first `# 标题` is used once, as the title.
 
 | Input without `document_mode` (kaiti, song, or no template) | Built as |
@@ -62,6 +63,9 @@ So an ordinary document on the kaiti or song template has no automatic heading n
 | `# 文档名` first, and later a `##` or another `#` | report |
 | Metadata `title`, and any heading in the body | report |
 | Body text first, and a `# 事项` later | report |
+| Body text, then only `# 资料来源` | document, with its sources section |
+| `# 资料来源` as the only heading, on the first line | document without a title, with its sources section |
+| Real chapters, and `# 资料来源` at the end | report |
 | `#` inside a code or math fence | not a chapter |
 | `1、事项`, `（1）事项` | not a chapter |
 
@@ -330,7 +334,7 @@ Under `list_numbering: template` only lines written `1. 条目` are ordered list
 
 The numbers are native Word numbering, not typed text. The first item shows the number that was written (`3.` starts at 3), and adding or deleting an item in Word renumbers the rest.
 
-These items are set like body paragraphs, the convention for notices, contracts and official-style text: the numbered line is indented two characters like the first line of a body paragraph, wrapped lines return to the left edge, and there is no hanging indent. Spacing, line pitch and alignment are the body's. After `1.` comes one space; the other forms run straight into the text, so the text after a wider number (9 → 10) simply starts further right. On the kaiti and song templates, template lists (`list_numbering: template`) keep their hanging-indent look. On the official template every list is set like this, the template's own lists included: its `（1）` numbers run straight into the text, and `1.`, `a.` and the bullet `•` are followed by one space.
+These items are set like body paragraphs, the convention for notices, contracts and official-style text: the numbered line is indented two characters like the first line of a body paragraph, wrapped lines return to the left edge, and there is no hanging indent. Spacing, line pitch and alignment are the body's. After `1.` comes one space; the other forms run straight into the text, so the text after a wider number (9 → 10) simply starts further right. On the kaiti and song templates, template lists (`list_numbering: template`) keep their hanging-indent look. On the official template every list is set like this, the template's own lists included: its `（1）` numbers run straight into the text, and `1.`, `a.` and the bullet `•` are followed by one space. A template-numbered list that sits under a level-4 heading of the official template (which carries the automatic `（1）`) is numbered ①②③ instead, so that two `（1）` levels are not nested; Word draws ① to ⑳ and plain numbers from 21 on. Lists written under `list_numbering: author`, and every list when `heading_numbering: none`, keep their numbers.
 
 How lines are grouped into lists:
 
