@@ -42,11 +42,11 @@ All three templates support both modes (`document_mode: report` or `document`). 
 | Template and mode | Cover, TOC, chapter-name header | `heading_numbering` | `list_numbering` | `page_numbers` |
 | --- | --- | --- | --- | --- |
 | kaiti or song, `report` | all three | `auto` | `template` | `always` |
-| kaiti or song, `document` (an ordinary document) | none | `none` | `author` | `auto` |
+| kaiti or song, `document` (an ordinary document) | none | by the headings (below) | `author` | `auto` |
 | official, `document` | none | `auto` (公文序号) | `template` | `always` |
 | official, `report` | cover and TOC, no header | `auto` | `template` | `always` |
 
-So an ordinary document on the kaiti or song template has no automatic heading numbers (the numbers the author wrote in headings are kept), keeps list numbers as written, and shows page numbers only when it runs to more than one page. Reports and the official template are as they always were. Page numbers are fields that can be updated in Word. Run `docx-kit templates` to query each mode's defaults.
+So an ordinary document on the kaiti or song template numbers its headings only when their structure calls for it (numbers the author wrote in headings are always kept, see `heading_numbering` below), keeps list numbers as written, and shows page numbers only when it runs to more than one page. Reports and the official template are as they always were. Page numbers are fields that can be updated in Word. Run `docx-kit templates` to query each mode's defaults.
 
 ### When `document_mode` Is Not Written
 
@@ -97,7 +97,13 @@ These fail validation instead of producing an empty part:
 
 `list_numbering` accepts `template` or `author` in every template and mode; the default is `author` for a kaiti or song ordinary document and `template` otherwise. `template` shows ordered lists in the template's format, each starting at 1; `author` keeps the form and numbers the author wrote. See "Lists Numbered as Written".
 
-`heading_numbering` accepts `auto` or `none` in every template and mode; the default is `none` for a kaiti or song ordinary document and `auto` otherwise. `auto` supplies heading numbers; `none` keeps author-written clause numbers and supplies none of its own. Heading styles and outline levels remain usable. It does not disable list or caption numbering.
+`heading_numbering` accepts `auto` or `none` in every template and mode; a written value always wins. Unwritten, it is `auto`, except in a kaiti or song ordinary document, where the headings decide:
+
+1. If any heading carries a written number (`一、`, `1.`, `1、`, `1.1 `, `（一）`, `第一章`, `第三条`, `（1）`, `(1)`), the headings are kept exactly as written and get no automatic numbers.
+2. Otherwise, if the headings to be numbered span two or more levels, or there are four or more of them, they get the template's numbers: 1, 1.1, 1.1.1.
+3. Otherwise (one to three headings, all at one level) they stay unnumbered.
+
+The document title is not a heading here, and the sources section (`# 资料来源` or another sources heading, with the headings under it) is never counted and never numbered in an ordinary document. The receipt's `effective_document.heading_numbering` gives the value used and `automatic_structure` the reason: `heading_numbering_auto_by_structure`, `heading_numbering_none_numbers_written` or `heading_numbering_none_few_headings`. The saved `report.json` writes the value, so a rebuild comes out the same. Write `heading_numbering: none` when a long ordinary document must stay unnumbered, and `auto` to number a short one. `auto` supplies heading numbers; `none` keeps author-written clause numbers and supplies none of its own. Heading styles and outline levels remain usable. It does not disable list or caption numbering, and in an ordinary document captions are numbered through the document either way.
 
 Put `numbering_rule: native-v1` in new Markdown that refers to tables, figures or equations by number; a text without such references does not need it. It declares that references were written against the new numbering rules; it does not choose a visual format. Do not add it to an old document before checking its reference targets. Markdown accepts only `native-v1`; legacy JSON rules are described below.
 
@@ -273,9 +279,9 @@ For transcriptions with `heading_numbering: none`, retain `# 第一条 整理范
 
 | Effective policy | Captions / equations | Body reference |
 | --- | --- | --- |
-| 楷体/宋体, automatic numbered chapters | 表 2.1、图 2.1、（2.1） | 见表 2.1、如图 2.1、式 2.1 |
+| 楷体/宋体 report, automatic numbered chapters | 表 2.1、图 2.1、（2.1） | 见表 2.1、如图 2.1、式 2.1 |
 | 公文, any mode or heading policy | 表 1、图 1、（1） throughout the document | 见表 1、如图 1、式 1 |
-| Any template with `heading_numbering: none`, without chapters, or with captions before the first ordinary-document chapter | Continuous integers throughout the document | 见表 1、如图 1、式 1 |
+| A 楷体/宋体 ordinary document (numbered headings or not); any template with `heading_numbering: none`, without chapters, or with captions before the first ordinary-document chapter | Continuous integers throughout the document | 见表 1、如图 1、式 1 |
 
 Each numbered level-1 section counts as a chapter, including an opening summary: an opening `# 执行摘要` or `# 导论` is chapter 1 and pushes the later chapters up. When `dangling_caption_reference` fires, its message lists the numbers that exist — copy from there instead of guessing, or write the skeleton first, build once, then fill in the references. Tables, figures and equations have separate sequences. **An uncaptioned table consumes no table number.** Captions and their body references display a space between label and number, even when the source omits it. Captions/equation numbers use native Word fields; body table/figure/equation/source references are clickable, updatable fields. Editing in Word requires updating fields; rebuilding Markdown requires updating the source's reference locators as well.
 
@@ -523,7 +529,7 @@ Introduce every table or figure before its caption in surrounding prose. Profess
 
 ## Sources
 
-Put source material in a final `# 资料来源` section. Use ordered-list items only. DocxKit renders them as native numbered `[1] xxxx`, `[2] xxxx` reference entries. With `heading_numbering: none`, an author-numbered title such as `# 第二条 资料来源` is also recognized without changing its visible title.
+Put source material in a final `# 资料来源` section. Use ordered-list items only. DocxKit renders them as native numbered `[1] xxxx`, `[2] xxxx` reference entries. On the 公文模板 the entries are set like the body (same font, size and line spacing), with `[n]` in a hanging indent two characters wide; on 楷体 and 宋体 they are one size smaller than the body (五号). With `heading_numbering: none`, an author-numbered title such as `# 第二条 资料来源` is also recognized without changing its visible title.
 
 ```markdown
 公开口径显示，预算压力主要来自回款周期延长[1]。
@@ -699,7 +705,7 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break, or be
 
 A transcription keeps the original's wording, clause numbers, masks and order. Nothing in this contract is permission to rewrite it.
 
-- Settings: `punctuation_mode: preserve` always. On the kaiti and song templates an ordinary document already keeps heading numbers and list numbers as written; on the 公文模板 add `heading_numbering: none` and `list_numbering: author`. Write `document_mode: document` when the original has headings, and do not switch to the 公文模板 just to remove a cover.
+- Settings: `punctuation_mode: preserve` always, and `heading_numbering: none` on every template: a kaiti or song ordinary document keeps numbers written in headings, but one whose headings carry none would otherwise be numbered by their structure. On the kaiti and song templates an ordinary document already keeps list numbers as written; on the 公文模板 also add `list_numbering: author`. Write `document_mode: document` when the original has headings, and do not switch to the 公文模板 just to remove a cover.
 - Position: a flush-left salutation, a right-aligned sign-off or a centred line goes in a `::: 顶格` / `::: 靠右` / `::: 居中` container (see "Paragraph Alignment"); never position text with spaces or empty paragraphs.
 - Lists: the six written forms become native lists with the original numbers (see "Lists Numbered as Written"); other numbering (`a.`, `①`, an indented sub-item) is kept as text and reported as `unsupported_list_numbering` (`info`). A numbered line that must stay an ordinary paragraph is written `1\.`.
 - Literal characters: `\*` for an asterisk (`Z\*\*\*\*\*99`), `\|` for a pipe inside a table cell; blanks of three or more underscores are written as they are. If `unparsed_inline_markdown` appears, the text has an unpaired marker: escape literal stars, or pair the markers if emphasis was intended. Never delete original characters to clear a check.

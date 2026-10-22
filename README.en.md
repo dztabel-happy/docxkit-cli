@@ -171,7 +171,7 @@ Three templates are built in: `executive-cn-docx` (KaiTi), `executive-cn-song-do
 
 Ordinary-document mode (`document_mode: document`) turns an existing contract, notice or letter into Word as it is: no cover or table of contents, and a title is optional. `heading_numbering: none` keeps the original clause numbers; `punctuation_mode: preserve` keeps the original punctuation and spaces. Write a literal asterisk as `\*` (for example `138\*\*\*\*5678`), a pipe inside a table cell as `\|`, and a paragraph that starts with a number but is not a list item as `1\.`.
 
-Captions and references are numbered automatically: by chapter in the KaiTi and SimSun templates (Table 1.1), continuously in the official-document template and in documents without heading numbers (Table 1). A table without a caption takes no number. New documents declare `numbering_rule: native-v1` at the top.
+Captions and references are numbered automatically: by chapter in the KaiTi and SimSun templates (Table 1.1), continuously in the official-document template, in KaiTi and SimSun ordinary documents and in documents without heading numbers (Table 1). A table without a caption takes no number. New documents declare `numbering_rule: native-v1` at the top.
 
 Punctuation is normalized by default: in Chinese text some half-width punctuation becomes full-width and extra spaces beside punctuation are removed. Use `punctuation_mode: preserve` to leave it untouched.
 
