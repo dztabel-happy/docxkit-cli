@@ -140,7 +140,7 @@ The exported Word file is meant to be worked on, not just read:
 
 - Captions, equation numbers, sources and the references to them use Word's own numbering. After adding or removing a table, figure or source, select all and press F9 (fn+F9 on a Mac); the numbers and every "see Table 1.3" or "[3]" update together.
 - Layout lives in styles. Change the body, Heading 1, caption or three-line table style and the whole document follows.
-- Enter after a heading gives body text; you can type straight after a table or code block; a table inserted in Word is the template's table (three-line; a grid on the 公文模板).
+- Enter after a heading gives body text; you can type straight after a table or code block; a table inserted in Word is a three-line table.
 - Each ordered list numbers from 1 on its own and can be demoted and promoted.
 
 A few operations need a small setting in Word or WPS first; the agent explains them on delivery (see the [Skill delivery instructions](skills/docxkit/SKILL.md#delivery-instructions--tell-the-user)). Edits made in Word do not flow back into the source used for rebuilding.
