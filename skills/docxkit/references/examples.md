@@ -222,23 +222,45 @@ These use what `docx-kit templates` lists under `format.features`; check it firs
 
 ### Form to be filled in by hand
 
-A grid with no header row (the first row is data too), roomy cells and stated column widths. Merged cells do not exist: this form pairs its fields so that no row needs to span the width; when the user's form has a row that must, write the cells the row has and tell the user they are not merged. Save as `examples/form.md`.
+A form that is printed and filled in with a pen. The 宋体 template; every part is a grid with no header row (`header=false`: the first row is data too), labels in bold, and a minimum row height of 8–10 mm so there is room to write. The part title is the first row of its table, merged across the whole width, so each part is a table of its own and the parts stand apart. The photo box is the last column merged down four rows with `^` (4 × 9 mm holds a 35 mm photo); its width is in millimetres, the weights of each table adding up to the 160 mm text width, and the label columns of the three tables line up. The declaration and the signatures come last, in a table with a taller row height. Save as `examples/form.md`.
 
 ```markdown
-# 培训报名表
+---
+template: executive-cn-song-docx
+---
 
-::: 表格 appearance=grid header=false spacing=roomy widths=1,2,1,2
-| 姓名 |  | 部门 |  |
-| --- | --- | --- | --- |
-| 工号 |  | 联系电话 |  |
-| 培训班次 |  | 报名日期 |  |
-| 参训理由 |  | 负责人意见 |  |
+# 实习生报名登记表
+
+::: 表格 appearance=grid header=false row_height=9mm widths=26,39,26,39,30
+| **一、个人信息** | < | < | < | < |
+| --- | --- | --- | --- | --- |
+| **姓名** |  | **性别** |  | 贴一寸照片处 |
+| **出生日期** |  | **民族** |  | ^ |
+| **学校** |  | **专业** |  | ^ |
+| **联系电话** |  | **电子邮箱** |  | ^ |
+| **通讯地址** |  | < | < | < |
 :::
 
-::: 靠右
-填表人（签字）：____________
+::: 表格 appearance=grid header=false row_height=9mm widths=26,39,26,69
+| **二、实习意向** | < | < | < |
+| --- | --- | --- | --- |
+| **意向部门** |  | **到岗日期** |  |
+| **每周天数** |  | **实习期限** |  |
+| **特长说明** |  | < | < |
+:::
+
+::: 表格 appearance=grid header=false row_height=12mm widths=26,39,26,69
+| **三、声明与签字** | < | < | < |
+| --- | --- | --- | --- |
+| 本人保证以上信息真实有效。 | < | < | < |
+| **本人签字** |  | **日期** |  |
+| **审核人签字** |  | **日期** |  |
 :::
 ```
+
+- A row whose columns differ from the rest — an 18-box ID number under a form of five columns — is a table of its own directly below, with one column per box (`widths=26,` then eighteen equal weights making up the rest); an empty line separates the two tables.
+- When one page is tight, put each part title in a left column merged down instead of a row of its own (`| **一、个人信息** | **姓名** |  | … |`, then `| ^ | **出生日期** |  | … |`): it saves a row per part, and the parts can share one table when their columns agree.
+- The user wants one page of A4: run `docx-kit pdf` on the result and check the page count before delivery. A second page that is blank means the last table ends right at the foot of the page and the empty paragraph Word keeps after a final table moved over: make a row height or a part a little smaller.
 
 ### Certificate with room for the stamp
 

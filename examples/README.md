@@ -9,7 +9,7 @@
 | [memo.md](memo.md) | 带章节的短备忘 / Short memo with chapters | 楷体 / KaiTi | `title`、`document_mode: document` |
 | [notice.md](notice.md) | 公文模板的通知，章号由模板给 / Notice on the official template, numbered by the template | 公文 / Official | `template`、`numbering_rule` |
 | [contract.md](contract.md) | 原样转录、保留条款编号的合同，结尾是左右并排、留出盖章位置的签署栏 / Transcribed contract keeping its clause numbers, ending in a side-by-side signature block with room for stamps | 宋体 / SimSun | `title`、`template`、`document_mode: document`、`punctuation_mode: preserve`、`numbering_rule` |
-| [form.md](form.md) | 手填的表单：全框线、没有表头、留高的格子 / Form to fill in by hand: all lines, no header row, roomy cells | 楷体 / KaiTi | 无 / none |
+| [form.md](form.md) | 打印出来手填的登记表：每节一张全框线、没有表头的表，小节标题整行合并，照片框竖向合并，最小行高 / Registration form printed and filled in by hand: one grid table per part without a header row, part titles merged across, a photo box merged down, a minimum row height | 宋体 / SimSun | `template` |
 | [certificate.md](certificate.md) | 落款前留出盖章位置的证明 / Certificate with room for the stamp above the sign-off | 楷体 / KaiTi | 无 / none |
 | [stated-format.md](stated-format.md) | 明说了字号、行距和四边页边距的通知 / Notice with stated sizes, line spacing and four margins | 公文 / Official | `template`、`title_size`、`body_size`、`body_line_spacing`、`margin_*` |
 
