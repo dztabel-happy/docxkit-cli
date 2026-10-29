@@ -705,6 +705,8 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break, or be
 
 ## Transcribing an Existing Document
 
+Transcribe only when the user says the wording must not change (照录、原文不能改、一字不改). A request to put material into Word ("排成 Word", "做成 Word", "整理成文档") is not a transcription: keep the content and the facts, fix obvious errors (a typo, a figure or an example that contradicts the rest of the material), turn spoken or note-like wording into written prose, and tell the user in the delivery message what was changed.
+
 A transcription keeps the original's wording, clause numbers, masks and order. Nothing in this contract is permission to rewrite it.
 
 - Settings: `punctuation_mode: preserve` always, and `heading_numbering: none` on every template: a kaiti or song ordinary document keeps numbers written in headings, but one whose headings carry none would otherwise be numbered by their structure. On the kaiti and song templates an ordinary document already keeps list numbers as written; on the 公文模板 also add `list_numbering: author`. Write `document_mode: document` when the original has headings, and do not switch to the 公文模板 just to remove a cover.
