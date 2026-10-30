@@ -50,7 +50,7 @@ The second command rebuilds the saved model into a sibling folder. Edit a copy o
 
 Re-run the same gate loop as a first build: read build `errors`, `warnings`, `checks`, `effective_document` and `text_normalization`, fix at the reported `path` and rebuild until errors and warnings are clean (leave a warning only when the user explicitly wants that shape, and say so); keep legitimate `info`. Run QA on the original generated document and review the content/layout required by the task. QA checks structure only; it does not compare a transcription with its original. Return the authoritative `docx_path`, source path, and the review status.
 
-For LibreOffice preview or conversion, create a `render-copy` after building. For a user-edited file, update fields and save in Word/WPS first. The render-only copy freezes displayed results without recomputation and is not the editable deliverable.
+For LibreOffice preview or conversion, create a `render-copy` after building. For a user-edited file, update fields and save in Word/WPS first. The render-only copy freezes displayed results without recomputation (only the page numbers of the contents are left for the renderer to compute) and is not the editable deliverable.
 
 ## Showing what changed (tracked changes)
 
