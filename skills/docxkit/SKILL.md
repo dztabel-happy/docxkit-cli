@@ -145,6 +145,7 @@ Say so to the user, naming what is missing, instead of improvising with spaces, 
 - **More than two panes side by side, text flowing from one column into the next, and anything but paragraphs in a pane** (no list, table or figure).
 - **Other spacing**: an amount in millimetres, more than three lines, space at the end of the file. **Keeping two blocks on one page**: only a side-by-side block of up to 10 lines stays whole by itself; anything else only with a `---PAGE---` before it.
 - **Decoration and special looks**: rules between résumé sections, a sealing line, a page border; a clause lead-in (`第一条`) in a style of its own — write `**第一条**` if bold is wanted. A paragraph style of its own, a size or line spacing for one paragraph, character spacing, paper other than A4, gutters and mirrored margins cannot be stated.
+- **Pictures as page decoration, and pictures without a number**: a logo or picture in the header or footer, a watermark, a page background, a picture on the cover, a picture that must carry no number (a logo, a QR code, an ID photo). Every figure is a body figure with a numbered caption (`图 N`), and it fills the text width unless `report.json` (or a chart manifest beside the image) gives a width. Tell the user, and suggest inserting such pictures in Word or WPS; do not fake them with python or another tool.
 
 ## The working loop
 
