@@ -4,17 +4,17 @@ template: executive-cn-song-docx
 
 # 实习生报名登记表
 
-::: 表格 appearance=grid header=false row_height=9mm widths=26,39,26,39,30
+::: 表格 appearance=grid header=false row_height=11.7mm widths=26,41,26,42,25
 | **一、个人信息** | < | < | < | < |
 | --- | --- | --- | --- | --- |
-| **姓名** |  | **性别** |  | 贴一寸照片处 |
+| **姓名** |  | **性别** |  | 贴照片处 |
 | **出生日期** |  | **民族** |  | ^ |
 | **学校** |  | **专业** |  | ^ |
-| **联系电话** |  | **电子邮箱** |  | ^ |
+| **联系电话** |  | **电子邮箱** |  | < |
 | **通讯地址** |  | < | < | < |
 :::
 
-::: 表格 appearance=grid header=false row_height=9mm widths=26,39,26,69
+::: 表格 appearance=grid header=false row_height=14mm widths=26,41,26,67
 | **二、实习意向** | < | < | < |
 | --- | --- | --- | --- |
 | **意向部门** |  | **到岗日期** |  |
@@ -22,7 +22,7 @@ template: executive-cn-song-docx
 | **特长说明** |  | < | < |
 :::
 
-::: 表格 appearance=grid header=false row_height=12mm widths=26,39,26,69
+::: 表格 appearance=grid header=false row_height=17mm widths=26,41,26,67
 | **三、声明与签字** | < | < | < |
 | --- | --- | --- | --- |
 | 本人保证以上信息真实有效。 | < | < | < |

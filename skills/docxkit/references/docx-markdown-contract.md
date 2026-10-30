@@ -593,15 +593,15 @@ A form to fill in by hand: grid, no header, more room in every cell, narrow labe
 :::
 ```
 
-A form with merged cells and a minimum row height. A cell that is exactly `<` joins the cell on its left, a cell that is exactly `^` joins the cell above; the top-left cell of the merged region holds the text (it may be empty). Here the photo box spans four rows of the last column, the address value spans three columns, and the remark value spans the rest of its line:
+A form with merged cells and a minimum row height. A cell that is exactly `<` joins the cell on its left, a cell that is exactly `^` joins the cell above; the top-left cell of the merged region holds the text (it may be empty). Here the photo box spans three rows of the last column — 25 mm wide and 3 × 11.7 mm, about 35.6 mm, high — and the address and remark values span the rest of their lines:
 
 ```markdown
-::: 表格 appearance=grid header=false row_height=9mm widths=26,40,26,40,28
+::: 表格 appearance=grid header=false row_height=11.7mm widths=26,41,26,42,25
 | **姓名** |  | **性别** |  | 贴照片处 |
 | --- | --- | --- | --- | --- |
 | **出生日期** |  | **民族** |  | ^ |
 | **联系电话** |  | **邮箱** |  | ^ |
-| **现住址** |  | < | < | ^ |
+| **现住址** |  | < | < | < |
 | **备注** |  | < | < | < |
 :::
 ```
@@ -610,8 +610,8 @@ A form with merged cells and a minimum row height. A cell that is exactly `<` jo
 | --- | --- | --- |
 | `appearance` | `three-line`, `grid`, `borderless`; not written: by structure | `grid` draws every line (0.5 pt); `borderless` draws none, for option lists or aligned blocks; `three-line` draws the top and bottom rules and the header rule (without a header only the top and bottom rules). Without `appearance`: three-line with a header row, grid with `header=false`, on every template |
 | `header` | `true` (default), `false` | `false`: the table has no header. The line above the `---` separator line is then data like every other row: it is not bold, nothing repeats across pages, nothing is dropped, and you do not invent column names. The separator line is still required syntax |
-| `spacing` | `normal` (default), `roomy`, `extra` | Room above and below the text in every cell: 5, 12 or 24 pt (rows about 9.5, 14.5 and 23 mm high on the default template). Use `roomy` or `extra` for cells to be written in by hand. Rows still grow with their text; for a minimum height use `row_height` |
-| `row_height` | `5mm` to `100mm`, or in `cm`, written like a page margin | Every body row (not the header row) is at least this tall, the `spacing` room included; the text stays centred vertically, and a row whose text needs more still grows, so nothing is cut. Usually 8–10 mm for a line written by hand, 12–15 mm for a signature. One value per table: there is no height for a single row and no exact height, so a taller signature row is a table of its own |
+| `spacing` | `normal` (default), `roomy`, `extra` | Room above and below the text in every cell: 5, 12 or 24 pt (rows about 9.5, 14.5 and 23 mm high on the default template in Word; on `normal` about 10.3 mm in LibreOffice). Use `roomy` or `extra` for cells to be written in by hand. Rows still grow with their text; for a minimum height use `row_height` |
+| `row_height` | `5mm` to `100mm`, or in `cm`, written like a page margin | Every body row (not the header row) is at least this tall, the `spacing` room included; the text stays centred vertically, and a row whose text needs more still grows, so nothing is cut. A value below the row's natural height (one line on `normal` spacing: about 9.5 mm in Word, 10.3 mm in LibreOffice) changes nothing, and a row comes out about 0.2 mm taller than the value (its line). Usually 11.7–14 mm for a line written by hand, 15–17 mm for a signature. A cell merged down n rows is as tall as those rows: three rows of `11.7mm` make a 35 mm photo box. One value per table: there is no height for a single row and no exact height, so a taller signature row is a table of its own |
 | `widths` | positive numbers, one per column | Relative column widths, `widths=1,2,1,2`. Without it the columns are equal. Weights that add up to the text width in millimetres are exact widths (see below) |
 | `alignments` | `left`, `center`, `right`, one per column | Per-column alignment of the cell text. Default is centred |
 | `layout` | `normal` (default), `landscape` | `landscape` puts the table on a landscape page, like `表[landscape]：`. If the caption bracket and this option are both written they must agree |
@@ -686,7 +686,7 @@ It prints one JSON object (exit code 0 on success, 1 otherwise; the JSON is plai
 docx-kit render-copy ./report/report.docx --out ./report/preview --filename report.render-only.docx
 ```
 
-LibreOffice and similar renderers recalculate Word caption and reference fields incorrectly. For a PDF use `docx-kit pdf` (above), which does this internally. `render-copy` writes a copy in which those fields are replaced by what they currently show; the original is never changed. A table of contents, and each list of figures or tables, loses only its outer TOC field: the entries stay as they are and their page-number fields are left for the renderer to compute, so the preview shows the real page numbers instead of the `1` that Word replaces when it opens the file. Page numbers, headers and footers keep their fields — with one exception: the conditional footer of `page_numbers: auto`, which LibreOffice does not display, becomes a plain page number in the copy (see `page_numbers` under "Metadata"). A freshly built document can be copied directly; for a file edited in Word or WPS, update fields and save first. The default output is `<input-stem>.render-only.docx` beside the input. Use the copy for preview and conversion only; deliver the original.
+LibreOffice and similar renderers recalculate Word caption and reference fields incorrectly. For a PDF use `docx-kit pdf` (above), which does this internally. `render-copy` writes a copy in which those fields are replaced by what they currently show; the original is never changed. A table of contents, and each list of figures or tables, loses only its outer TOC field: the entries stay as they are and their page-number fields are left for the renderer to compute, so the preview shows the real page numbers instead of the `1` that Word replaces when it opens the file. Page numbers, headers and footers keep their fields — with one exception: the conditional footer of `page_numbers: auto`, which LibreOffice does not display, becomes a plain page number in the copy (see `page_numbers` under "Metadata"). Latin text marked as Chinese — DocxKit marks it so, because Word then breaks English only between words and never hyphenates it — is marked English in the copy, with automatic hyphenation off: LibreOffice breaks Latin text marked Chinese inside a word (`error_code` as `e` / `rror_code`). A freshly built document can be copied directly; for a file edited in Word or WPS, update fields and save first. The default output is `<input-stem>.render-only.docx` beside the input. Use the copy for preview and conversion only; deliver the original.
 
 The result is JSON on stdout with `command: render-copy`, `input_sha256`, `docx_path` and `artifacts.render_copy`; `template_id` is `not-applicable`, and no `report.json` is created.
 

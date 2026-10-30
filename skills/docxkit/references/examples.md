@@ -222,7 +222,7 @@ These use what `docx-kit templates` lists under `format.features`; check it firs
 
 ### Form to be filled in by hand
 
-A form that is printed and filled in with a pen. The 宋体 template; every part is a grid with no header row (`header=false`: the first row is data too), labels in bold, and a minimum row height of 8–10 mm so there is room to write. The part title is the first row of its table, merged across the whole width, so each part is a table of its own and the parts stand apart. The photo box is the last column merged down four rows with `^` (4 × 9 mm holds a 35 mm photo); its width is in millimetres, the weights of each table adding up to the 160 mm text width, and the label columns of the three tables line up. The declaration and the signatures come last, in a table with a taller row height. Save as `examples/form.md`.
+A form that is printed and filled in with a pen. The 宋体 template; every part is a grid with no header row (`header=false`: the first row is data too), labels in bold. The part title is the first row of its table, merged across the whole width, so each part is a table of its own and the parts stand apart. The photo box is the last column, 25 mm wide, merged down three rows with `^`; the weights of each table are millimetres adding up to the 160 mm text width. The declaration and the signatures come last, in a table with taller rows. Save as `examples/form.md`.
 
 ```markdown
 ---
@@ -231,17 +231,17 @@ template: executive-cn-song-docx
 
 # 实习生报名登记表
 
-::: 表格 appearance=grid header=false row_height=9mm widths=26,39,26,39,30
+::: 表格 appearance=grid header=false row_height=11.7mm widths=26,41,26,42,25
 | **一、个人信息** | < | < | < | < |
 | --- | --- | --- | --- | --- |
-| **姓名** |  | **性别** |  | 贴一寸照片处 |
+| **姓名** |  | **性别** |  | 贴照片处 |
 | **出生日期** |  | **民族** |  | ^ |
 | **学校** |  | **专业** |  | ^ |
-| **联系电话** |  | **电子邮箱** |  | ^ |
+| **联系电话** |  | **电子邮箱** |  | < |
 | **通讯地址** |  | < | < | < |
 :::
 
-::: 表格 appearance=grid header=false row_height=9mm widths=26,39,26,69
+::: 表格 appearance=grid header=false row_height=14mm widths=26,41,26,67
 | **二、实习意向** | < | < | < |
 | --- | --- | --- | --- |
 | **意向部门** |  | **到岗日期** |  |
@@ -249,7 +249,7 @@ template: executive-cn-song-docx
 | **特长说明** |  | < | < |
 :::
 
-::: 表格 appearance=grid header=false row_height=12mm widths=26,39,26,69
+::: 表格 appearance=grid header=false row_height=17mm widths=26,41,26,67
 | **三、声明与签字** | < | < | < |
 | --- | --- | --- | --- |
 | 本人保证以上信息真实有效。 | < | < | < |
@@ -258,8 +258,11 @@ template: executive-cn-song-docx
 :::
 ```
 
-- A row whose columns differ from the rest — an 18-box ID number under a form of five columns — is a table of its own directly below, with one column per box (`widths=26,` then eighteen equal weights making up the rest); an empty line separates the two tables.
-- When one page is tight, put each part title in a left column merged down instead of a row of its own (`| **一、个人信息** | **姓名** |  | … |`, then `| ^ | **出生日期** |  | … |`): it saves a row per part, and the parts can share one table when their columns agree.
+- **Row height.** A row is never shorter than its text and the room above and below it: one line of 五号 text on the default `spacing` makes a row about 9.5 mm high in Word and 10.3 mm in LibreOffice, so `row_height=9mm` or `10mm` changes nothing. A row also comes out about 0.2 mm taller than its `row_height` (the width of its line). Write more than 10.5 mm when the height matters: 11.7–14 mm leaves room to write, 15–17 mm room to sign.
+- **Photo box.** A cell merged down n rows is as tall as those n rows. Three rows of `row_height=11.7mm` make a box 35.6 mm high, in Word and in LibreOffice alike, and the 25 mm column makes it 25 mm wide: a 一寸 photo (25 × 35 mm) fits inside. Four rows of the default height come out 38 mm in Word and 41 mm in LibreOffice — too tall for a stated 3.5 cm. When the user gives a size, choose the rows and `row_height` to match it and measure the box in the PDF; when not, a box 35–40 mm high is fine for a 一寸 photo.
+- **Columns that line up.** The label columns of stacked tables line up only when their widths in millimetres are the same: every table here starts `26,41,26`, and its last weight takes up the rest of the 160 mm.
+- A row whose columns differ from the rest — an 18-box ID number under a form of five columns — is a table of its own directly below, with one column per box (`widths=26,` then eighteen equal weights making up the rest); an empty line separates the two tables. Only the ID number goes in that table: a free-text row (school, employer, address) stays in the main form, where its value has a wide cell.
+- When the page has room left at the bottom, give the rows more height rather than leave a blank band under the last table — this example's second and third parts use 14 and 17 mm for that. When one page is tight, put each part title in a left column merged down instead of a row of its own (`| **一、个人信息** | **姓名** |  | … |`, then `| ^ | **出生日期** |  | … |`): it saves a row per part, and the parts can share one table when their columns agree.
 - The user wants one page of A4: run `docx-kit pdf` on the result and check the page count before delivery. A second page that is blank means the last table ends right at the foot of the page and the empty paragraph Word keeps after a final table moved over: make a row height or a part a little smaller.
 
 ### Certificate with room for the stamp
