@@ -77,6 +77,8 @@ E = \frac{1}{n} \sum_{i=1}^{n} \frac{R_i}{C_i}
 2. [区域消费行为调研](https://example.com/survey)，第三方调研机构，2026-06-28 访问。
 ````
 
+The cover shows `title`, `subtitle`, `client · date` and `confidentiality`. `author` goes only into the Word document properties (作者), with an `info` check `author_not_displayed`; an issuing organisation that should be seen on the cover goes in `subtitle`, for example `subtitle: 某某咨询有限公司 编制`.
+
 ## Plain Documents
 
 A plain document has no cover, no contents and no header. On the default 楷体 template (and on 宋体) headings and list numbers are kept as written and the page number appears only when there is a second page.
