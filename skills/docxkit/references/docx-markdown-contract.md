@@ -36,6 +36,8 @@ Available templates (different Chinese font pairing and layout personality):
 | `executive-cn-song-docx` | 宋体 | 黑体（不加粗，GB/T 9704 搭配） | 宋体 | 宋体加粗 | 正式规范风（行距 20 磅、标题段距阶梯、清北学位论文体系） |
 | `executive-cn-official-docx` | 仿宋_GB2312 三号 | H1 黑体；H2 楷体_GB2312 加粗；H3 仿宋_GB2312 加粗；H4 仿宋_GB2312 | 仿宋_GB2312 小四号，表题同字号 | 方正小标宋简体（二号封面标题） | 首页副标题无前缀、无页眉、A4 默认页边距、固定 30 磅行距、公文序号“一、”“（一）”“1.”“（1）”；禁止 callout |
 
+The 公文模板 in words: 二号 方正小标宋简体 title centred, 楷体_GB2312 subtitle without a prefix, 仿宋_GB2312 三号 body on a fixed 30 pt line, headings 一、（一）1.（1） in 黑体, bold 楷体_GB2312, bold 仿宋_GB2312 and 仿宋_GB2312, 小四 tables with a bold header, sources like the body, small print and footnotes 四号, definition and checklist tables 小四, page numbers as GB/T 9704 `— 1 —` in 四号宋体 centred 7 mm below the text area, no header, no callouts.
+
 Body Latin text uses Times New Roman; code, equations and some template roles have their own fonts. Chinese font declarations follow the template, including code and equations. Pick a non-default template only when the user asks for the corresponding typography.
 
 All three templates support both modes (`document_mode: report` or `document`). A mode is a ready-made set of defaults; every item in it can also be written on its own.
@@ -46,6 +48,8 @@ All three templates support both modes (`document_mode: report` or `document`). 
 | kaiti or song, `document` (an ordinary document) | none | by the headings (below) | `author` | `auto` |
 | official, `document` | none | `auto` (公文序号) | `template` | `always` |
 | official, `report` | cover and TOC, no header | `auto` | `template` | `always` |
+
+The parts are `cover`, `toc`, `chapter_header`, `list_of_figures`, `list_of_tables`, `page_numbers` and `heading_numbering`. Each overrides the mode's default: `cover: false` gives a report that starts with its title and contents, and a plain document (`document_mode: document`) can have `cover: true` (it needs a `title`) and `toc: true` (it needs chapter headings) while its heading and caption numbering stay those of a plain document — no need to make it a report for that.
 
 So an ordinary document on the kaiti or song template numbers its headings only when their structure calls for it (numbers the author wrote in headings are always kept, see `heading_numbering` below), keeps list numbers as written, and shows page numbers only when it runs to more than one page. Reports and the official template are as they always were. Page numbers are fields that can be updated in Word. Run `docx-kit templates` to query each mode's defaults.
 
@@ -70,6 +74,8 @@ So an ordinary document on the kaiti or song template numbers its headings only 
 | `#` inside a code or math fence | not a chapter |
 | `1、事项`, `（1）事项` | not a chapter |
 
+**A lone `# 资料来源`.** A sources heading is never a chapter and never the title: body text followed only by `# 资料来源`, or a text whose only heading is a first-line `# 资料来源`, is a plain document with its sources section (without a title unless you write `title`). Write `document_mode: report` if it should still be a report.
+
 `effective_document.document_mode` in the receipt says which was used. When the content decided on `document`, `automatic_structure` also contains `document_mode_document_without_chapters`. Write `document_mode` whenever you know what the user wants: `report` for a short text that still needs a cover and contents, `document` for a long text with chapters that needs neither.
 
 Two kinds of existing kaiti or song source now give a different result. A source with no `document_mode` and no chapters used to become a report with a cover, contents and one chapter made from the title; it is now an ordinary document. A source that says `document_mode: document` now gets the three defaults in the table; write `heading_numbering: auto`, `list_numbering: template` and `page_numbers: always` to keep the earlier result. Sources with chapters, the official template, and every `report.json` are unaffected (a `report.json` carries its settings; see `layout_rule` below).
@@ -83,7 +89,9 @@ Two kinds of existing kaiti or song source now give a different result. A source
 | `chapter_header` | `true` / `false` | A header on body pages naming the current chapter (level-1 heading). In a document with no level-1 heading it shows the document title instead. |
 | `page_numbers` | `always` / `none` / `auto` | `always` puts the page number, centred, in the footer of contents and body pages; on the 公文模板 it follows GB/T 9704: `— 1 —` in 四号 宋体 with half-width digits, its line 7 mm below the text area, centred on every page (not alternating sides). Its position and form cannot be chosen; `none` shows no page number anywhere; `auto` shows page numbers only when the whole document has more than one page. Default: `auto` for a kaiti or song ordinary document, `always` otherwise. |
 
-`page_numbers: auto` writes a conditional field into the footer (`IF NUMPAGES > 1`, counting every page of the file). Word and WPS evaluate it as they lay the pages out (on the 公文模板 the two dashes are inside the condition too): a one-page document shows no number, the numbers appear when it grows to a second page and disappear when it shrinks back, with nothing to update by hand. The receipt therefore does not say whether a number is currently shown. LibreOffice does not evaluate this footer and shows no page number at all, so `render-copy` puts a plain page number into the preview copy instead: previews of several pages are right, and the preview of a one-page document shows a "1" that the delivered file does not have. Binaries older than this feature reject `page_numbers: auto`.
+`page_numbers: auto` writes a conditional field into the footer (`IF NUMPAGES > 1`, counting every page of the file). Word and WPS evaluate it as they lay the pages out (on the 公文模板 the two dashes are inside the condition too): a one-page document shows no number, the numbers appear when it grows to a second page and disappear when it shrinks back, with nothing to update by hand. The receipt therefore does not say whether a number is currently shown. LibreOffice does not evaluate this footer and shows no page number at all, so `render-copy` puts a plain page number into its copy instead: the copy of a document of several pages is right, and the copy of a one-page document shows a "1" that the delivered file does not have. Binaries older than this feature reject `page_numbers: auto`.
+
+The page number sits centred in the footer, and on the 公文模板 follows GB/T 9704 (`— 1 —`; odd pages right and even pages left without a cover or contents, centred with one); its position and form cannot be chosen in this version.
 
 `document_mode` keeps deciding everything else: title and section rules, caption numbering and check severities. Typical uses: `cover: false` for a report that starts with its title and contents; `toc: false` for a short report; `document_mode: document` with `toc: true` or `cover: true` for a long ordinary document.
 
@@ -112,7 +120,7 @@ Put `numbering_rule: native-v1` in new Markdown that refers to tables, figures o
 
 ## Stated Formats and the Type Scale
 
-Use these only when the user states a format ("正文仿宋三号，行距固定 28 磅", "标题二号小标宋", "字大一点"). They change the chosen template; they do not replace choosing one. Without them a document is built exactly as before.
+Use these only when the user states a format ("正文仿宋三号，行距固定 28 磅", "标题二号小标宋", "字大一点"). A paragraph style of its own, a size or line spacing for one paragraph, character spacing, paper other than A4, gutters and mirrored margins cannot be stated. They change the chosen template; they do not replace choosing one. Without them a document is built exactly as before.
 
 ```markdown
 ---
@@ -215,7 +223,7 @@ margin_right: 26mm
 - In JSON, a figure whose `width` is given in millimetres and is wider than the text area. Use a smaller width or a percentage.
 - `--settle-figures` together with stated margins: figure settling does not measure the new geometry yet.
 
-When the longest chapter title may not fit in one header line of the new text width, the build succeeds with the warning `chapter_header_may_not_fit`. This is an estimate: if the header does wrap in Word, Word pushes the text of that page down, so the top margin is no longer the stated one. Look at the page in Word; raise `margin_top` to the value the message gives, shorten the heading, or set `chapter_header: false`.
+When the longest chapter title may not fit in one header line of the new text width, the build succeeds with the warning `chapter_header_may_not_fit`. This is an estimate: if the header does wrap in Word, Word pushes the text of that page down, so the top margin is no longer the stated one. Raise `margin_top` to the value the message gives, shorten the heading, or set `chapter_header: false`.
 
 The build receipt gives the margins and the text area in effect under `effective_document.format.page`.
 
@@ -240,8 +248,6 @@ page_position: center
 **What counts as content.** Word centres everything in the section, structural empty paragraphs included: the empty paragraph after a table that ends the document (where the user goes on writing) or the one that carries the section break after a landscape table. A page that ends that way shows its text about 8–17 pt above the exact centre. Do not add or delete paragraphs or change margins to correct it.
 
 **What does not change.** The cover and the contents pages keep their own layout; without a cover, a document with contents has its title on the contents page, which is not centred either. Header, footer and page numbers stay where they are, numbering does not restart, and no section or page is added. With `page_numbers: auto` the number appears once the text reaches a second page, as before.
-
-**Previews.** LibreOffice (and so the preview of a render copy, and the built-in preview of some desktop apps) does not apply vertical alignment: it shows a centred page from the top. Check the position in Word or WPS, or trust the receipt.
 
 **Refused.** `--settle-figures` together with `center` (it judges a page by the space under its last line). `redline` between drafts whose page positions differ.
 
@@ -511,6 +517,8 @@ Markers must be paired and hug their content (`**9.1%**`, not `** 9.1% **`); unp
 
 `\<br>` prints a literal `<br>`; inside a code span or a code block `<br>` is always literal. Other tags (`<b>`, `</br>`, `< br>`) are text. In a `::: 表格` cell, `<br>` is not a merge marker: only a whole cell of `<` or `^` merges. `report.json` stores `<br>` as written (in text, cells, the title), and a rebuild breaks the line again; a newline character `\n` in a `report.json` text is not a line break (Word shows it as a space), so write `<br>`. Column widths are estimated from the longest line of a cell. In a redline, a changed paragraph is compared character by character as it is shown, breaks and inline markers included, with the change on the right line (details in `revising-documents.md`, "Showing what changed"); a changed table is deleted and inserted whole as before. Writing `<br />` instead of `<br>` is not a change.
 
+A long `title` that would wrap with one or two characters (or one word) left on its last line: break it yourself with `<br>` where the meaning is complete, lines of similar length (`title: 关于开展2026年第四季度<br>安全生产大检查的通知`); the warning `title_short_last_line` points it out.
+
 ### Punctuation and Spaces
 
 **The default is `punctuation_mode: normalize`.** In text that contains Chinese characters, the ASCII punctuation `, ; : ? ! .` becomes `，；：？！。`, and ASCII spaces between that punctuation and Chinese characters are removed. For example, `甲,  乙: 丙.` becomes `甲，乙：丙。`.
@@ -522,6 +530,8 @@ Left alone in either mode: bare `http(s)` URLs and email addresses, link targets
 **Lines joined into one paragraph.** Adjacent lines of a paragraph (also in alignment containers and side-by-side panes) are joined with no space where the characters on both sides are Chinese — characters, kana, Chinese punctuation, and a curly quote, dash or ellipsis next to them — because a line break in Chinese is not a space: `第一，先切断电源。` + line break + `第二，……` gives `第一，先切断电源。第二，……`. Where both sides are Latin, or one side is Latin, the lines are joined with one space as before. This holds in both punctuation modes.
 
 Set `punctuation_mode: preserve` to skip this step. Author punctuation and spaces are then kept character for character. Markdown structure, inline markers, the escapes, `<br>` and automatic numbering still apply. Half-width spaces and tabs at the edges of a table cell or heading are Markdown padding and are dropped; full-width spaces there are kept, so `| 甲方：　　　　 |` keeps its blank for a signature. The source text in `report.json` is never rewritten in either mode; the build receipt reports how many characters normalization changed.
+
+A paragraph with a bare URL or a very long Latin string may break inside words and is set flush left instead of justified, so the string cannot run off the line. Lines of one paragraph are joined without a space where both sides are Chinese.
 
 ## Captions
 
@@ -649,7 +659,7 @@ A document that uses the container is read under `format-v1` like the stated for
 
 ## Figures
 
-Image paths are resolved relative to the Markdown file (for `report.json`, relative to that file), not to the working directory. Keep alt text short and different from the formal `图：` caption.
+Image paths are resolved relative to the Markdown file (for `report.json`, relative to that file), not to the working directory. Keep alt text short and different from the formal `图：` caption. Every figure is a body figure with a numbered caption (`图 N`), and it fills the text width unless `report.json` (or a chart manifest beside the image) gives a width.
 A figure whose file is missing fails validation; the error names the folder a relative path was resolved against and the full path that was looked for. When the user asked for a figure that does not exist, do not draw, generate or borrow one: build without that figure, tell the user which file was missing, and write a placeholder paragraph in its place (for example `［此处插入时序图］`) only if the user agrees to one.
 The generated `report.json` rebases relative figure paths to its own output directory, so `docx-kit build report/report.json --out report --filename 目标文件名.docx` remains reproducible.
 
@@ -658,7 +668,7 @@ Unsupported extensions, mismatched file signatures, and corrupt bitmap files fai
 
 ### Chart manifests (ChartKit)
 
-If `<image>-manifest.json` sits next to a figure image (e.g. `assets/chart.png` + `assets/chart-manifest.json`), Markdown import reads `layout.recommended_insert_width_mm` (falling back to `layout.rendered_width_mm`) to size the figure. Discovery is fail-soft: a sidecar that is not valid JSON or has no usable width is treated as absent and never blocks or changes a build. An explicit `width` on the figure always wins over the manifest.
+If `<image>-manifest.json` sits next to a figure image (e.g. `assets/chart.png` + `assets/chart-manifest.json`), Markdown import reads `layout.recommended_insert_width_mm` (falling back to `layout.rendered_width_mm`) to size the figure. A ChartKit image with its `-manifest.json` beside it is sized from the manifest. Discovery is fail-soft: a sidecar that is not valid JSON or has no usable width is treated as absent and never blocks or changes a build. An explicit `width` on the figure always wins over the manifest.
 
 In direct `report.json`, `chart_manifest` on a figure block is a strict reference: the file must exist and parse, otherwise the build fails with a structured error.
 
@@ -668,7 +678,7 @@ Word cannot split a figure across pages. A figure taller than the space left on 
 
 `docx-kit build <input> --out <dir> --filename <name.docx> --settle-figures` measures the real pagination after the normal build and, **in the delivered `.docx` only**, lets such a figure fall back by one or two of the ordinary paragraphs that follow it, so those paragraphs fill the page and the figure opens the next one. The paragraphs keep their order and wording; only the figure's position among them changes. The input and `report.json` keep the author's order, and every build starts again from that order.
 
-- **Use it only on request**: when the user asks to reduce the blank space before a figure, or you can see that problem in the delivered file. It is not a default and it does not replace sizing a figure sensibly.
+- **Use it only on request**: when the user asks to reduce the blank space before a figure. It is not a default and it does not replace sizing a figure sensibly.
 - **What it measures with**: on Windows with Microsoft Word installed, Word itself (the reader's pagination). Otherwise LibreOffice (`soffice` on `PATH`, `DOCXKIT_SOFFICE`, or the standard install location) plus poppler's `pdftotext`; LibreOffice measures a render-only copy. `DOCXKIT_SETTLE_WITH=libreoffice` skips Word; `DOCXKIT_DOCX2PDF=<executable>` uses your own converter (`<it> <input.docx> <output.pdf>`), on the original document unless `DOCXKIT_DOCX2PDF_RENDER_COPY=1` is set.
 - **LibreOffice is not the reader's Word**: the two paginate these documents a line or two apart per page. A LibreOffice-measured arrangement is re-checked with the page one or two lines taller and shorter and is delivered only if it is no worse than the draft both ways; even so, in our sample roughly one changed document in nine came out worse in real Word. For a document that matters, measure with Word.
 - **A figure never moves past** a paragraph that points at it (“上图”“图中”“如上所示”), its note or source line (“注：”“资料来源：”), a paragraph describing what is on it (“右上区域”“虚线”“箭头”), a lead-in sentence (ends with a colon, “如下”“以下”), a salutation, sign-off or centred line (a `::: 顶格`, `::: 靠右` or `::: 居中` paragraph), or a paragraph directly followed by a table, figure, list, equation or other non-paragraph block (it is most likely that block's lead-in; a hard page break after it does not count); it never leaves a preceding sentence that points down at it (“如下图所示：”), and a figure placed directly after another figure stays with it. These word lists only stop a move — they do not prove a paragraph is position-independent. Referring to figures by number (`见图 2.1`) is what makes a move safe.
@@ -702,10 +712,10 @@ Read `notes`: they name the engine and say when Word failed and LibreOffice was 
 ### Render-only copies
 
 ```bash
-docx-kit render-copy ./report/report.docx --out ./report/preview --filename report.render-only.docx
+docx-kit render-copy ./report/report.docx --out ./report/copy --filename report.render-only.docx
 ```
 
-LibreOffice and similar renderers recalculate Word caption and reference fields incorrectly. For a PDF use `docx-kit pdf` (above), which does this internally. `render-copy` writes a copy in which those fields are replaced by what they currently show; the original is never changed. A table of contents, and each list of figures or tables, loses only its outer TOC field: the entries stay as they are and their page-number fields are left for the renderer to compute, so the preview shows the real page numbers instead of the `1` that Word replaces when it opens the file. Page numbers, headers and footers keep their fields — with one exception: the conditional footer of `page_numbers: auto`, which LibreOffice does not display, becomes a plain page number in the copy (see `page_numbers` under "Metadata"). Latin text marked as Chinese — DocxKit marks it so, because Word then breaks English only between words and never hyphenates it — is marked English in the copy, with automatic hyphenation off: LibreOffice breaks Latin text marked Chinese inside a word (`error_code` as `e` / `rror_code`). A freshly built document can be copied directly; for a file edited in Word or WPS, update fields and save first. The default output is `<input-stem>.render-only.docx` beside the input. Use the copy for preview and conversion only; deliver the original.
+`render-copy` is for other programs that read the file and for troubleshooting, not a check before delivery. LibreOffice and similar renderers recalculate Word caption and reference fields incorrectly. For a PDF use `docx-kit pdf` (above), which does this internally. `render-copy` writes a copy in which those fields are replaced by what they currently show; the original is never changed. A table of contents, and each list of figures or tables, loses only its outer TOC field: the entries stay as they are and their page-number fields are left for the renderer to compute, so the copy shows the real page numbers instead of the `1` that Word replaces when it opens the file. Page numbers, headers and footers keep their fields — with one exception: the conditional footer of `page_numbers: auto`, which LibreOffice does not display, becomes a plain page number in the copy (see `page_numbers` under "Metadata"). Latin text marked as Chinese — DocxKit marks it so, because Word then breaks English only between words and never hyphenates it — is marked English in the copy, with automatic hyphenation off: LibreOffice breaks Latin text marked Chinese inside a word (`error_code` as `e` / `rror_code`). A freshly built document can be copied directly; for a file edited in Word or WPS, update fields and save first. The default output is `<input-stem>.render-only.docx` beside the input. Use the copy for other programs only; deliver the original.
 
 The result is JSON on stdout with `command: render-copy`, `input_sha256`, `docx_path` and `artifacts.render_copy`; `template_id` is `not-applicable`, and no `report.json` is created.
 
@@ -784,7 +794,7 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | `table_consider_landscape` | warning | warning | Table cannot fit at normal portrait size; consider landscape. With a stated size or `text_scale: large` the table is not shrunk either, so cells wrap. Decided by the length of each column's text, not by `widths`; the message names the widest column. Shorten its longest header or cell, use fewer columns or `表[landscape]：`; if the compact (or wrapped) table reads well, it may stay (see Tables) |
 | `font_not_found` | warning | warning | A stated font is not installed on this machine: the name is written as given, its display is unconfirmed and readers without it get a silent substitute. Ask the user for the font or for permission to use another |
 | `fixed_line_spacing_tall_inline` | warning | warning | A paragraph under a stated fixed line spacing holds an inline formula taller than the line; to keep it whole (WPS cuts it off) that paragraph was given "at least" the stated value, the other paragraphs keep the fixed value. Tell the user, or make the formula a display equation |
-| `chapter_header_may_not_fit` | warning | warning | With the stated margins the longest chapter title may wrap to a second header line and reach past the top margin; Word then pushes that page's text down. Check the page in Word; raise `margin_top`, shorten the heading or turn the header off |
+| `chapter_header_may_not_fit` | warning | warning | With the stated margins the longest chapter title may wrap to a second header line and reach past the top margin; Word then pushes that page's text down. Raise `margin_top`, shorten the heading or turn the header off |
 | `title_short_last_line` | warning | warning | The document title (cover title, title block, 公文标题) is estimated to wrap with a very short last line (under a quarter of a line, or a single English word), measured with the effective title size and font and the text width; each line you broke with `<br>` is estimated on its own. Break it with `<br>` where the meaning is complete so the lines are of similar length (公文: trapezoid or diamond). It is an estimate and stays silent near the edge; Word decides |
 | `line_break_ignored` | warning | warning | A `<br>` where it is not a line break (heading, caption, source entry, callout or code title, metric-grid caption, cover client/date/confidentiality): it was dropped and the text is shown on one line. Reword or shorten it; write `\<br>` for a literal `<br>` |
 | `table_compact_layout_ignored` | warning | warning | Obsolete compact flag; remove it, sizing is automatic |
@@ -830,7 +840,7 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | `页边距写带单位的毫米或厘米` / `theme.format.margins…` | A margin without a unit or in another unit; or margins that leave too small a text area, or that collide with the chapter header or the page number. The message names the edge and the smallest value that works. Tell the user when the margin they asked for cannot be built; do not pick another margin for them silently. |
 | `…width: … is wider than the text area` | A figure width stated in millimetres does not fit between the stated margins. Use the width the message gives, or a percentage. |
 | `--settle-figures is not available together with stated page margins yet` | Build without `--settle-figures`, or without the margin keys. |
-| `chapter_header_may_not_fit` | Open the page in Word. If the header wraps, raise `margin_top` to the value in the message, shorten the heading, or set `chapter_header: false`. |
+| `chapter_header_may_not_fit` | Raise `margin_top` to the value in the message, shorten the heading, or set `chapter_header: false`. |
 | `title_short_last_line` | Break the title with `<br>` where the meaning is complete, so the lines are of similar length (`关于开展2026年第四季度<br>安全生产大检查的通知`). Do not shorten or reword the user's title to clear it; if the title must stay as written, deliver and mention the wrap. |
 | `line_break_ignored` | The `<br>` is in a heading, caption, source entry or other place that does not break. Remove it, or say the second part in the text; do not split a heading into two headings. |
 | `redline needs both drafts to have the same page margins` | Build the two drafts separately, or give both drafts the same margins. |
@@ -844,11 +854,11 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 | `legacy_official_reference` / `caption_number_replaced` | Informational compatibility and renumbering notices; read them, but do not change an original merely to clear them. |
 | Punctuation or spaces changed unexpectedly (`text_normalization.applied: true`) | Add `punctuation_mode: preserve`. |
 | Formula rendered as plain text | Correct the LaTeX or use valid native OMML from the source. Check top-level `warnings` as well as `checks`. |
-| Figure settling skipped or stopped | Inspect `figure_settling` and warn the user; this warning alone does not fail strict builds. A moved figure still needs a reading-order review. |
+| Figure settling skipped or stopped: `warnings` starting with `图位置整理未执行` / `图位置整理中止` (only with `--settle-figures`) | Inspect `figure_settling` and warn the user; this warning alone does not fail strict builds. A moved figure still needs a reading-order review. Not a content problem, and the document was still delivered — either the normal one or an arrangement measured before the pass stopped. Do not try to "fix" the content. Whether paragraphs were moved is told by `figure_settling.moved_paragraphs`, not by the warning: if it is above 0, check the moved paragraphs as usual. Tell the user; measuring needs Microsoft Word on Windows, or LibreOffice plus poppler elsewhere. |
 | QA fails | Rebuild from source. If it still fails, report the QA result as a tool issue. |
 | A command or option is absent | The installed binary is older than this contract. The CLI is updated once at session start, fail-soft, as `SKILL.md` describes, never in the middle of a build and redline loop; if it is still missing, report the local capability gap. Do not silently produce a report when a plain document was requested, and do not fall back to generating the Word file another way. |
 
-`docx-kit build` takes `--embed-fonts` when recipients lack the template's fonts and the locally available fonts allow embedding; fonts are otherwise not embedded.
+`docx-kit build` takes `--embed-fonts` when recipients lack the template's fonts and the locally available fonts allow embedding; fonts are otherwise not embedded. The template fonts are written with alternative names, so Word shows a close system font where one is missing (on the 公文模板: 仿宋, 楷体 and 宋体 on Windows) and the file stays small and fully editable.
 
 ## Machine-Readable Results (cli-contract 0.2)
 
