@@ -50,7 +50,7 @@ docx-kit --version
 出现类似输出代表 CLI 安装成功：
 
 ```text
-docx-kit 0.1.63 (cli-contract 0.2)
+docx-kit 0.2.0 (cli-contract 0.2)
 ```
 
 ### 2. 安装 Agent skill（二选一）
@@ -179,13 +179,13 @@ report/qa/qa-result.json
 
 [示例](examples/README.md)包含报告、备忘、合同、通知、函件各一份，可以直接构建。
 
-LibreOffice 等工具会把 Word 的编号算错。需要用它们预览或转 PDF 时，先生成一份渲染副本：
+要 PDF 时用 `docx-kit pdf`：Windows 上装了 Microsoft Word 就用 Word 导出，和在 Word 里另存为 PDF 一样；其它平台用 LibreOffice 导出，编号和引用是对的，但换行、分页可能和 Word 差一两行，缺的字体会被替代（结果里会列出）。两者都没有时它会说明，这时在 Word 或 WPS 里另存为 PDF。
 
 ```bash
-docx-kit render-copy ./report/项目复盘报告.docx --out ./report/preview --filename preview.render-only.docx
+docx-kit pdf ./report/项目复盘报告.docx --out ./report --filename 项目复盘报告.pdf
 ```
 
-副本只用于预览和转换，不改原件；交付的仍是原来的 Word 文件。
+LibreOffice 等工具会把 Word 的编号算错，不要直接用它们转换交付的文件。给别的程序读文件时，用 `docx-kit render-copy` 生成一份渲染副本；副本不改原件，交付的仍是原来的 Word 文件。
 
 修订稿用 `docx-kit redline` 比较两份源文件，生成带修订标记的 Word：接受全部修订得到新稿，拒绝全部得到旧稿。用法见[修订说明](skills/docxkit/references/revising-documents.md)。
 

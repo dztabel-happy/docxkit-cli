@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.1.63 (cli-contract 0.2)
+docx-kit 0.2.0 (cli-contract 0.2)
 ```
 
 ### 2. Install one agent skill
@@ -179,13 +179,13 @@ Supports native editable Word equations, references to tables, figures, equation
 
 The [examples](examples/README.md) include a report, a memo, a contract, a notice and a letter, all buildable as they are.
 
-LibreOffice and similar tools recalculate Word's numbering incorrectly. To preview or convert to PDF with them, make a render-only copy first:
+For a PDF, use `docx-kit pdf`. On Windows with Microsoft Word it exports through Word, the same as saving as PDF in Word; elsewhere it exports with LibreOffice, so numbers and references are right, but line and page breaks may differ from Word by a line or two and missing fonts are substituted (the result lists them). When neither is available it says so; save as PDF from Word or WPS instead.
 
 ```bash
-docx-kit render-copy ./report/project-review.docx --out ./report/preview --filename preview.render-only.docx
+docx-kit pdf ./report/project-review.docx --out ./report --filename project-review.pdf
 ```
 
-The copy is for preview and conversion only and never changes the original; deliver the original Word file.
+LibreOffice and similar tools recalculate Word's numbering incorrectly, so do not convert the delivered file with them directly. For other programs that read the file, `docx-kit render-copy` makes a render-only copy; it never changes the original, and the original Word file is what you deliver.
 
 `docx-kit redline` compares two source files and produces a Word file with tracked changes: accepting all gives the new version, rejecting all gives the old one. See the [revision instructions](skills/docxkit/references/revising-documents.md).
 
