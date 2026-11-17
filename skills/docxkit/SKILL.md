@@ -13,7 +13,7 @@ DocxKit turns Markdown (or `report.json`) into a Word `.docx` the user can keep 
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.2.0`; what decides is what the binary reports. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
+This skill matches `@dztabel/docxkit >= 0.2.1`; what decides is what the binary reports. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
 
 ```bash
 npm install @dztabel/docxkit@latest   # session-start upgrade; on failure keep the local install
