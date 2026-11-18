@@ -9,7 +9,7 @@ Build the editable Word file from Markdown or `report.json`. Make corrections in
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.2.3`. Once at session start, refresh the CLI and skill. If offline, continue with the installed version. Use the same binary throughout a build or revision.
+This skill matches `@dztabel/docxkit >= 0.2.4`. Once at session start, refresh the CLI and skill. If the refresh fails, continue with the installed version. Use the same binary throughout a build or revision.
 
 ```bash
 npm install @dztabel/docxkit@latest
@@ -54,7 +54,7 @@ npx --no-install docx-kit qa ./output_docx/经营分析会通知.docx --report-j
 
 Read the receipt's errors, warnings and checks. Fix the source and rebuild if needed. Check `effective_document` against the requested mode and numbering, and `text_normalization` if the wording must be exact. Compare the generated model and content with the request. Explain any warning retained for an intentional layout.
 
-Deliver the single file at `docx_path` and identify its editable source. Tell the recipient they can keep writing in Word or WPS; for a later rebuild, ask for any edits made there. Report the checks actually performed. Structural QA inspects the DOCX package. Visual appearance, source fidelity and accepting or rejecting tracked changes each require their own check.
+Deliver the single file at `docx_path` and identify its editable source. Tell the recipient they can keep writing in Word or WPS; for a later rebuild, ask for any edits made there. At handoff, identify any unmet requirements and any fields left blank because source information was missing. Report the checks actually performed. Structural QA inspects the DOCX package. Visual appearance, source fidelity and accepting or rejecting tracked changes each require their own check.
 
 ## When the task needs more
 

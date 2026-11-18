@@ -79,11 +79,13 @@ Look up the reported check code or error message here. For integration work, the
 
 `docx-kit build` takes `--embed-fonts` when recipients lack the template's fonts and the locally available fonts allow embedding; fonts are otherwise not embedded. The template fonts are written with alternative names, so Word shows a close system font where one is missing (on the 公文模板: 仿宋, 楷体 and 宋体 on Windows) and the file stays small and fully editable.
 
+For a local npm installation, `sync-skill` mirrors the packaged skill into the `docxkit` subdirectory of each existing skills root (`~/.claude/skills` and `~/.agents/skills`). In its JSON receipt, `source` is the packaged skill directory, `synced` lists the updated destinations, `skipped` names absent default roots, and `errors` explains failures. If `ok` is true and `synced` is empty, no copy was updated. If the installed CLI predates this command, skip it and continue with the installed skill.
+
 ## Machine-Readable Results (cli-contract 0.2)
 
-`build-result.json`, `redline-result.json`, and `qa-result.json` carry `contract_version: "0.2"`; stdout matches the persisted result file for these commands. `render-copy` instead returns its receipt only on stdout.
+`build-result.json`, `redline-result.json`, and `qa-result.json` carry `contract_version: "0.2"`; stdout matches the persisted result file for these commands. After a normal build, verify that the Word file at `docx_path`, `report.json` and `build-result.json` exist before delivery. `render-copy` instead returns its receipt only on stdout.
 
-- With a binary listing `components [--list | <component-id>]` in help, use `components --list` for names and `components checklist` (or `definition_list`, `metric_grid`) for the item schema and a minimal example.
+- With a binary listing `components [--list | <component-id>]` in help, use `components --list` for names and `components checklist` (or `definition_list`, `metric_grid`) for the item schema and a minimal example. On older binaries, run `components` without arguments for the full catalog.
 - When present, `diagnostic_counts` counts entries across errors/warnings and structured checks by severity; inspect their messages. `component_counts` counts semantic components, not physical Word tables used to place content in columns. On redlines counts describe the new source. `redline_evidence` identifies both input versions and the exported DOCX.
 - A PDF receipt can include `source_sha256` (the snapshot actually exported) and `page_count` (null when unavailable). Never infer final pagination from structural QA. Only reuse a PDF made from the same source with matching engine, version and settings.
 - With figure settling requested, use `figure_settling.status` when present: `no_candidates`, `missing_tool` (see `missing_tool`), `interrupted`, or `completed`. Completed does not imply anything moved.

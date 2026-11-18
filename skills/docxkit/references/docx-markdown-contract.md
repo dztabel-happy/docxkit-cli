@@ -315,7 +315,7 @@ Use `---PAGE---` only when the user explicitly asks for a hard page break, or be
 
 ## Transcribing an Existing Document
 
-Transcribe only when the user says the wording must not change (照录、原文不能改、一字不改). A request to put material into Word ("排成 Word", "做成 Word", "整理成文档") is not a transcription: keep the content and the facts, fix obvious errors (a typo, a figure or an example that contradicts the rest of the material), turn spoken or note-like wording into written prose, and tell the user in the delivery message what was changed.
+Transcribe only when the user says the wording must not change (照录、原文不能改、一字不改). A request to put material into Word ("排成 Word", "做成 Word", "整理成文档") is not a transcription: keep the content and the facts, fix obvious errors (a typo, a figure or an example that contradicts the rest of the material), and turn spoken or note-like wording into written prose. When repairing inconsistent section numbering, use actual headings and update references in the text (for example, `见 3.0`) to point to the same section under its new number. Tell the user what you changed.
 
 A transcription keeps the original's wording, clause numbers, masks and order. Nothing in this contract is permission to rewrite it.
 
