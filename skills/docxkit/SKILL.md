@@ -13,7 +13,7 @@ DocxKit turns Markdown (or `report.json`) into a Word `.docx` the user can keep 
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.2.1`; what decides is what the binary reports. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
+This skill matches `@dztabel/docxkit >= 0.2.2`; what decides is what the binary reports. At session start (once, before the first build), refresh the CLI and the installed skill copies. Every step is fail-soft: if offline or a step errors, keep going with the local versions — never block the build on updating.
 
 ```bash
 npm install @dztabel/docxkit@latest   # session-start upgrade; on failure keep the local install
@@ -24,6 +24,8 @@ npx --no-install docx-kit sync-skill  # mirrors the packaged skill into ~/.claud
 `sync-skill` refreshes the machine-installed skill copies from the npm package (only into skills roots that already exist); an updated skill takes effect in the next session — do not re-read it mid-session. Skip the command silently if the local CLI predates it. Do not run `npm install` again mid-session: the CLI version must stay the same across a build and redline loop. If `docx-kit` is not found, run `npm install @dztabel/docxkit`, then use `npx --no-install docx-kit …`.
 
 `docx-kit templates` says what the installed binary can do. It prints `by_structure` when it has plain documents, `:::` containers and lists as written, and names under `format.features` the stated-format features it has — all of them are `text_scale`, `role_font`, `role_latin_font`, `role_size`, `role_line_spacing`, `page_margins`, `table_appearance`, `table_without_header`, `table_spacing`, `table_merges`, `table_row_height`, `paragraph_spacing`, `parallel`, `page_position`. An older binary prints `:::` lines as text, makes a short text a report with a cover and rejects those keys: if something you need is missing, tell the user rather than building something else.
+
+For a single component, check `docx-kit components --help`: when it lists `--list`, use `components --list` for the index or e.g. `components checklist` for the item fields and an example. Older binaries provide the full catalog with `components`.
 
 ## First decision: does the user want a report?
 

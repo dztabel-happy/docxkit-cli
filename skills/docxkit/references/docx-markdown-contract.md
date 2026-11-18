@@ -91,7 +91,7 @@ Two kinds of existing kaiti or song source now give a different result. A source
 
 `page_numbers: auto` writes a conditional field into the footer (`IF NUMPAGES > 1`, counting every page of the file). Word and WPS evaluate it as they lay the pages out (on the 公文模板 the two dashes are inside the condition too): a one-page document shows no number, the numbers appear when it grows to a second page and disappear when it shrinks back, with nothing to update by hand. The receipt therefore does not say whether a number is currently shown. LibreOffice does not evaluate this footer and shows no page number at all, so `render-copy` puts a plain page number into its copy instead: the copy of a document of several pages is right, and the copy of a one-page document shows a "1" that the delivered file does not have. Binaries older than this feature reject `page_numbers: auto`.
 
-The page number sits centred in the footer, and on the 公文模板 follows GB/T 9704 (`— 1 —`; odd pages right and even pages left without a cover or contents, centred with one); its position and form cannot be chosen in this version.
+The official template centres `— 1 —` in the footer whether or not the document has a cover or contents.
 
 `document_mode` keeps deciding everything else: title and section rules, caption numbering and check severities. Typical uses: `cover: false` for a report that starts with its title and contents; `toc: false` for a short report; `document_mode: document` with `toc: true` or `cover: true` for a long ordinary document.
 
@@ -316,6 +316,15 @@ Undeclared Markdown uses the new counting rule. If an old table locator and the 
 ```
 
 Prefer paragraphs, bullet lists, ordered lists, tables, figures, and code blocks for normal report content. Use callouts only for rare high-signal emphasis. The official template rejects callouts. The default kaiti template draws an admonition box (colored left bar, light fill for risk/warning); the song template renders a plain body paragraph led by a bold label（标题或默认"风险提示"/"注"）— the formal-report idiom, no box or color.
+
+For example, `> [!note] 关键说明` followed by `> 只统计已到账款项。` gives two different readings:
+
+| Template | What the reader sees |
+| --- | --- |
+| 楷体 | The box starts with “只统计已到账款项。”; “关键说明” follows as a small right-aligned label in the same cell. |
+| 宋体 | **关键说明：**只统计已到账款项。 The bold label leads the paragraph. |
+
+
 
 A line directly under a list item (no blank line between), indented with spaces or a tab to where the item's text starts or by four spaces, continues that item: it joins the item's text, without a space where both sides are Chinese. This holds for ordered and bullet lists and for both kinds of numbering. A line written flush left is a paragraph of its own (in Chinese writing the text under `一、总体情况` starts a paragraph), and so is a line indented with full-width spaces, a line after a blank line, and an indented line that is itself numbered.
 
@@ -587,6 +596,9 @@ A pipe table needs its separator line, the second line, with at least three hyph
 **Across pages** (every table, nothing to write): a short table — at most 10 rows besides the header, and with the header at most about a third of the text height (of the landscape page for a landscape table) — stays on one page; when it does not fit at the foot of a page it moves to the next page whole. A longer table splits normally, but its first row is not left alone at the foot of a page (under the header), and its last row is not left alone at the top of the next page — when those rows are short (up to 3 lines each); a taller row is a complete item and may stand alone. A row is split across pages only when it is tall: more than 3 lines in a grid table, more than 8 in a three-line or borderless one. The last row never keeps with the next paragraph, so rows a user adds at the end in Word or WPS (Tab in the last cell) continue the table on the page instead of pushing it to the next. Do not add `---PAGE---` before a table to keep it whole.
 
 **Landscape pages** (`表[landscape]：标题` or `layout=landscape`): the table and its caption get landscape pages of their own, with the body's header and footer and the page numbers running on. When anything follows the table — a paragraph, a heading, `# 资料来源`, an appendix — the pages after it are portrait again. When the landscape table is the last thing in the document, the document ends on its landscape page: the empty paragraph after the table that Word requires (where the user goes on writing) is an ordinary body paragraph on that page, and no blank portrait page follows. The cost: what the user types after that table in Word or WPS stays on landscape pages; to go on in portrait, insert a next-page section break and set the new section to portrait.
+
+A two-row table can therefore leave most of the preceding portrait page empty. For a short comparison, first see whether the columns read comfortably in portrait (shorter headers may be enough). Request landscape when the width is worth a separate page; the number of rows alone does not decide it.
+
 
 ### Table looks (`::: 表格`)
 
@@ -863,6 +875,11 @@ A transcription keeps the original's wording, clause numbers, masks and order. N
 ## Machine-Readable Results (cli-contract 0.2)
 
 `build-result.json`, `redline-result.json`, and `qa-result.json` carry `contract_version: "0.2"`; stdout matches the persisted result file for these commands. `render-copy` instead returns its receipt only on stdout.
+
+- With a binary listing `components [--list | <component-id>]` in help, use `components --list` for names and `components checklist` (or `definition_list`, `metric_grid`) for the item schema and a minimal example.
+- When present, `diagnostic_counts` counts entries across errors/warnings and structured checks by severity; inspect their messages. `component_counts` counts semantic components, not physical Word tables used to place content in columns. On redlines counts describe the new source. `redline_evidence` identifies both input versions and the exported DOCX.
+- A PDF receipt can include `source_sha256` (the snapshot actually exported) and `page_count` (null when unavailable). Never infer final pagination from structural QA. Only reuse a PDF made from the same source with matching engine, version and settings.
+- With figure settling requested, use `figure_settling.status` when present: `no_candidates`, `missing_tool` (see `missing_tool`), `interrupted`, or `completed`. Completed does not imply anything moved.
 
 - All paths in results (`input_path`, `output_dir`, `report_path`, `docx_path`, `artifacts.*`) are absolute. Pass `--filename <name.docx>` to `build` or `redline`; it accepts a file name only, not a path. Without it `build` writes `report.docx` and `redline` writes `redline.docx`; `redline-result.json` keeps its name, and a redline docx of an earlier run under another name in the same `--out` is removed, as `build` does. `docx_path` is the single authoritative Word deliverable and must not be copied or renamed by the agent.
 - `build` and `validate` results carry `input_sha256`: the SHA-256 of the exact input bytes that were parsed (a successful result always has a real 64-hex digest; an unreadable input leaves it empty). `redline` and `error` results keep it empty instead of fabricating one.
