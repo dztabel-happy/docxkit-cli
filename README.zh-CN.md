@@ -50,7 +50,7 @@ docx-kit --version
 出现类似输出代表 CLI 安装成功：
 
 ```text
-docx-kit 0.2.2 (cli-contract 0.2)
+docx-kit 0.2.3 (cli-contract 0.2)
 ```
 
 ### 2. 安装 Agent skill（二选一）
@@ -143,7 +143,7 @@ Agent 根据任务完成资料读取、写作或转录、Word 导出和必要的
 - 标题后回车就是正文；表格、代码块后面可以直接输入；在 Word 里新插的表格自动是三线表。
 - 每个有序列表各自从 1 编号，可以升降级。
 
-少数操作要先在 Word 或 WPS 里做一点设置，Agent 交付时会一并说明（见 [Skill 的交付说明](skills/docxkit/SKILL.md#delivery-instructions--tell-the-user)）。在 Word 里改过的内容不会回到生成用的源文件。
+少数操作要先在 Word 或 WPS 里做一点设置，Agent 交付时会一并说明（见 [Skill 的交付说明](skills/docxkit/references/word-editing.md)）。在 Word 里改过的内容不会回到生成用的源文件。
 
 ## 技术细节
 

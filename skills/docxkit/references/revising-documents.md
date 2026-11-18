@@ -4,6 +4,24 @@ When the user is not satisfied with a `.docx` DocxKit produced and asks for chan
 
 The user can also continue writing directly in Word/WPS. Agent rebuilds use Markdown or `report.json`; they do not import edits from the Word file. First establish which copy contains the latest content.
 
+## Showing what changed (tracked changes)
+
+To hand the user a Word file with tracked-changes markup of what changed between two versions you generated, use `redline`: it renders the new version with insertions and deletions marked, reviewable and acceptable in Word/WPS. It compares two DocxKit sources (Markdown or JSON), including ordinary documents and escaped literal text, so both versions' sources must be at hand; it is not for redlining an arbitrary uploaded `.docx`. For example, after preparing old and new source files:
+
+```bash
+docx-kit redline --from ./old.md --to ./new.md --out ./revision
+```
+
+`redline` writes `redline.docx` and `redline-result.json` into `--out`; `--filename <name.docx>` names the Word file instead (a file name only, as on `build`). A redline already in that folder is overwritten, and no `report.json` is written. Give each redline its own folder. Check the exact redline and its unchanged new draft without building the draft again:
+
+```bash
+docx-kit qa ./revision/redline.docx --redline-result ./revision/redline-result.json
+```
+
+The receipt binds the old input, new input and output DOCX by SHA-256. QA reads the new source named in the receipt and checks its hash and the DOCX hash. This is a structural check, not an acceptance/rejection test in Word. With an older binary use `--report-json` and the new draft's build model. Without either option, QA looks for an adjacent `report.json`.
+
+For a captioned numeric table with matching header and layout, unique row labels in the first column and the existing rows in the same order, changes to integer values and appended rows can be reviewed separately: accept Q3 changing from 62 to 68 and reject the new Q4 row, or do the reverse. This does not match moved rows or split merged cells. Other supported table edits keep the whole-table comparison.
+
 ## The rule
 
 - **Never hand-edit the generated `.docx`.** It is a derived artifact: a change made in its XML is lost on the next rebuild and cannot be merged back. For an agent revision, change the source and rebuild.
@@ -46,25 +64,11 @@ docx-kit build ./contract/report.json --out ./contract_v2 --filename contract.do
 
 The second command rebuilds the saved model into a sibling folder. Edit a copy of the source before using this pattern for an actual revision.
 
-## After every revision
+## After rebuilding an edited source
 
-Re-run the same gate loop as a first build: read build `errors`, `warnings`, `checks`, `effective_document` and `text_normalization`, fix at the reported `path` and rebuild until errors and warnings are clean (leave a warning only when the user explicitly wants that shape, or it is a `table_consider_landscape` whose table reads well as built, and say so); keep legitimate `info`. Run QA on the original generated document — for a redline document with the new draft's `report.json`, see below — and review the content required by the task. QA checks structure only; it does not compare a transcription with its original. Return the authoritative `docx_path`, source path, and the review status.
+Re-run the same gate loop as a first build: read build `errors`, `warnings`, `checks`, `effective_document` and `text_normalization`, fix at the reported `path` and rebuild until errors and warnings are clean (leave a warning only when the user explicitly wants that shape, or it is a `table_consider_landscape` whose table reads well as built, and say so); keep legitimate `info`. Run QA on the original generated document and review the content required by the task. QA checks structure only; it does not compare a transcription with its original. Return the authoritative `docx_path`, source path, and the review status.
 
-## Showing what changed (tracked changes)
-
-To hand the user a Word file with tracked-changes markup of what changed between two versions you generated, use `redline`: it renders the new version with insertions and deletions marked, reviewable and acceptable in Word/WPS. It compares two DocxKit sources (Markdown or JSON), including ordinary documents and escaped literal text, so both versions' sources must be at hand; it is not for redlining an arbitrary uploaded `.docx`. For example, after preparing old and new source files:
-
-```bash
-docx-kit redline --from ./old.md --to ./new.md --out ./revision
-```
-
-`redline` writes `redline.docx` and `redline-result.json` into `--out`; `--filename <name.docx>` names the Word file instead (a file name only, as on `build`). A redline already in that folder is overwritten, and no `report.json` is written. Give each redline its own folder. If `qa --help` lists `--redline-result`, check the exact redline and its unchanged new draft without building the draft again:
-
-```bash
-docx-kit qa ./revision/redline.docx --redline-result ./revision/redline-result.json
-```
-
-The receipt binds the old input, new input and output DOCX by SHA-256. QA reads the new source named in the receipt and checks its hash and the DOCX hash. This is a structural check, not an acceptance/rejection test in Word. With an older binary use `--report-json` and the new draft's build model. Without either option, QA looks for an adjacent `report.json`.
+## Comparison limits
 
 Both sources must resolve to the same `cover`, `toc`, `chapter_header` and `page_numbers` (and, with a chapter header, both must have level-1 headings or both must lack them). Otherwise `redline` fails with `redline needs both drafts to have the same cover, toc, chapter_header and page_numbers…`: give both sources the same settings, or build the two versions separately. This also applies across versions: a 楷体 or 宋体 ordinary document saved as `report.json` by an earlier release has `page_numbers: always`, while a new Markdown draft of it defaults to `auto`; write `page_numbers: always` (and `heading_numbering: auto`, `list_numbering: template` if the old draft used them) in the new draft before comparing.
 
@@ -74,6 +78,6 @@ The contents section must also exist in both sources or in neither. This only ma
 
 Landscape tables keep their landscape pages in the redline document, and the other page settings (margins, page position) are those of both drafts. When one draft has landscape table pages that the other lacks, Word restarts the page numbers at 1 in the section after those pages once all revisions are accepted or rejected — or, when those landscape pages end the kept draft, on the landscape pages themselves; Word cannot record taking a page-number restart away as a revision. To keep that file, set the page numbering of that section (the one that follows the landscape pages, or the landscape pages at the end) to continue from the previous section (Insert → Page Number → Format Page Numbers → Continue from previous section); that one setting is enough. Otherwise use the document rebuilt from the kept draft's source. Read `redline-result.json` and deliver its returned Word path. Accepting all revisions yields the new text; rejecting all yields the old text. Each side retains its own punctuation mode; the normalization receipt counts the emitted text from both sides. After accepting or rejecting revisions, update fields so the numbers and references match the side that was kept.
 
-Redline compares document structure, not the bytes of external image assets. Replacing an image at the same path is visible in a rebuilt final document but is not an image-content diff. Headings/captions are compared as displayed: `**概况**` versus `概况` has the same displayed text, whereas a code-protected `A*B*C` differs from unprotected emphasis. A changed body paragraph is compared as shown too, character by character with its formatting: inserted and deleted text keeps its bold, italic, strikethrough or code look, a word that only became bold (or stopped being bold) is shown deleted and inserted again, and no `**` or other marker is printed. A paragraph with a link, a cross-reference, a citation or an inline formula is deleted and inserted whole, and so is a list, quote, callout whose text changed. For a captioned numeric table with matching header and layout, unique row labels in the first column and the existing rows in the same order, changes to integer values and appended rows can be reviewed separately: accept Q3 changing from 62 to 68 and reject the new Q4 row, or do the reverse. This does not match moved rows or split merged cells. Other supported table edits keep the whole-table comparison. The `added`/`removed`/`changed` summary comes from the same comparison used for the document.
+Redline compares document structure, not the bytes of external image assets. Replacing an image at the same path is visible in a rebuilt final document but is not an image-content diff. Headings/captions are compared as displayed: `**概况**` versus `概况` has the same displayed text, whereas a code-protected `A*B*C` differs from unprotected emphasis. A changed body paragraph is compared as shown too, character by character with its formatting: inserted and deleted text keeps its bold, italic, strikethrough or code look, a word that only became bold (or stopped being bold) is shown deleted and inserted again, and no `**` or other marker is printed. A paragraph with a link, a cross-reference, a citation or an inline formula is deleted and inserted whole, and so is a list, quote, callout whose text changed. The `added`/`removed`/`changed` summary comes from the same comparison used for the document.
 
 Tell users that a later rebuild from source does not include changes they made in Word.

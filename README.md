@@ -50,7 +50,7 @@ docx-kit --version
 Output like this means the CLI is installed:
 
 ```text
-docx-kit 0.2.2 (cli-contract 0.2)
+docx-kit 0.2.3 (cli-contract 0.2)
 ```
 
 ### 2. Install one agent skill
@@ -143,7 +143,7 @@ The exported Word file is meant to be worked on, not just read:
 - Enter after a heading gives body text; you can type straight after a table or code block; a table inserted in Word is a three-line table.
 - Each ordered list numbers from 1 on its own and can be demoted and promoted.
 
-A few operations need a small setting in Word or WPS first; the agent explains them on delivery (see the [Skill delivery instructions](skills/docxkit/SKILL.md#delivery-instructions--tell-the-user)). Edits made in Word do not flow back into the source used for rebuilding.
+A few operations need a small setting in Word or WPS first; the agent explains them on delivery (see the [Skill delivery instructions](skills/docxkit/references/word-editing.md)). Edits made in Word do not flow back into the source used for rebuilding.
 
 ## Technical Details
 

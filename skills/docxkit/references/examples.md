@@ -222,7 +222,7 @@ numbering_rule: native-v1
 
 These use what `docx-kit templates` lists under `format.features`; check it first on an installation you did not just update.
 
-More on these rows of the table in `SKILL.md` ("What you can express"):
+Use the [form and layout options](forms-and-layout.md) to adapt the worked forms below.
 
 | Need | Write |
 | --- | --- |
