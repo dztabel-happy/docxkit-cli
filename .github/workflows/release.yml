@@ -17,6 +17,9 @@ on:
 permissions:
   contents: read
 
+env:
+  PACKAGE_DIR: wrapper/.release-package
+
 concurrency:
   group: docxkit-release-${{ github.ref }}
   cancel-in-progress: false
@@ -81,30 +84,29 @@ jobs:
       - name: Release metadata gate
         shell: bash
         run: node scripts/check_release_metadata.mjs wrapper
+      - name: Assemble npm packages
+        shell: bash
+        run: node scripts/stage_npm_package.mjs wrapper "$PACKAGE_DIR"
       - name: Build platform binary
         shell: bash
         run: bash scripts/build_binary.sh "${{ matrix.rid }}"
       - name: Binary smoke test
         shell: bash
         run: "./dist/${{ matrix.rid }}/${{ matrix.binary }} --version"
-      - name: Stage binary into public package
+      - name: Stage platform binary
         shell: bash
-        run: |
-          cp "dist/${{ matrix.rid }}/${{ matrix.binary }}" "wrapper/npm/platform-packages/${{ matrix.platform_dir }}/${{ matrix.binary }}"
-          if [ "${{ runner.os }}" = "macOS" ]; then
-            chmod +x "wrapper/npm/platform-packages/${{ matrix.platform_dir }}/${{ matrix.binary }}"
-          fi
+        run: bash scripts/prepare_npm_platform_package.sh "${{ matrix.rid }}" "$PACKAGE_DIR"
       - name: Package boundary gate
         shell: bash
-        run: node scripts/check_package_boundary.mjs wrapper main "${{ matrix.boundary }}"
+        run: node scripts/check_package_boundary.mjs "$PACKAGE_DIR" main "${{ matrix.boundary }}"
       - name: Packed install smoke test
         shell: bash
         run: |
           pack_dir="$RUNNER_TEMP/docxkit-packages"
           install_dir="$RUNNER_TEMP/docxkit-install"
           mkdir -p "$pack_dir" "$install_dir"
-          (cd wrapper && npm pack --pack-destination "$pack_dir" >/dev/null)
-          (cd "wrapper/npm/platform-packages/${{ matrix.platform_dir }}" && npm pack --pack-destination "$pack_dir" >/dev/null)
+          (cd "$PACKAGE_DIR" && npm pack --pack-destination "$pack_dir" >/dev/null)
+          (cd "$PACKAGE_DIR/npm/platform-packages/${{ matrix.platform_dir }}" && npm pack --pack-destination "$pack_dir" >/dev/null)
           cd "$install_dir"
           npm init -y >/dev/null
           npm install "$pack_dir"/*.tgz >/dev/null
@@ -122,6 +124,10 @@ jobs:
           npx --no-install docx-kit build content.md --out output --filename 公开构建验收.docx >/dev/null
           test -f output/公开构建验收.docx
           npx --no-install docx-kit qa output/公开构建验收.docx --report-json output/report.json --out output/qa >/dev/null
+          npx --no-install docx-kit sync-skill --to ./skills >/dev/null
+          test -f skills/docxkit/references/examples.md
+          npx --no-install docx-kit build node_modules/@dztabel/docxkit/examples/report.md --out sample >/dev/null
+          npx --no-install docx-kit qa sample/report.docx --report-json sample/report.json --out sample/qa >/dev/null
       - name: Hand the platform binary to the publish job
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -162,27 +168,28 @@ jobs:
       - name: Stage binaries into public packages
         shell: bash
         run: |
-          cp platform-binaries/platform-binary-darwin-arm64/docx-kit wrapper/npm/platform-packages/darwin-arm64/docx-kit
-          cp platform-binaries/platform-binary-win32-x64/docx-kit.exe wrapper/npm/platform-packages/win32-x64/docx-kit.exe
+          node scripts/stage_npm_package.mjs wrapper "$PACKAGE_DIR"
+          cp platform-binaries/platform-binary-darwin-arm64/docx-kit "$PACKAGE_DIR/npm/platform-packages/darwin-arm64/docx-kit"
+          cp platform-binaries/platform-binary-win32-x64/docx-kit.exe "$PACKAGE_DIR/npm/platform-packages/win32-x64/docx-kit.exe"
           # artifact 不保留权限位，重新赋予可执行权限（npm 打包会带上文件模式）
-          chmod +x wrapper/npm/platform-packages/darwin-arm64/docx-kit
+          chmod +x "$PACKAGE_DIR/npm/platform-packages/darwin-arm64/docx-kit"
       - name: Release gates
         run: |
           node scripts/check_release_metadata.mjs wrapper
-          node scripts/check_package_boundary.mjs wrapper main darwin win32
+          node scripts/check_package_boundary.mjs "$PACKAGE_DIR" main darwin win32
       - name: Publish packages
         if: inputs.publish == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           node scripts/publish_npm_packages.mjs \
-            wrapper/npm/platform-packages/darwin-arm64 \
-            wrapper/npm/platform-packages/win32-x64 \
-            wrapper
+            "$PACKAGE_DIR/npm/platform-packages/darwin-arm64" \
+            "$PACKAGE_DIR/npm/platform-packages/win32-x64" \
+            "$PACKAGE_DIR"
       - name: Rehearse publish
         if: inputs.publish != 'true'
         run: |
           node scripts/publish_npm_packages.mjs --dry-run \
-            wrapper/npm/platform-packages/darwin-arm64 \
-            wrapper/npm/platform-packages/win32-x64 \
-            wrapper
+            "$PACKAGE_DIR/npm/platform-packages/darwin-arm64" \
+            "$PACKAGE_DIR/npm/platform-packages/win32-x64" \
+            "$PACKAGE_DIR"

@@ -1,7 +1,6 @@
 {
   "name": "@dztabel/docxkit",
-  "version": "0.2.6",
-  "description": "Agent-facing CLI for exporting prepared content into polished Word docx reports.",
+  "version": "0.2.7",
   "license": "UNLICENSED",
   "publishConfig": {
     "access": "public"
@@ -11,17 +10,22 @@
     "docxkit": "npm/docx-kit.cjs"
   },
   "optionalDependencies": {
-    "@dztabel/docxkit-darwin-arm64": "0.2.6",
-    "@dztabel/docxkit-win32-x64": "0.2.6"
+    "@dztabel/docxkit-darwin-arm64": "0.2.7",
+    "@dztabel/docxkit-win32-x64": "0.2.7"
   },
   "files": [
     "npm/docx-kit.cjs",
     "README.md",
-    "README.en.md",
-    "README.zh-CN.md",
     "skills/docxkit",
-    "examples/showcase/reference/*.png",
-    "examples/showcase/cases/*.png"
+    "examples/report.md",
+    "examples/letter.md",
+    "examples/memo.md",
+    "examples/notice.md",
+    "examples/contract.md",
+    "examples/form.md",
+    "examples/certificate.md",
+    "examples/stated-format.md",
+    "examples/assets/migration.png"
   ],
   "engines": {
     "node": ">=18"
