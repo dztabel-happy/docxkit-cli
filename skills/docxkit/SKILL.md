@@ -9,7 +9,7 @@ Build the editable Word file from Markdown or `report.json`. Make corrections in
 
 ## Requirements
 
-This skill matches `@dztabel/docxkit >= 0.2.5`. Once at session start, refresh the CLI and skill. If the refresh fails, continue with the installed version. Use the same binary throughout a build or revision.
+This skill matches `@dztabel/docxkit >= 0.2.6`. Once at session start, refresh the CLI and skill. If the refresh fails, continue with the installed version. Use the same binary throughout a build or revision.
 
 ```bash
 npm install @dztabel/docxkit@latest

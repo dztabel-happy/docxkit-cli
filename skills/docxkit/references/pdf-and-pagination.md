@@ -18,7 +18,11 @@ It prints one JSON object (exit code 0 on success, 1 otherwise; the JSON is plai
  "errors": [], "substituted_fonts": []}
 ```
 
-`engine` is `word` or `libreoffice`. On failure `pdf_path`, `engine` and `engine_version` are null, `substituted_fonts` is empty and `errors` holds `{code, message}`: `invalid_arguments`, `input_not_found`, `not_a_docx`, `export_failed`, or `no_pdf_engine` — neither Word nor LibreOffice is available here. Its message says so plainly: this computer cannot make a PDF; do not install anything, do not look for another converter and do not make the PDF with another tool; deliver the Word file and tell the user they can open it in Word or WPS and save it as PDF.
+An existing target is kept by default. `output_exists` gives its absolute path. Choose a new `--filename`, or pass `--overwrite` when the user wants to replace that PDF. CLIs through 0.2.5 silently replace an existing target, so use a fresh filename with those versions.
+
+On macOS, a volume such as exFAT may lack the operation needed to create a completed PDF exclusively. If `export_failed` reports this limitation, export to a local APFS folder. Use `--overwrite` on the requested volume only with permission to replace the target.
+
+`engine` is `word` or `libreoffice`. On failure `pdf_path`, `engine` and `engine_version` are null, `substituted_fonts` is empty and `errors` holds `{code, message}`. Besides `output_exists`, codes include `invalid_arguments`, `input_not_found`, `not_a_docx`, `export_failed`, and `no_pdf_engine`. With `no_pdf_engine`, neither Word nor LibreOffice is available here. Its message says so plainly: this computer cannot make a PDF; do not install anything, do not look for another converter and do not make the PDF with another tool; deliver the Word file and tell the user they can open it in Word or WPS and save it as PDF.
 
 `substituted_fonts` lists the fonts the document uses to show text that the exporting program does not have on this computer, by the names the document writes; in the PDF those characters are in another font. Fonts embedded in the document count as present; with LibreOffice, fonts that only Microsoft Office can use (its own font folder on macOS) count as missing and LibreOffice's own fonts as present. A font that is only set somewhere but shows no character (a Latin font of a paragraph with only Chinese text) is not listed.
 
